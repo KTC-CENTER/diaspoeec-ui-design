@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DiaspoEEC - Cultes, Notifications & Profil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        forest: { DEFAULT: '#1B4332', light: '#2D6A4F' },
+                        mint: { DEFAULT: '#95D5B2', light: '#D8F3DC' },
+                        gold: { DEFAULT: '#D4A017', light: '#F4D35E' },
+                        cream: { DEFAULT: '#FEFAE0', warm: '#FFFBF0' },
+                        terra: '#C17817',
+                        ink: '#1A1A2E',
+                        muted: '#4A4A5A',
+                    },
+                    fontFamily: {
+                        display: ['Fraunces', 'Georgia', 'serif'],
+                        body: ['Outfit', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        * { font-family: 'Outfit', system-ui, sans-serif; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #95D5B2; border-radius: 999px; }
+
+        /* Pulse animation for live dot */
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.4); }
+        }
+        .live-pulse { animation: livePulse 1.5s ease-in-out infinite; }
+
+        /* Fade-in animation */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up { animation: fadeUp 0.5s ease-out forwards; }
+        .fade-up-d1 { animation-delay: 0.05s; opacity: 0; }
+        .fade-up-d2 { animation-delay: 0.10s; opacity: 0; }
+        .fade-up-d3 { animation-delay: 0.15s; opacity: 0; }
+        .fade-up-d4 { animation-delay: 0.20s; opacity: 0; }
+        .fade-up-d5 { animation-delay: 0.25s; opacity: 0; }
+        .fade-up-d6 { animation-delay: 0.30s; opacity: 0; }
+
+        /* Toggle switch */
+        .toggle-track {
+            width: 44px; height: 24px;
+            border-radius: 12px;
+            background: #D1D5DB;
+            transition: background 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        .toggle-track.active { background: #2D6A4F; }
+        .toggle-thumb {
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            background: white;
+            position: absolute;
+            top: 2px; left: 2px;
+            transition: transform 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .toggle-track.active .toggle-thumb { transform: translateX(20px); }
+
+        /* Horizontal scroll no-scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* African pattern for profile header */
+        .african-pattern {
+            background-image:
+                radial-gradient(circle at 20% 30%, rgba(212,160,23,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(27,67,50,0.06) 0%, transparent 50%),
+                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5 L35 15 L30 25 L25 15Z' fill='none' stroke='%23D4A017' stroke-width='0.5' opacity='0.12'/%3E%3Cpath d='M10 25 L15 35 L10 45 L5 35Z' fill='none' stroke='%231B4332' stroke-width='0.5' opacity='0.08'/%3E%3Cpath d='M50 25 L55 35 L50 45 L45 35Z' fill='none' stroke='%23D4A017' stroke-width='0.5' opacity='0.10'/%3E%3Ccircle cx='30' cy='30' r='2' fill='none' stroke='%231B4332' stroke-width='0.5' opacity='0.08'/%3E%3Ccircle cx='30' cy='30' r='6' fill='none' stroke='%23D4A017' stroke-width='0.3' opacity='0.06'/%3E%3C/svg%3E");
+        }
+
+        /* Kente-inspired decorative bar */
+        .kente-bar {
+            height: 4px;
+            background: repeating-linear-gradient(
+                90deg,
+                #D4A017 0px, #D4A017 8px,
+                #1B4332 8px, #1B4332 16px,
+                #C17817 16px, #C17817 24px,
+                #2D6A4F 24px, #2D6A4F 32px
+            );
+            border-radius: 2px;
+        }
+
+        /* Sidebar nav item */
+        .nav-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 16px; border-radius: 12px;
+            color: #4A4A5A; font-weight: 500;
+            transition: all 0.2s ease; cursor: pointer;
+        }
+        .nav-item:hover { background: rgba(149,213,178,0.2); color: #1B4332; }
+        .nav-item.active {
+            background: linear-gradient(135deg, #1B4332, #2D6A4F);
+            color: white; font-weight: 600;
+            box-shadow: 0 4px 12px rgba(27,67,50,0.3);
+        }
+
+        /* Notification item hover */
+        .notif-item {
+            transition: all 0.2s ease;
+        }
+        .notif-item:hover {
+            background: rgba(254,250,224,0.6);
+            transform: translateX(4px);
+        }
+
+        /* Screen transitions */
+        .screen { display: none; }
+        .screen.active-screen { display: block; }
+
+        /* Video card hover */
+        .video-card:hover .video-overlay {
+            opacity: 1;
+        }
+        .video-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(27,67,50,0.12);
+        }
+        .video-card { transition: all 0.3s ease; }
+
+        /* Mobile bottom bar */
+        .mobile-tab.active-tab {
+            color: #1B4332;
+        }
+        .mobile-tab.active-tab .tab-indicator {
+            width: 24px;
+            opacity: 1;
+        }
+        .tab-indicator {
+            width: 0;
+            height: 3px;
+            border-radius: 2px;
+            background: linear-gradient(90deg, #1B4332, #2D6A4F);
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+
+        /* Stat card */
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(27,67,50,0.1);
+        }
+
+        /* Settings row */
+        .settings-row {
+            transition: all 0.2s ease;
+        }
+        .settings-row:hover {
+            background: rgba(254,250,224,0.5);
+            padding-left: 20px;
+        }
+
+        /* Screen tab navigator */
+        .screen-tab {
+            transition: all 0.25s ease;
+        }
+        .screen-tab.active-stab {
+            background: linear-gradient(135deg, #1B4332, #2D6A4F);
+            color: white;
+            box-shadow: 0 4px 12px rgba(27,67,50,0.25);
+        }
+
+        /* Fire streak animation */
+        @keyframes flicker {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        .fire-streak { animation: flicker 0.8s ease-in-out infinite; }
+    </style>
+</head>
+
+<body class="bg-cream-warm font-body text-ink min-h-screen">
+
+    <!-- ============================================================ -->
+    <!--  SCREEN TAB NAVIGATOR (top of page)                          -->
+    <!-- ============================================================ -->
+    <div class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-mint/30 shadow-sm">
+        <div class="max-w-screen-2xl mx-auto px-4 py-2 flex items-center gap-3 overflow-x-auto no-scrollbar md:pl-[296px]">
+            <span class="text-xs font-semibold text-muted uppercase tracking-wider whitespace-nowrap mr-2 hidden md:block">Ecrans :</span>
+            <button onclick="switchScreen('cultes')" data-stab="cultes"
+                class="screen-tab active-stab px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap border border-forest/10">
+                Cultes & Videos
+            </button>
+            <button onclick="switchScreen('notifications')" data-stab="notifications"
+                class="screen-tab px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap border border-forest/10 text-muted">
+                Notifications
+            </button>
+            <button onclick="switchScreen('profil')" data-stab="profil"
+                class="screen-tab px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap border border-forest/10 text-muted">
+                Mon Profil
+            </button>
+            <button onclick="switchScreen('notif-settings')" data-stab="notif-settings"
+                class="screen-tab px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap border border-forest/10 text-muted">
+                Param. Notifications
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!--  DESKTOP SIDEBAR                                              -->
+    <!-- ============================================================ -->
+    <aside id="sidebar" class="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-[280px] bg-cream z-40 border-r border-mint/20 shadow-lg shadow-forest/5">
+        <!-- Logo -->
+        <div class="px-6 pt-6 pb-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-forest to-forest-light flex items-center justify-center shadow-md">
+                    <span class="text-white font-bold text-lg">E</span>
+                </div>
+                <div>
+                    <h1 class="font-display text-xl font-bold text-forest leading-tight">DiaspoEEC</h1>
+                    <p class="text-[10px] text-muted uppercase tracking-widest">Communaute</p>
+                </div>
+            </div>
+            <div class="kente-bar mt-4"></div>
+        </div>
+
+        <!-- Nav items -->
+        <nav class="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
+            <div class="nav-item" data-nav="accueil">
+                <i data-lucide="home" class="w-5 h-5"></i>
+                <span>Accueil</span>
+            </div>
+            <div class="nav-item" data-nav="meditations">
+                <i data-lucide="book-heart" class="w-5 h-5"></i>
+                <span>Meditations</span>
+            </div>
+            <div class="nav-item" data-nav="guide">
+                <i data-lucide="book-open" class="w-5 h-5"></i>
+                <span>Guide Biblique</span>
+            </div>
+            <div class="nav-item" data-nav="evenements">
+                <i data-lucide="calendar-days" class="w-5 h-5"></i>
+                <span>Evenements</span>
+            </div>
+            <div class="nav-item" data-nav="dons">
+                <i data-lucide="heart-handshake" class="w-5 h-5"></i>
+                <span>Dons</span>
+            </div>
+            <div class="nav-item active" data-nav="cultes" onclick="switchScreen('cultes')">
+                <i data-lucide="tv" class="w-5 h-5"></i>
+                <span>Cultes Live</span>
+            </div>
+            <div class="nav-item" data-nav="notifications" onclick="switchScreen('notifications')">
+                <i data-lucide="bell" class="w-5 h-5"></i>
+                <span>Notifications</span>
+                <span class="ml-auto bg-terra text-white text-[10px] font-bold px-2 py-0.5 rounded-full">3</span>
+            </div>
+            <div class="nav-item" data-nav="profil" onclick="switchScreen('profil')">
+                <i data-lucide="user" class="w-5 h-5"></i>
+                <span>Mon Profil</span>
+            </div>
+        </nav>
+
+        <!-- User card -->
+        <div class="px-4 pb-4">
+            <div class="bg-white rounded-2xl p-3 flex items-center gap-3 shadow-sm border border-mint/10">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gold to-gold-light flex items-center justify-center text-white font-bold text-sm shadow-inner">
+                    JP
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-sm text-ink truncate">Jean-Paul Mbarga</p>
+                    <p class="text-[11px] text-muted">Paroisse de Douala</p>
+                </div>
+            </div>
+            <button class="mt-2 w-full flex items-center justify-center gap-2 text-sm text-red-500 hover:text-red-700 hover:bg-red-50 py-2 rounded-xl transition-colors">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+                <span>Deconnexion</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- ============================================================ -->
+    <!--  MOBILE TOP BAR                                               -->
+    <!-- ============================================================ -->
+    <div class="md:hidden fixed top-[52px] left-0 right-0 z-30 bg-white/90 backdrop-blur-xl border-b border-mint/20 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-forest to-forest-light flex items-center justify-center">
+                <span class="text-white font-bold text-sm">E</span>
+            </div>
+            <span class="font-display text-lg font-bold text-forest">DiaspoEEC</span>
+        </div>
+        <button onclick="switchScreen('notifications')" class="relative p-2 rounded-xl hover:bg-mint-light/50 transition-colors">
+            <i data-lucide="bell" class="w-5 h-5 text-forest"></i>
+            <span class="absolute -top-0.5 -right-0.5 w-5 h-5 bg-terra text-white text-[10px] font-bold rounded-full flex items-center justify-center">3</span>
+        </button>
+    </div>
+
+    <!-- ============================================================ -->
+    <!--  MAIN CONTENT AREA                                            -->
+    <!-- ============================================================ -->
+    <main class="md:ml-[280px] pt-[100px] md:pt-[64px] pb-24 md:pb-8 px-4 md:px-8 max-w-5xl">
+
+        <!-- ======================================================== -->
+        <!--  SCREEN 1: CULTES & VIDEOS                                -->
+        <!-- ======================================================== -->
+        <div id="screen-cultes" class="screen active-screen">
+
+            <!-- Header -->
+            <div class="mb-8 fade-up">
+                <h1 class="font-display text-3xl md:text-4xl font-bold text-forest mb-2">Cultes & Videos</h1>
+                <p class="text-muted text-lg">Vivez les cultes ou que vous soyez</p>
+            </div>
+
+            <!-- LIVE NOW BANNER -->
+            <div class="fade-up fade-up-d1 bg-gradient-to-br from-ink via-[#2a1a3e] to-[#1a1a2e] rounded-2xl overflow-hidden mb-8 shadow-xl shadow-ink/20">
+                <!-- Live badge bar -->
+                <div class="px-5 pt-4 pb-2 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="relative flex items-center gap-2 bg-red-600/90 text-white text-xs font-bold px-3 py-1 rounded-full">
+                            <span class="w-2 h-2 bg-white rounded-full live-pulse"></span>
+                            EN DIRECT
+                        </span>
+                        <span class="text-white/60 text-sm">127 spectateurs en direct</span>
+                    </div>
+                    <span class="text-white/40 text-xs hidden sm:block">Commence il y a 45 minutes</span>
+                </div>
+
+                <!-- Video placeholder -->
+                <div class="mx-5 my-3 aspect-video bg-gradient-to-br from-[#1a1a2e] via-[#2d1b45] to-[#1B4332]/40 rounded-xl flex items-center justify-center relative overflow-hidden group cursor-pointer">
+                    <!-- Decorative rings -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="w-32 h-32 rounded-full border border-white/5"></div>
+                        <div class="absolute w-48 h-48 rounded-full border border-white/[0.03]"></div>
+                    </div>
+                    <!-- Play button -->
+                    <div class="w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 group-hover:bg-white/20 group-hover:scale-110 transition-all duration-300">
+                        <svg class="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    </div>
+                    <!-- Corner label -->
+                    <div class="absolute top-3 left-3 bg-black/40 backdrop-blur-sm text-white/80 text-xs px-2 py-1 rounded-lg flex items-center gap-1">
+                        <i data-lucide="video" class="w-3 h-3"></i> LIVE
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="px-5 pb-5">
+                    <h2 class="font-display text-xl md:text-2xl font-bold text-white mb-1">Culte du Dimanche - Paroisse de Douala</h2>
+                    <p class="text-white/50 text-sm mb-4">Commence il y a 45 minutes</p>
+                    <button class="w-full sm:w-auto bg-gradient-to-r from-red-600 to-terra hover:from-red-700 hover:to-terra/90 text-white font-semibold py-3 px-8 rounded-xl shadow-lg shadow-red-600/30 hover:shadow-red-600/40 transition-all duration-300 flex items-center justify-center gap-2">
+                        <i data-lucide="radio" class="w-5 h-5"></i>
+                        Rejoindre le culte en direct
+                    </button>
+                </div>
+            </div>
+
+            <!-- PROCHAINS CULTES EN DIRECT -->
+            <div class="mb-8 fade-up fade-up-d2">
+                <h2 class="font-display text-xl font-bold text-forest mb-4 flex items-center gap-2">
+                    <i data-lucide="calendar-clock" class="w-5 h-5 text-gold"></i>
+                    Prochains cultes en direct
+                </h2>
+                <div class="flex gap-4 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4">
+                    <!-- Card 1 -->
+                    <div class="min-w-[280px] bg-white rounded-2xl p-5 border border-mint/10 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-10 h-10 rounded-xl bg-forest/10 flex items-center justify-center">
+                                <i data-lucide="church" class="w-5 h-5 text-forest"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-muted">1 Mars 2026</p>
+                                <p class="text-sm font-semibold text-forest">10h00</p>
+                            </div>
+                        </div>
+                        <h3 class="font-display font-bold text-ink mb-1">Culte de Dimanche prochain</h3>
+                        <p class="text-sm text-muted mb-4">Paroisse de Paris</p>
+                        <button class="w-full flex items-center justify-center gap-2 text-sm font-semibold text-gold hover:text-terra border border-gold/30 hover:border-terra/30 py-2 rounded-xl transition-colors">
+                            <i data-lucide="bell-ring" class="w-4 h-4"></i>
+                            Definir un rappel
+                        </button>
+                    </div>
+                    <!-- Card 2 -->
+                    <div class="min-w-[280px] bg-white rounded-2xl p-5 border border-mint/10 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center">
+                                <i data-lucide="moon" class="w-5 h-5 text-gold"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-muted">5 Mars 2026</p>
+                                <p class="text-sm font-semibold text-forest">20h00</p>
+                            </div>
+                        </div>
+                        <h3 class="font-display font-bold text-ink mb-1">Veillee de priere</h3>
+                        <p class="text-sm text-muted mb-4">Toutes paroisses</p>
+                        <button class="w-full flex items-center justify-center gap-2 text-sm font-semibold text-gold hover:text-terra border border-gold/30 hover:border-terra/30 py-2 rounded-xl transition-colors">
+                            <i data-lucide="bell-ring" class="w-4 h-4"></i>
+                            Definir un rappel
+                        </button>
+                    </div>
+                    <!-- Card 3 -->
+                    <div class="min-w-[280px] bg-white rounded-2xl p-5 border border-mint/10 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-10 h-10 rounded-xl bg-terra/10 flex items-center justify-center">
+                                <i data-lucide="users" class="w-5 h-5 text-terra"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-muted">8 Mars 2026</p>
+                                <p class="text-sm font-semibold text-forest">15h00</p>
+                            </div>
+                        </div>
+                        <h3 class="font-display font-bold text-ink mb-1">Conference Jeunesse</h3>
+                        <p class="text-sm text-muted mb-4">Paroisse de Paris</p>
+                        <button class="w-full flex items-center justify-center gap-2 text-sm font-semibold text-gold hover:text-terra border border-gold/30 hover:border-terra/30 py-2 rounded-xl transition-colors">
+                            <i data-lucide="bell-ring" class="w-4 h-4"></i>
+                            Definir un rappel
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIDEOS RECENTES -->
+            <div class="fade-up fade-up-d3">
+                <h2 class="font-display text-xl font-bold text-forest mb-4 flex items-center gap-2">
+                    <i data-lucide="play-circle" class="w-5 h-5 text-gold"></i>
+                    Videos recentes
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                    <!-- Video 1 -->
+                    <div class="video-card bg-white rounded-2xl overflow-hidden border border-mint/10 shadow-sm cursor-pointer">
+                        <div class="aspect-video bg-gradient-to-br from-forest/80 via-forest-light/60 to-mint/40 relative flex items-center justify-center">
+                            <div class="video-overlay opacity-0 absolute inset-0 bg-black/20 flex items-center justify-center transition-opacity duration-300">
+                                <div class="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                                    <svg class="w-6 h-6 text-forest ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                </div>
+                            </div>
+                            <div class="absolute bottom-2 right-2 bg-black/70 text-white text-xs font-semibold px-2 py-0.5 rounded-md">1:23:45</div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-display font-bold text-ink mb-1 line-clamp-2">Culte du 16 Fevrier 2026</h3>
+                            <p class="text-sm text-muted mb-3">Paroisse de Douala</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3 text-xs text-muted">
+                                    <span>234 vues</span>
+                                    <span class="flex items-center gap-1"><i data-lucide="heart" class="w-3 h-3 text-red-400"></i> 45</span>
+                                    <span>Il y a 4 jours</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button class="p-1.5 rounded-lg hover:bg-mint-light/50 transition-colors"><i data-lucide="heart" class="w-4 h-4 text-muted"></i></button>
+                                    <button class="p-1.5 rounded-lg hover:bg-mint-light/50 transition-colors"><i data-lucide="share-2" class="w-4 h-4 text-muted"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Video 2 -->
+                    <div class="video-card bg-white rounded-2xl overflow-hidden border border-mint/10 shadow-sm cursor-pointer">
+                        <div class="aspect-video bg-gradient-to-br from-gold/40 via-terra/30 to-cream relative flex items-center justify-center">
+                            <div class="video-overlay opacity-0 absolute inset-0 bg-black/20 flex items-center justify-center transition-opacity duration-300">
+                                <div class="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                                    <svg class="w-6 h-6 text-forest ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                </div>
+                            </div>
+                            <div class="absolute bottom-2 right-2 bg-black/70 text-white text-xs font-semibold px-2 py-0.5 rounded-md">52:18</div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-display font-bold text-ink mb-1 line-clamp-2">Predication: La grace suffisante</h3>
+                            <p class="text-sm text-muted mb-3">Pasteur Ndongo</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3 text-xs text-muted">
+                                    <span>189 vues</span>
+                                    <span class="flex items-center gap-1"><i data-lucide="heart" class="w-3 h-3 text-red-400"></i> 32</span>
+                                    <span>Il y a 1 semaine</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button class="p-1.5 rounded-lg hover:bg-mint-light/50 transition-colors"><i data-lucide="heart" class="w-4 h-4 text-muted"></i></button>
+                                    <button class="p-1.5 rounded-lg hover:bg-mint-light/50 transition-colors"><i data-lucide="share-2" class="w-4 h-4 text-muted"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Video 3 -->
+                    <div class="video-card bg-white rounded-2xl overflow-hidden border border-mint/10 shadow-sm cursor-pointer">
+                        <div class="aspect-video bg-gradient-to-br from-mint/50 via-forest/30 to-mint-light relative flex items-center justify-center">
+                            <div class="video-overlay opacity-0 absolute inset-0 bg-black/20 flex items-center justify-center transition-opacity duration-300">
+                                <div class="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                                    <svg class="w-6 h-6 text-forest ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                </div>
+                            </div>
+                            <div class="absolute bottom-2 right-2 bg-black/70 text-white text-xs font-semibold px-2 py-0.5 rounded-md">1:45:12</div>
+                            <div class="absolute top-2 left-2 bg-gold/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">POPULAIRE</div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-display font-bold text-ink mb-1 line-clamp-2">Louange & Adoration - Compilation</h3>
+                            <p class="text-sm text-muted mb-3">Chorale EEC Paris</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3 text-xs text-muted">
+                                    <span>412 vues</span>
+                                    <span class="flex items-center gap-1"><i data-lucide="heart" class="w-3 h-3 text-red-400"></i> 78</span>
+                                    <span>Il y a 1 semaine</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button class="p-1.5 rounded-lg hover:bg-mint-light/50 transition-colors"><i data-lucide="heart" class="w-4 h-4 text-muted"></i></button>
+                                    <button class="p-1.5 rounded-lg hover:bg-mint-light/50 transition-colors"><i data-lucide="share-2" class="w-4 h-4 text-muted"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Video 4 -->
+                    <div class="video-card bg-white rounded-2xl overflow-hidden border border-mint/10 shadow-sm cursor-pointer">
+                        <div class="aspect-video bg-gradient-to-br from-terra/30 via-gold-light/30 to-cream relative flex items-center justify-center">
+                            <div class="video-overlay opacity-0 absolute inset-0 bg-black/20 flex items-center justify-center transition-opacity duration-300">
+                                <div class="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                                    <svg class="w-6 h-6 text-forest ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                </div>
+                            </div>
+                            <div class="absolute bottom-2 right-2 bg-black/70 text-white text-xs font-semibold px-2 py-0.5 rounded-md">18:32</div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-display font-bold text-ink mb-1 line-clamp-2">Temoignage: De la diaspora a l'appel</h3>
+                            <p class="text-sm text-muted mb-3">Soeur Nkotto</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3 text-xs text-muted">
+                                    <span>156 vues</span>
+                                    <span class="flex items-center gap-1"><i data-lucide="heart" class="w-3 h-3 text-red-400"></i> 28</span>
+                                    <span>Il y a 2 semaines</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button class="p-1.5 rounded-lg hover:bg-mint-light/50 transition-colors"><i data-lucide="heart" class="w-4 h-4 text-muted"></i></button>
+                                    <button class="p-1.5 rounded-lg hover:bg-mint-light/50 transition-colors"><i data-lucide="share-2" class="w-4 h-4 text-muted"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Video 5 -->
+                    <div class="video-card bg-white rounded-2xl overflow-hidden border border-mint/10 shadow-sm cursor-pointer">
+                        <div class="aspect-video bg-gradient-to-br from-forest-light/40 via-mint/30 to-cream relative flex items-center justify-center">
+                            <div class="video-overlay opacity-0 absolute inset-0 bg-black/20 flex items-center justify-center transition-opacity duration-300">
+                                <div class="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                                    <svg class="w-6 h-6 text-forest ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                </div>
+                            </div>
+                            <div class="absolute bottom-2 right-2 bg-black/70 text-white text-xs font-semibold px-2 py-0.5 rounded-md">38:15</div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-display font-bold text-ink mb-1 line-clamp-2">Etude biblique: Epitre aux Romains</h3>
+                            <p class="text-sm text-muted mb-3">Pasteur Eyinga</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3 text-xs text-muted">
+                                    <span>98 vues</span>
+                                    <span class="flex items-center gap-1"><i data-lucide="heart" class="w-3 h-3 text-red-400"></i> 15</span>
+                                    <span>Il y a 2 semaines</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button class="p-1.5 rounded-lg hover:bg-mint-light/50 transition-colors"><i data-lucide="heart" class="w-4 h-4 text-muted"></i></button>
+                                    <button class="p-1.5 rounded-lg hover:bg-mint-light/50 transition-colors"><i data-lucide="share-2" class="w-4 h-4 text-muted"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Video 6 -->
+                    <div class="video-card bg-white rounded-2xl overflow-hidden border border-mint/10 shadow-sm cursor-pointer">
+                        <div class="aspect-video bg-gradient-to-br from-red-800/20 via-gold/30 to-forest/20 relative flex items-center justify-center">
+                            <div class="video-overlay opacity-0 absolute inset-0 bg-black/20 flex items-center justify-center transition-opacity duration-300">
+                                <div class="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                                    <svg class="w-6 h-6 text-forest ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                </div>
+                            </div>
+                            <div class="absolute bottom-2 right-2 bg-black/70 text-white text-xs font-semibold px-2 py-0.5 rounded-md">2:01:33</div>
+                            <div class="absolute top-2 left-2 bg-red-700/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                NOEL 2025
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-display font-bold text-ink mb-1 line-clamp-2">Culte de Noel 2025</h3>
+                            <p class="text-sm text-muted mb-3">Paroisse de Lyon</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3 text-xs text-muted">
+                                    <span>567 vues</span>
+                                    <span class="flex items-center gap-1"><i data-lucide="heart" class="w-3 h-3 text-red-400"></i> 92</span>
+                                    <span>Il y a 2 mois</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button class="p-1.5 rounded-lg hover:bg-mint-light/50 transition-colors"><i data-lucide="heart" class="w-4 h-4 text-muted"></i></button>
+                                    <button class="p-1.5 rounded-lg hover:bg-mint-light/50 transition-colors"><i data-lucide="share-2" class="w-4 h-4 text-muted"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================================================== -->
+        <!--  SCREEN 2: NOTIFICATIONS                                  -->
+        <!-- ======================================================== -->
+        <div id="screen-notifications" class="screen">
+
+            <!-- Header -->
+            <div class="mb-6 fade-up">
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                    <div>
+                        <h1 class="font-display text-3xl md:text-4xl font-bold text-forest mb-1">Notifications</h1>
+                    </div>
+                    <button class="text-sm text-forest-light hover:text-forest font-medium hover:underline transition-colors">
+                        Marquer tout comme lu
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="flex gap-2 mb-6 fade-up fade-up-d1">
+                <button onclick="filterNotifs('all')" id="notif-tab-all" class="notif-filter-tab bg-gradient-to-r from-forest to-forest-light text-white px-5 py-2 rounded-full text-sm font-semibold shadow-md">
+                    Toutes
+                </button>
+                <button onclick="filterNotifs('unread')" id="notif-tab-unread" class="notif-filter-tab px-5 py-2 rounded-full text-sm font-semibold border border-forest/20 text-muted hover:border-forest/40 transition-colors">
+                    Non lues
+                    <span class="inline-flex items-center justify-center w-5 h-5 bg-terra text-white text-[10px] font-bold rounded-full ml-1">3</span>
+                </button>
+            </div>
+
+            <!-- Today -->
+            <div class="mb-6 fade-up fade-up-d2">
+                <h3 class="text-xs font-bold text-muted uppercase tracking-wider mb-3 pl-1">Aujourd'hui</h3>
+                <div class="space-y-3">
+                    <!-- Notification 1 - Meditation -->
+                    <div class="notif-item bg-white rounded-2xl p-4 border border-mint/10 shadow-sm border-l-4 border-l-forest-light flex gap-4 items-start" data-unread="true">
+                        <div class="w-10 h-10 rounded-xl bg-forest/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i data-lucide="book-heart" class="w-5 h-5 text-forest"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <h4 class="font-semibold text-ink text-sm">Nouvelle meditation disponible</h4>
+                                <span class="w-2.5 h-2.5 bg-forest rounded-full flex-shrink-0 unread-dot"></span>
+                            </div>
+                            <p class="text-sm text-muted">La force dans l'epreuve - Pasteur Ndongo</p>
+                            <p class="text-xs text-muted/60 mt-1">Il y a 2 heures</p>
+                        </div>
+                        <button class="p-1.5 rounded-lg hover:bg-mint-light/50 transition-colors flex-shrink-0">
+                            <i data-lucide="more-horizontal" class="w-4 h-4 text-muted"></i>
+                        </button>
+                    </div>
+
+                    <!-- Notification 2 - Event reminder -->
+                    <div class="notif-item bg-white rounded-2xl p-4 border border-mint/10 shadow-sm border-l-4 border-l-gold flex gap-4 items-start" data-unread="true">
+                        <div class="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i data-lucide="calendar-days" class="w-5 h-5 text-gold"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <h4 class="font-semibold text-ink text-sm">Rappel : Evenement demain</h4>
+                                <span class="w-2.5 h-2.5 bg-forest rounded-full flex-shrink-0 unread-dot"></span>
+                            </div>
+                            <p class="text-sm text-muted">Culte de louange - Dimanche 10h00, Paris</p>
+                            <p class="text-xs text-muted/60 mt-1">Il y a 3 heures</p>
+                        </div>
+                        <button class="p-1.5 rounded-lg hover:bg-mint-light/50 transition-colors flex-shrink-0">
+                            <i data-lucide="more-horizontal" class="w-4 h-4 text-muted"></i>
+                        </button>
+                    </div>
+
+                    <!-- Notification 3 - Birthday -->
+                    <div class="notif-item bg-white rounded-2xl p-4 border border-mint/10 shadow-sm border-l-4 border-l-gold-light flex gap-4 items-start" data-unread="true">
+                        <div class="w-10 h-10 rounded-xl bg-gold-light/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i data-lucide="cake" class="w-5 h-5 text-gold"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <h4 class="font-semibold text-ink text-sm">Anniversaire aujourd'hui !</h4>
+                                <span class="w-2.5 h-2.5 bg-forest rounded-full flex-shrink-0 unread-dot"></span>
+                            </div>
+                            <p class="text-sm text-muted">Marie-Claire Fotso fete ses 35 ans</p>
+                            <p class="text-xs text-muted/60 mt-1">Il y a 5 heures</p>
+                        </div>
+                        <button class="p-1.5 rounded-lg hover:bg-mint-light/50 transition-colors flex-shrink-0">
+                            <i data-lucide="more-horizontal" class="w-4 h-4 text-muted"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Yesterday -->
+            <div class="mb-6 fade-up fade-up-d3">
+                <h3 class="text-xs font-bold text-muted uppercase tracking-wider mb-3 pl-1">Hier</h3>
+                <div class="space-y-3">
+                    <!-- Notification 4 - Donation -->
+                    <div class="notif-item bg-white rounded-2xl p-4 border border-mint/10 shadow-sm border-l-4 border-l-terra flex gap-4 items-start" data-unread="false">
+                        <div class="w-10 h-10 rounded-xl bg-terra/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i data-lucide="heart-handshake" class="w-5 h-5 text-terra"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-semibold text-ink text-sm mb-0.5">Merci pour votre don !</h4>
+                            <p class="text-sm text-muted">Votre don de 50&#8364; a la campagne Centre Communautaire a bien ete recu.</p>
+                            <p class="text-xs text-muted/60 mt-1">Hier, 14h30</p>
+                        </div>
+                        <button class="p-1.5 rounded-lg hover:bg-mint-light/50 transition-colors flex-shrink-0">
+                            <i data-lucide="more-horizontal" class="w-4 h-4 text-muted"></i>
+                        </button>
+                    </div>
+
+                    <!-- Notification 5 - Comment reply -->
+                    <div class="notif-item bg-white rounded-2xl p-4 border border-mint/10 shadow-sm border-l-4 border-l-forest/30 flex gap-4 items-start" data-unread="false">
+                        <div class="w-10 h-10 rounded-xl bg-forest/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i data-lucide="message-circle" class="w-5 h-5 text-forest-light"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-semibold text-ink text-sm mb-0.5">Pasteur Ndongo a repondu a votre commentaire</h4>
+                            <p class="text-sm text-muted">Sur : Marcher par la foi</p>
+                            <p class="text-xs text-muted/60 mt-1">Hier, 11h20</p>
+                        </div>
+                        <button class="p-1.5 rounded-lg hover:bg-mint-light/50 transition-colors flex-shrink-0">
+                            <i data-lucide="more-horizontal" class="w-4 h-4 text-muted"></i>
+                        </button>
+                    </div>
+
+                    <!-- Notification 6 - Like -->
+                    <div class="notif-item bg-white rounded-2xl p-4 border border-mint/10 shadow-sm border-l-4 border-l-red-300 flex gap-4 items-start" data-unread="false">
+                        <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i data-lucide="heart" class="w-5 h-5 text-red-400"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-semibold text-ink text-sm mb-0.5">12 personnes ont aime votre commentaire</h4>
+                            <p class="text-sm text-muted">Sur : La priere qui transforme</p>
+                            <p class="text-xs text-muted/60 mt-1">Hier, 09h15</p>
+                        </div>
+                        <button class="p-1.5 rounded-lg hover:bg-mint-light/50 transition-colors flex-shrink-0">
+                            <i data-lucide="more-horizontal" class="w-4 h-4 text-muted"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- This week -->
+            <div class="mb-6 fade-up fade-up-d4">
+                <h3 class="text-xs font-bold text-muted uppercase tracking-wider mb-3 pl-1">Cette semaine</h3>
+                <div class="space-y-3">
+                    <!-- Notification 7 - Bible reminder -->
+                    <div class="notif-item bg-white rounded-2xl p-4 border border-mint/10 shadow-sm border-l-4 border-l-forest/20 flex gap-4 items-start" data-unread="false">
+                        <div class="w-10 h-10 rounded-xl bg-forest/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i data-lucide="book-open" class="w-5 h-5 text-forest"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-semibold text-ink text-sm mb-0.5">N'oubliez pas votre lecture du jour</h4>
+                            <p class="text-sm text-muted">Plan : Les Psaumes - Jour 15</p>
+                            <p class="text-xs text-muted/60 mt-1">Lundi</p>
+                        </div>
+                        <button class="p-1.5 rounded-lg hover:bg-mint-light/50 transition-colors flex-shrink-0">
+                            <i data-lucide="more-horizontal" class="w-4 h-4 text-muted"></i>
+                        </button>
+                    </div>
+
+                    <!-- Notification 8 - Live alert -->
+                    <div class="notif-item bg-white rounded-2xl p-4 border border-mint/10 shadow-sm border-l-4 border-l-red-400 flex gap-4 items-start" data-unread="false">
+                        <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i data-lucide="radio" class="w-5 h-5 text-red-500"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-semibold text-ink text-sm mb-0.5">Culte en direct maintenant !</h4>
+                            <p class="text-sm text-muted">Paroisse de Douala est en direct</p>
+                            <p class="text-xs text-muted/60 mt-1">Dimanche</p>
+                        </div>
+                        <button class="p-1.5 rounded-lg hover:bg-mint-light/50 transition-colors flex-shrink-0">
+                            <i data-lucide="more-horizontal" class="w-4 h-4 text-muted"></i>
+                        </button>
+                    </div>
+
+                    <!-- Notification 9 - Event -->
+                    <div class="notif-item bg-white rounded-2xl p-4 border border-mint/10 shadow-sm border-l-4 border-l-gold/50 flex gap-4 items-start" data-unread="false">
+                        <div class="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i data-lucide="calendar-plus" class="w-5 h-5 text-gold"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-semibold text-ink text-sm mb-0.5">Nouvel evenement dans votre zone</h4>
+                            <p class="text-sm text-muted">Retraite spirituelle de Careme - Lyon</p>
+                            <p class="text-xs text-muted/60 mt-1">Samedi</p>
+                        </div>
+                        <button class="p-1.5 rounded-lg hover:bg-mint-light/50 transition-colors flex-shrink-0">
+                            <i data-lucide="more-horizontal" class="w-4 h-4 text-muted"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preferences link -->
+            <div class="fade-up fade-up-d5">
+                <button onclick="switchScreen('notif-settings')" class="w-full bg-white rounded-2xl p-4 border border-mint/10 shadow-sm flex items-center gap-3 hover:bg-cream/50 transition-colors group">
+                    <div class="w-10 h-10 rounded-xl bg-mint-light/50 flex items-center justify-center">
+                        <i data-lucide="settings" class="w-5 h-5 text-forest group-hover:rotate-90 transition-transform duration-500"></i>
+                    </div>
+                    <span class="text-sm font-semibold text-forest">Gerer mes preferences de notification</span>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-muted ml-auto"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ======================================================== -->
+        <!--  SCREEN 3: MON PROFIL                                     -->
+        <!-- ======================================================== -->
+        <div id="screen-profil" class="screen">
+
+            <!-- Profile Header Card -->
+            <div class="fade-up bg-white rounded-2xl overflow-hidden border border-mint/10 shadow-md mb-6">
+                <!-- Pattern banner -->
+                <div class="african-pattern h-28 md:h-36 bg-gradient-to-r from-cream via-mint-light/30 to-cream relative">
+                    <div class="kente-bar absolute bottom-0 left-0 right-0"></div>
+                </div>
+                <!-- Profile info -->
+                <div class="px-5 md:px-8 pb-6 -mt-12">
+                    <div class="flex flex-col sm:flex-row sm:items-end gap-4">
+                        <!-- Avatar -->
+                        <div class="relative group">
+                            <div class="w-24 h-24 rounded-full bg-gradient-to-br from-gold via-terra to-forest flex items-center justify-center text-white font-display font-bold text-3xl ring-4 ring-white shadow-lg">
+                                JP
+                            </div>
+                            <button class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center border border-mint/20 group-hover:bg-forest group-hover:text-white transition-colors">
+                                <i data-lucide="camera" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <!-- Name & info -->
+                        <div class="flex-1">
+                            <h1 class="font-display text-2xl md:text-3xl font-bold text-ink">Jean-Paul Mbarga</h1>
+                            <div class="flex flex-wrap items-center gap-3 mt-1">
+                                <span class="inline-flex items-center gap-1.5 bg-gold/10 text-gold-dark px-3 py-1 rounded-full text-xs font-semibold border border-gold/20">
+                                    <i data-lucide="globe" class="w-3.5 h-3.5"></i>
+                                    Diaspora Professionnelle
+                                </span>
+                                <span class="inline-flex items-center gap-1 text-sm text-muted">
+                                    <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                                    Paris, France
+                                </span>
+                                <span class="text-xs text-muted/70">Membre depuis Mars 2024</span>
+                            </div>
+                        </div>
+                        <!-- Edit button -->
+                        <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-forest text-forest font-semibold text-sm hover:bg-forest hover:text-white transition-all duration-300 self-start sm:self-end">
+                            <i data-lucide="pen-line" class="w-4 h-4"></i>
+                            Modifier le profil
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="grid grid-cols-3 gap-3 md:gap-5 mb-6 fade-up fade-up-d1">
+                <div class="stat-card bg-white rounded-2xl p-4 md:p-5 text-center border border-mint/10 shadow-sm">
+                    <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center mx-auto mb-2">
+                        <i data-lucide="heart" class="w-5 h-5 text-red-400"></i>
+                    </div>
+                    <p class="font-display text-2xl md:text-3xl font-bold text-ink">12</p>
+                    <p class="text-xs text-muted mt-0.5">Dons effectues</p>
+                </div>
+                <div class="stat-card bg-white rounded-2xl p-4 md:p-5 text-center border border-mint/10 shadow-sm">
+                    <div class="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center mx-auto mb-2">
+                        <i data-lucide="calendar-check" class="w-5 h-5 text-gold"></i>
+                    </div>
+                    <p class="font-display text-2xl md:text-3xl font-bold text-ink">28</p>
+                    <p class="text-xs text-muted mt-0.5">Evenements suivis</p>
+                </div>
+                <div class="stat-card bg-white rounded-2xl p-4 md:p-5 text-center border border-mint/10 shadow-sm">
+                    <div class="w-10 h-10 rounded-xl bg-forest/10 flex items-center justify-center mx-auto mb-2">
+                        <i data-lucide="thumbs-up" class="w-5 h-5 text-forest"></i>
+                    </div>
+                    <p class="font-display text-2xl md:text-3xl font-bold text-ink">156</p>
+                    <p class="text-xs text-muted mt-0.5">J'aime donnes</p>
+                </div>
+            </div>
+
+            <!-- Personal Info -->
+            <div class="bg-white rounded-2xl p-5 md:p-6 border border-mint/10 shadow-sm mb-5 fade-up fade-up-d2">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="font-display text-lg font-bold text-forest flex items-center gap-2">
+                        <i data-lucide="user" class="w-5 h-5 text-gold"></i>
+                        Informations personnelles
+                    </h2>
+                    <button class="text-sm text-forest-light hover:text-forest font-medium flex items-center gap-1 transition-colors">
+                        <i data-lucide="pen-line" class="w-3.5 h-3.5"></i>
+                        Modifier
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex items-center gap-3 p-3 rounded-xl bg-cream-warm/50">
+                        <i data-lucide="mail" class="w-4 h-4 text-muted flex-shrink-0"></i>
+                        <div class="min-w-0">
+                            <p class="text-xs text-muted">Email</p>
+                            <p class="text-sm font-medium text-ink truncate">jeanpaul.mbarga@gmail.com</p>
+                        </div>
+                        <span class="ml-auto bg-forest/10 text-forest text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 flex-shrink-0">
+                            <i data-lucide="check-circle" class="w-3 h-3"></i> Verifie
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 rounded-xl bg-cream-warm/50">
+                        <i data-lucide="phone" class="w-4 h-4 text-muted flex-shrink-0"></i>
+                        <div>
+                            <p class="text-xs text-muted">Telephone</p>
+                            <p class="text-sm font-medium text-ink">+33 6 12 34 56 78</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 rounded-xl bg-cream-warm/50">
+                        <i data-lucide="calendar" class="w-4 h-4 text-muted flex-shrink-0"></i>
+                        <div>
+                            <p class="text-xs text-muted">Date de naissance</p>
+                            <p class="text-sm font-medium text-ink">15 Juillet 1991</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 rounded-xl bg-cream-warm/50">
+                        <i data-lucide="user-circle" class="w-4 h-4 text-muted flex-shrink-0"></i>
+                        <div>
+                            <p class="text-xs text-muted">Sexe</p>
+                            <p class="text-sm font-medium text-ink">Homme</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diaspora Info -->
+            <div class="bg-white rounded-2xl p-5 md:p-6 border border-mint/10 shadow-sm mb-5 fade-up fade-up-d3">
+                <h2 class="font-display text-lg font-bold text-forest flex items-center gap-2 mb-4">
+                    <i data-lucide="globe" class="w-5 h-5 text-gold"></i>
+                    Informations Diaspora
+                </h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="p-3 rounded-xl bg-cream-warm/50">
+                        <p class="text-xs text-muted mb-0.5">Type</p>
+                        <p class="text-sm font-semibold text-ink">Professionnelle</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-cream-warm/50">
+                        <p class="text-xs text-muted mb-0.5">Pays</p>
+                        <p class="text-sm font-semibold text-ink">France</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-cream-warm/50">
+                        <p class="text-xs text-muted mb-0.5">Ville</p>
+                        <p class="text-sm font-semibold text-ink">Paris</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-cream-warm/50">
+                        <p class="text-xs text-muted mb-0.5">Depuis</p>
+                        <p class="text-sm font-semibold text-ink">2018</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Church Info -->
+            <div class="bg-white rounded-2xl p-5 md:p-6 border border-mint/10 shadow-sm mb-5 fade-up fade-up-d4">
+                <h2 class="font-display text-lg font-bold text-forest flex items-center gap-2 mb-4">
+                    <i data-lucide="church" class="w-5 h-5 text-gold"></i>
+                    Informations Paroisse
+                </h2>
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3 p-3 rounded-xl bg-cream-warm/50">
+                        <i data-lucide="home" class="w-4 h-4 text-muted flex-shrink-0"></i>
+                        <div>
+                            <p class="text-xs text-muted">Paroisse d'origine</p>
+                            <p class="text-sm font-semibold text-ink">Paroisse de Douala-Akwa</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 rounded-xl bg-cream-warm/50">
+                        <i data-lucide="droplets" class="w-4 h-4 text-muted flex-shrink-0"></i>
+                        <div>
+                            <p class="text-xs text-muted">Baptise</p>
+                            <p class="text-sm font-semibold text-ink">Oui <span class="text-muted font-normal">(15 Decembre 2005)</span></p>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs text-muted mb-2 pl-1">Ministeres</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-forest/10 text-forest px-4 py-1.5 rounded-full text-sm font-medium">Chorale</span>
+                            <span class="bg-gold/10 text-gold px-4 py-1.5 rounded-full text-sm font-medium border border-gold/20">Jeunesse</span>
+                            <span class="bg-terra/10 text-terra px-4 py-1.5 rounded-full text-sm font-medium border border-terra/20">Evangelisation</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reading Stats -->
+            <div class="bg-white rounded-2xl p-5 md:p-6 border border-mint/10 shadow-sm mb-5 fade-up fade-up-d5">
+                <h2 class="font-display text-lg font-bold text-forest flex items-center gap-2 mb-4">
+                    <i data-lucide="book-open" class="w-5 h-5 text-gold"></i>
+                    Guide Biblique
+                </h2>
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="text-center p-3 rounded-xl bg-gradient-to-b from-forest/5 to-transparent">
+                        <p class="font-display text-2xl font-bold text-forest">3</p>
+                        <p class="text-xs text-muted mt-0.5">Plans completes</p>
+                    </div>
+                    <div class="text-center p-3 rounded-xl bg-gradient-to-b from-terra/5 to-transparent">
+                        <p class="font-display text-2xl font-bold text-terra flex items-center justify-center gap-1">
+                            7
+                            <span class="fire-streak text-base">&#128293;</span>
+                        </p>
+                        <p class="text-xs text-muted mt-0.5">Jours consecutifs</p>
+                    </div>
+                    <div class="text-center p-3 rounded-xl bg-gradient-to-b from-gold/5 to-transparent">
+                        <p class="font-display text-2xl font-bold text-gold">24</p>
+                        <p class="text-xs text-muted mt-0.5">Versets annotes</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings -->
+            <div class="bg-white rounded-2xl overflow-hidden border border-mint/10 shadow-sm fade-up fade-up-d6">
+                <h2 class="font-display text-lg font-bold text-forest flex items-center gap-2 p-5 md:p-6 pb-3">
+                    <i data-lucide="settings" class="w-5 h-5 text-gold"></i>
+                    Parametres
+                </h2>
+                <div class="divide-y divide-mint/10">
+                    <button onclick="switchScreen('notif-settings')" class="settings-row w-full flex items-center gap-3 px-5 md:px-6 py-3.5 transition-all">
+                        <div class="w-9 h-9 rounded-lg bg-forest/10 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="bell" class="w-4 h-4 text-forest"></i>
+                        </div>
+                        <span class="text-sm font-medium text-ink">Preferences de notification</span>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-muted ml-auto"></i>
+                    </button>
+                    <div class="settings-row flex items-center gap-3 px-5 md:px-6 py-3.5">
+                        <div class="w-9 h-9 rounded-lg bg-forest/10 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="globe" class="w-4 h-4 text-forest"></i>
+                        </div>
+                        <span class="text-sm font-medium text-ink">Langue</span>
+                        <span class="ml-auto text-sm text-muted mr-1">Francais</span>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-muted"></i>
+                    </div>
+                    <div class="settings-row flex items-center gap-3 px-5 md:px-6 py-3.5">
+                        <div class="w-9 h-9 rounded-lg bg-ink/5 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="moon" class="w-4 h-4 text-ink"></i>
+                        </div>
+                        <span class="text-sm font-medium text-ink">Mode sombre</span>
+                        <div class="ml-auto toggle-track" onclick="this.classList.toggle('active')">
+                            <div class="toggle-thumb"></div>
+                        </div>
+                    </div>
+                    <div class="settings-row flex items-center gap-3 px-5 md:px-6 py-3.5 cursor-pointer">
+                        <div class="w-9 h-9 rounded-lg bg-forest/10 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="shield" class="w-4 h-4 text-forest"></i>
+                        </div>
+                        <span class="text-sm font-medium text-ink">Securite du compte</span>
+                        <span class="ml-auto text-[10px] text-muted bg-mint-light/50 px-2 py-0.5 rounded-full font-medium mr-1">Keycloak</span>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-muted"></i>
+                    </div>
+                    <div class="settings-row flex items-center gap-3 px-5 md:px-6 py-3.5 cursor-pointer">
+                        <div class="w-9 h-9 rounded-lg bg-forest/10 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="smartphone" class="w-4 h-4 text-forest"></i>
+                        </div>
+                        <span class="text-sm font-medium text-ink">Appareils connectes</span>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-muted ml-auto"></i>
+                    </div>
+                    <div class="settings-row flex items-center gap-3 px-5 md:px-6 py-3.5 cursor-pointer">
+                        <div class="w-9 h-9 rounded-lg bg-gold/10 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="circle-help" class="w-4 h-4 text-gold"></i>
+                        </div>
+                        <span class="text-sm font-medium text-ink">Aide & Support</span>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-muted ml-auto"></i>
+                    </div>
+                    <button class="settings-row w-full flex items-center gap-3 px-5 md:px-6 py-3.5 cursor-pointer">
+                        <div class="w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="log-out" class="w-4 h-4 text-red-500"></i>
+                        </div>
+                        <span class="text-sm font-medium text-red-500">Deconnexion</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================================================== -->
+        <!--  SCREEN 4: NOTIFICATION SETTINGS                          -->
+        <!-- ======================================================== -->
+        <div id="screen-notif-settings" class="screen">
+
+            <!-- Header with back -->
+            <div class="mb-8 fade-up">
+                <button onclick="switchScreen('notifications')" class="inline-flex items-center gap-2 text-sm text-forest-light hover:text-forest font-medium mb-4 group transition-colors">
+                    <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
+                    Retour aux notifications
+                </button>
+                <h1 class="font-display text-3xl md:text-4xl font-bold text-forest mb-1">Preferences de notification</h1>
+                <p class="text-muted">Choisissez comment vous souhaitez etre notifie</p>
+            </div>
+
+            <!-- Notification Channels -->
+            <div class="bg-white rounded-2xl p-5 md:p-6 border border-mint/10 shadow-sm mb-6 fade-up fade-up-d1">
+                <h2 class="font-display text-lg font-bold text-forest flex items-center gap-2 mb-5">
+                    <i data-lucide="send" class="w-5 h-5 text-gold"></i>
+                    Canaux de notification
+                </h2>
+                <div class="space-y-4">
+                    <!-- Email -->
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-cream-warm/50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-forest/10 flex items-center justify-center">
+                                <i data-lucide="mail" class="w-4 h-4 text-forest"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-ink">Emails</p>
+                                <p class="text-xs text-muted">Recevez les notifications par email</p>
+                            </div>
+                        </div>
+                        <div class="toggle-track active" onclick="this.classList.toggle('active')">
+                            <div class="toggle-thumb"></div>
+                        </div>
+                    </div>
+                    <!-- Push -->
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-cream-warm/50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-forest/10 flex items-center justify-center">
+                                <i data-lucide="bell" class="w-4 h-4 text-forest"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-ink">Notifications push</p>
+                                <p class="text-xs text-muted">Notifications sur votre appareil</p>
+                            </div>
+                        </div>
+                        <div class="toggle-track active" onclick="this.classList.toggle('active')">
+                            <div class="toggle-thumb"></div>
+                        </div>
+                    </div>
+                    <!-- SMS -->
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-cream-warm/50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-forest/10 flex items-center justify-center">
+                                <i data-lucide="smartphone" class="w-4 h-4 text-forest"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-ink">SMS</p>
+                                <p class="text-xs text-muted">Notifications par message texte</p>
+                            </div>
+                        </div>
+                        <div class="toggle-track" onclick="this.classList.toggle('active')">
+                            <div class="toggle-thumb"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification Types -->
+            <div class="bg-white rounded-2xl p-5 md:p-6 border border-mint/10 shadow-sm mb-6 fade-up fade-up-d2">
+                <h2 class="font-display text-lg font-bold text-forest flex items-center gap-2 mb-5">
+                    <i data-lucide="list-checks" class="w-5 h-5 text-gold"></i>
+                    Types de notification
+                </h2>
+                <div class="space-y-1">
+                    <!-- Meditations -->
+                    <div class="flex items-center justify-between py-3 px-2 rounded-xl hover:bg-cream-warm/30 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="book-heart" class="w-4 h-4 text-forest"></i>
+                            <span class="text-sm font-medium text-ink">Nouvelles meditations</span>
+                        </div>
+                        <div class="toggle-track active" onclick="this.classList.toggle('active')">
+                            <div class="toggle-thumb"></div>
+                        </div>
+                    </div>
+                    <!-- Events -->
+                    <div class="flex items-center justify-between py-3 px-2 rounded-xl hover:bg-cream-warm/30 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="calendar-days" class="w-4 h-4 text-gold"></i>
+                            <span class="text-sm font-medium text-ink">Rappels d'evenements</span>
+                        </div>
+                        <div class="toggle-track active" onclick="this.classList.toggle('active')">
+                            <div class="toggle-thumb"></div>
+                        </div>
+                    </div>
+                    <!-- Bible reading -->
+                    <div class="flex items-center justify-between py-3 px-2 rounded-xl hover:bg-cream-warm/30 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="book-open" class="w-4 h-4 text-forest"></i>
+                            <span class="text-sm font-medium text-ink">Rappels de lecture biblique</span>
+                        </div>
+                        <div class="toggle-track active" onclick="this.classList.toggle('active')">
+                            <div class="toggle-thumb"></div>
+                        </div>
+                    </div>
+                    <!-- Birthdays -->
+                    <div class="flex items-center justify-between py-3 px-2 rounded-xl hover:bg-cream-warm/30 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="cake" class="w-4 h-4 text-gold"></i>
+                            <span class="text-sm font-medium text-ink">Anniversaires</span>
+                        </div>
+                        <div class="toggle-track active" onclick="this.classList.toggle('active')">
+                            <div class="toggle-thumb"></div>
+                        </div>
+                    </div>
+                    <!-- Donations -->
+                    <div class="flex items-center justify-between py-3 px-2 rounded-xl hover:bg-cream-warm/30 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="heart-handshake" class="w-4 h-4 text-terra"></i>
+                            <span class="text-sm font-medium text-ink">Dons et campagnes</span>
+                        </div>
+                        <div class="toggle-track" onclick="this.classList.toggle('active')">
+                            <div class="toggle-thumb"></div>
+                        </div>
+                    </div>
+                    <!-- Live -->
+                    <div class="flex items-center justify-between py-3 px-2 rounded-xl hover:bg-cream-warm/30 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="radio" class="w-4 h-4 text-red-500"></i>
+                            <span class="text-sm font-medium text-ink">Cultes en direct</span>
+                        </div>
+                        <div class="toggle-track active" onclick="this.classList.toggle('active')">
+                            <div class="toggle-thumb"></div>
+                        </div>
+                    </div>
+                    <!-- Comments -->
+                    <div class="flex items-center justify-between py-3 px-2 rounded-xl hover:bg-cream-warm/30 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="message-circle" class="w-4 h-4 text-forest-light"></i>
+                            <span class="text-sm font-medium text-ink">Commentaires et reponses</span>
+                        </div>
+                        <div class="toggle-track active" onclick="this.classList.toggle('active')">
+                            <div class="toggle-thumb"></div>
+                        </div>
+                    </div>
+                    <!-- Weekly summary -->
+                    <div class="flex items-center justify-between py-3 px-2 rounded-xl hover:bg-cream-warm/30 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="bar-chart-3" class="w-4 h-4 text-gold"></i>
+                            <span class="text-sm font-medium text-ink">Resume hebdomadaire</span>
+                        </div>
+                        <div class="toggle-track active" onclick="this.classList.toggle('active')">
+                            <div class="toggle-thumb"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save button -->
+            <div class="fade-up fade-up-d3">
+                <button class="w-full md:w-auto bg-gradient-to-r from-forest to-forest-light text-white font-semibold py-3.5 px-10 rounded-xl shadow-lg shadow-forest/20 hover:shadow-forest/30 hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2">
+                    <i data-lucide="check" class="w-5 h-5"></i>
+                    Enregistrer les preferences
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ============================================================ -->
+    <!--  MOBILE BOTTOM TAB BAR                                        -->
+    <!-- ============================================================ -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-mint/20 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+        <div class="flex items-center justify-around px-2 py-2">
+            <button class="mobile-tab flex flex-col items-center gap-0.5 py-1 px-3 transition-colors text-muted" data-mtab="accueil">
+                <i data-lucide="home" class="w-5 h-5"></i>
+                <span class="text-[10px] font-medium">Accueil</span>
+                <div class="tab-indicator"></div>
+            </button>
+            <button class="mobile-tab flex flex-col items-center gap-0.5 py-1 px-3 transition-colors text-muted" data-mtab="meditations">
+                <i data-lucide="book-heart" class="w-5 h-5"></i>
+                <span class="text-[10px] font-medium">Meditations</span>
+                <div class="tab-indicator"></div>
+            </button>
+            <button class="mobile-tab flex flex-col items-center gap-0.5 py-1 px-3 transition-colors text-muted" data-mtab="evenements">
+                <i data-lucide="calendar-days" class="w-5 h-5"></i>
+                <span class="text-[10px] font-medium">Evenements</span>
+                <div class="tab-indicator"></div>
+            </button>
+            <button class="mobile-tab flex flex-col items-center gap-0.5 py-1 px-3 transition-colors text-muted" data-mtab="dons">
+                <i data-lucide="heart-handshake" class="w-5 h-5"></i>
+                <span class="text-[10px] font-medium">Dons</span>
+                <div class="tab-indicator"></div>
+            </button>
+            <button onclick="switchScreen('profil')" class="mobile-tab flex flex-col items-center gap-0.5 py-1 px-3 transition-colors text-muted" data-mtab="profil">
+                <i data-lucide="user" class="w-5 h-5"></i>
+                <span class="text-[10px] font-medium">Profil</span>
+                <div class="tab-indicator"></div>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ============================================================ -->
+    <!--  SCRIPTS                                                      -->
+    <!-- ============================================================ -->
+    <script>
+        // Initialize Lucide icons
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+
+        // Screen switching
+        function switchScreen(screenId) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+            // Show target
+            const target = document.getElementById('screen-' + screenId);
+            if (target) {
+                target.classList.add('active-screen');
+                // Re-trigger animations
+                target.querySelectorAll('.fade-up, [class*="fade-up-d"]').forEach(el => {
+                    el.style.animation = 'none';
+                    el.offsetHeight; // trigger reflow
+                    el.style.animation = '';
+                });
+            }
+
+            // Update screen tabs
+            document.querySelectorAll('.screen-tab').forEach(tab => {
+                tab.classList.remove('active-stab');
+                tab.classList.add('text-muted');
+            });
+            const activeTab = document.querySelector(`[data-stab="${screenId}"]`);
+            if (activeTab) {
+                activeTab.classList.add('active-stab');
+                activeTab.classList.remove('text-muted');
+            }
+
+            // Update sidebar nav
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            const sidebarMap = {
+                'cultes': 'cultes',
+                'notifications': 'notifications',
+                'profil': 'profil',
+                'notif-settings': 'notifications'
+            };
+            const navKey = sidebarMap[screenId];
+            if (navKey) {
+                const navItem = document.querySelector(`.nav-item[data-nav="${navKey}"]`);
+                if (navItem) navItem.classList.add('active');
+            }
+
+            // Update mobile tab
+            document.querySelectorAll('.mobile-tab').forEach(mt => {
+                mt.classList.remove('active-tab');
+                mt.classList.add('text-muted');
+            });
+            const mobileMap = {
+                'profil': 'profil',
+            };
+            const mKey = mobileMap[screenId];
+            if (mKey) {
+                const mTab = document.querySelector(`.mobile-tab[data-mtab="${mKey}"]`);
+                if (mTab) {
+                    mTab.classList.add('active-tab');
+                    mTab.classList.remove('text-muted');
+                }
+            }
+
+            // Reinitialize lucide icons for the new screen
+            setTimeout(() => lucide.createIcons(), 50);
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Notification filter tabs
+        function filterNotifs(type) {
+            const tabAll = document.getElementById('notif-tab-all');
+            const tabUnread = document.getElementById('notif-tab-unread');
+
+            if (type === 'all') {
+                tabAll.className = 'notif-filter-tab bg-gradient-to-r from-forest to-forest-light text-white px-5 py-2 rounded-full text-sm font-semibold shadow-md';
+                tabUnread.className = 'notif-filter-tab px-5 py-2 rounded-full text-sm font-semibold border border-forest/20 text-muted hover:border-forest/40 transition-colors';
+                document.querySelectorAll('.notif-item').forEach(n => n.style.display = '');
+                document.querySelectorAll('#screen-notifications h3').forEach(h => h.style.display = '');
+            } else {
+                tabUnread.className = 'notif-filter-tab bg-gradient-to-r from-forest to-forest-light text-white px-5 py-2 rounded-full text-sm font-semibold shadow-md';
+                tabAll.className = 'notif-filter-tab px-5 py-2 rounded-full text-sm font-semibold border border-forest/20 text-muted hover:border-forest/40 transition-colors';
+                document.querySelectorAll('.notif-item').forEach(n => {
+                    if (n.dataset.unread === 'true') {
+                        n.style.display = '';
+                    } else {
+                        n.style.display = 'none';
+                    }
+                });
+                // Hide section headers for Yesterday and This week if filtering unread
+                const sections = document.querySelectorAll('#screen-notifications h3');
+                sections.forEach((h, i) => {
+                    if (i > 0) h.style.display = 'none';
+                });
+            }
+        }
+    </script>
+</body>
+</html>

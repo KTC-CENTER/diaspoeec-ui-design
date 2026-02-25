@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DiaspoEEC - Ensemble, o&ugrave; que nous soyons</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,400;1,9..144,500;1,9..144,600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        forest: { DEFAULT: '#1B4332', light: '#2D6A4F' },
+                        sage: { light: '#95D5B2', lighter: '#D8F3DC' },
+                        gold: { DEFAULT: '#D4A017', light: '#F4D35E', pale: '#FFF3C4' },
+                        cream: { DEFAULT: '#FEFAE0', warm: '#FFFBF0' },
+                        terra: '#C17817',
+                        ink: { DEFAULT: '#1A1A2E', mid: '#4A4A5A', light: '#7A7A8A' }
+                    },
+                    fontFamily: {
+                        display: ['Fraunces', 'serif'],
+                        body: ['Outfit', 'sans-serif']
+                    },
+                    borderRadius: {
+                        '4xl': '2rem',
+                        '5xl': '2.5rem'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * { font-family: 'Outfit', sans-serif; }
+        h1, h2, h3, .font-display { font-family: 'Fraunces', serif; }
+
+        /* ====== AFRICAN GEOMETRIC PATTERNS ====== */
+
+        /* Ndop-inspired diamond pattern */
+        .pattern-ndop {
+            background-image:
+                linear-gradient(45deg, transparent 45%, rgba(27,67,50,0.06) 45%, rgba(27,67,50,0.06) 55%, transparent 55%),
+                linear-gradient(-45deg, transparent 45%, rgba(27,67,50,0.06) 45%, rgba(27,67,50,0.06) 55%, transparent 55%),
+                linear-gradient(45deg, transparent 45%, rgba(212,160,23,0.04) 45%, rgba(212,160,23,0.04) 55%, transparent 55%),
+                linear-gradient(-45deg, transparent 45%, rgba(212,160,23,0.04) 45%, rgba(212,160,23,0.04) 55%, transparent 55%);
+            background-size: 60px 60px, 60px 60px, 30px 30px, 30px 30px;
+            background-position: 0 0, 0 0, 15px 15px, 15px 15px;
+        }
+
+        /* Kente-inspired horizontal stripes with zigzag */
+        .pattern-kente {
+            background-image:
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 18px,
+                    rgba(212,160,23,0.08) 18px,
+                    rgba(212,160,23,0.08) 20px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 38px,
+                    rgba(27,67,50,0.05) 38px,
+                    rgba(27,67,50,0.05) 40px
+                );
+        }
+
+        /* Adinkra-inspired cross pattern for dividers */
+        .pattern-divider {
+            height: 4px;
+            background: repeating-linear-gradient(
+                90deg,
+                #D4A017 0px, #D4A017 8px,
+                transparent 8px, transparent 16px,
+                #1B4332 16px, #1B4332 24px,
+                transparent 24px, transparent 32px
+            );
+            opacity: 0.4;
+        }
+
+        /* Hero complex pattern overlay */
+        .hero-pattern {
+            position: absolute;
+            inset: 0;
+            opacity: 0.5;
+            background-image:
+                /* large diamonds */
+                linear-gradient(45deg, transparent 48%, rgba(212,160,23,0.07) 48%, rgba(212,160,23,0.07) 52%, transparent 52%),
+                linear-gradient(-45deg, transparent 48%, rgba(212,160,23,0.07) 48%, rgba(212,160,23,0.07) 52%, transparent 52%),
+                /* small diamonds offset */
+                linear-gradient(45deg, transparent 48%, rgba(27,67,50,0.05) 48%, rgba(27,67,50,0.05) 52%, transparent 52%),
+                linear-gradient(-45deg, transparent 48%, rgba(27,67,50,0.05) 48%, rgba(27,67,50,0.05) 52%, transparent 52%),
+                /* dots at intersections */
+                radial-gradient(circle 2px at center, rgba(212,160,23,0.1) 0%, transparent 100%);
+            background-size: 80px 80px, 80px 80px, 40px 40px, 40px 40px, 40px 40px;
+            background-position: 0 0, 0 0, 20px 20px, 20px 20px, 0 0;
+            pointer-events: none;
+        }
+
+        /* ====== ANIMATIONS ====== */
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInLeft {
+            from { opacity: 0; transform: translateX(-40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes progressFill {
+            from { width: 0%; }
+            to { width: 72%; }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+        }
+
+        @keyframes pulse-gold {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(212, 160, 23, 0.3); }
+            50% { box-shadow: 0 0 0 12px rgba(212, 160, 23, 0); }
+        }
+
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInStagger {
+            from { opacity: 0; transform: translateY(30px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Reveal classes */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reveal-left {
+            opacity: 0;
+            transform: translateX(-50px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal-left.revealed {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .reveal-right {
+            opacity: 0;
+            transform: translateX(50px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal-right.revealed {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .reveal-scale {
+            opacity: 0;
+            transform: scale(0.88);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal-scale.revealed {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Stagger delays for children */
+        .stagger-1 { transition-delay: 0.1s !important; }
+        .stagger-2 { transition-delay: 0.2s !important; }
+        .stagger-3 { transition-delay: 0.3s !important; }
+        .stagger-4 { transition-delay: 0.4s !important; }
+        .stagger-5 { transition-delay: 0.5s !important; }
+        .stagger-6 { transition-delay: 0.6s !important; }
+
+        /* ====== CUSTOM STYLES ====== */
+
+        /* Progress bar animation */
+        .progress-animated {
+            animation: progressFill 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            background: linear-gradient(90deg, #1B4332, #2D6A4F, #95D5B2);
+            background-size: 200% 100%;
+        }
+
+        .progress-shimmer::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 2s ease-in-out infinite;
+        }
+
+        /* Button hover effects */
+        .btn-primary {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .btn-primary:hover::after { opacity: 1; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(27,67,50,0.3); }
+
+        .btn-gold {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .btn-gold::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .btn-gold:hover::after { opacity: 1; }
+        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(212,160,23,0.35); }
+
+        /* Card hover */
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 60px rgba(27,67,50,0.12), 0 8px 20px rgba(27,67,50,0.06);
+        }
+
+        /* Donation amount button */
+        .amount-btn {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .amount-btn:hover {
+            transform: scale(1.05);
+        }
+        .amount-btn.active {
+            background: #1B4332;
+            color: white;
+            border-color: #1B4332;
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(27,67,50,0.3);
+        }
+
+        /* Toggle switch */
+        .toggle-track {
+            transition: background-color 0.3s;
+        }
+        .toggle-thumb {
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Testimonial quote */
+        .quote-mark {
+            font-family: 'Fraunces', serif;
+            font-size: 5rem;
+            line-height: 1;
+            color: #D4A017;
+            opacity: 0.3;
+        }
+
+        /* Nav scroll effect */
+        .nav-scrolled {
+            background: rgba(255, 251, 240, 0.95) !important;
+            backdrop-filter: blur(20px) !important;
+            box-shadow: 0 4px 30px rgba(27, 67, 50, 0.08) !important;
+        }
+
+        /* Mobile menu */
+        .mobile-menu {
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .mobile-menu.open {
+            transform: translateX(0);
+        }
+
+        /* Smooth link underline */
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #D4A017;
+            border-radius: 999px;
+            transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Floating decoration circles */
+        .deco-circle {
+            border-radius: 50%;
+            position: absolute;
+            pointer-events: none;
+        }
+
+        /* Avatar gradient */
+        .avatar-gradient-1 { background: linear-gradient(135deg, #1B4332, #2D6A4F); }
+        .avatar-gradient-2 { background: linear-gradient(135deg, #D4A017, #F4D35E); }
+        .avatar-gradient-3 { background: linear-gradient(135deg, #C17817, #D4A017); }
+
+        /* Section divider wave */
+        .wave-divider {
+            position: relative;
+        }
+        .wave-divider::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 60'%3E%3Cpath fill='%23FEFAE0' d='M0,30 C360,60 720,0 1080,30 C1260,45 1380,40 1440,30 L1440,60 L0,60 Z'/%3E%3C/svg%3E") no-repeat center bottom;
+            background-size: cover;
+        }
+
+        /* Leaf cross icon SVG animation */
+        .logo-icon {
+            transition: transform 0.3s;
+        }
+        .logo-icon:hover {
+            transform: rotate(15deg) scale(1.1);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #FEFAE0; }
+        ::-webkit-scrollbar-thumb { background: #95D5B2; border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: #2D6A4F; }
+
+        /* Selection */
+        ::selection { background: rgba(212,160,23,0.25); color: #1A1A2E; }
+    </style>
+</head>
+<body class="bg-cream font-body text-ink overflow-x-hidden">
+
+    <!-- ============================================ -->
+    <!-- NAVIGATION                                    -->
+    <!-- ============================================ -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-500 bg-transparent">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo -->
+                <a href="#" class="flex items-center gap-3 group">
+                    <!-- Leaf-Cross Icon -->
+                    <div class="logo-icon w-11 h-11 bg-forest rounded-2xl flex items-center justify-center shadow-lg shadow-forest/20">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C12 2 4 7 4 13C4 17.4183 7.58172 21 12 21C16.4183 21 20 17.4183 20 13C20 7 12 2 12 2Z" fill="#95D5B2" opacity="0.6"/>
+                            <path d="M12 6V18M8 12H16" stroke="#FFFBF0" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <span class="font-display text-2xl font-bold text-forest group-hover:text-forest-light transition-colors">
+                        Diaspo<span class="text-gold">EEC</span>
+                    </span>
+                </a>
+
+                <!-- Desktop Nav Links -->
+                <div class="hidden lg:flex items-center gap-8">
+                    <a href="#accueil" class="nav-link text-ink-mid font-medium hover:text-forest transition-colors">Accueil</a>
+                    <a href="#apropos" class="nav-link text-ink-mid font-medium hover:text-forest transition-colors">&Agrave; propos</a>
+                    <a href="#fonctionnalites" class="nav-link text-ink-mid font-medium hover:text-forest transition-colors">Fonctionnalit&eacute;s</a>
+                    <a href="#dons" class="nav-link text-ink-mid font-medium hover:text-forest transition-colors">Dons</a>
+                    <a href="#contact" class="nav-link text-ink-mid font-medium hover:text-forest transition-colors">Contact</a>
+                </div>
+
+                <!-- CTA Button (desktop) -->
+                <div class="hidden lg:block">
+                    <a href="#" class="btn-primary inline-flex items-center gap-2 bg-forest text-white px-6 py-3 rounded-2xl font-semibold text-sm shadow-lg shadow-forest/20">
+                        <i data-lucide="log-in" class="w-4 h-4"></i>
+                        Rejoindre la communaut&eacute;
+                    </a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button id="mobileMenuBtn" class="lg:hidden w-11 h-11 flex items-center justify-center rounded-xl hover:bg-sage-lighter transition-colors" aria-label="Menu">
+                    <i data-lucide="menu" class="w-6 h-6 text-forest"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="mobile-menu fixed top-0 right-0 w-80 max-w-[85vw] h-full bg-cream-warm shadow-2xl z-50 p-8">
+            <div class="flex justify-end mb-10">
+                <button id="mobileMenuClose" class="w-11 h-11 flex items-center justify-center rounded-xl hover:bg-sage-lighter transition-colors" aria-label="Fermer">
+                    <i data-lucide="x" class="w-6 h-6 text-forest"></i>
+                </button>
+            </div>
+            <div class="flex flex-col gap-6">
+                <a href="#accueil" class="mobile-nav-link text-lg font-medium text-ink hover:text-forest transition-colors">Accueil</a>
+                <a href="#apropos" class="mobile-nav-link text-lg font-medium text-ink hover:text-forest transition-colors">&Agrave; propos</a>
+                <a href="#fonctionnalites" class="mobile-nav-link text-lg font-medium text-ink hover:text-forest transition-colors">Fonctionnalit&eacute;s</a>
+                <a href="#dons" class="mobile-nav-link text-lg font-medium text-ink hover:text-forest transition-colors">Dons</a>
+                <a href="#contact" class="mobile-nav-link text-lg font-medium text-ink hover:text-forest transition-colors">Contact</a>
+                <hr class="border-sage-light/50 my-2">
+                <a href="#" class="btn-primary inline-flex items-center justify-center gap-2 bg-forest text-white px-6 py-3.5 rounded-2xl font-semibold shadow-lg shadow-forest/20">
+                    <i data-lucide="log-in" class="w-4 h-4"></i>
+                    Rejoindre la communaut&eacute;
+                </a>
+            </div>
+        </div>
+        <!-- Mobile overlay -->
+        <div id="mobileOverlay" class="fixed inset-0 bg-black/30 z-40 hidden" style="backdrop-filter: blur(4px);"></div>
+    </nav>
+
+
+    <!-- ============================================ -->
+    <!-- HERO SECTION                                  -->
+    <!-- ============================================ -->
+    <section id="accueil" class="relative min-h-screen flex items-center overflow-hidden wave-divider" style="background: linear-gradient(180deg, #FFFBF0 0%, #FEFAE0 50%, #D8F3DC 100%);">
+        <!-- African Pattern Overlay -->
+        <div class="hero-pattern"></div>
+
+        <!-- Decorative Circles -->
+        <div class="deco-circle w-96 h-96 bg-gold/5 -top-20 -right-20 animate-pulse" style="animation-duration: 6s;"></div>
+        <div class="deco-circle w-64 h-64 bg-forest/5 bottom-20 -left-16" style="animation: float 8s ease-in-out infinite;"></div>
+        <div class="deco-circle w-40 h-40 bg-gold/8 top-1/3 right-1/4 hidden lg:block" style="animation: float 6s ease-in-out infinite 1s;"></div>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 lg:py-40">
+            <div class="text-center max-w-4xl mx-auto">
+                <!-- Eyebrow -->
+                <div class="inline-flex items-center gap-2 bg-white/70 backdrop-blur-sm px-5 py-2.5 rounded-full mb-8 shadow-sm" style="animation: fadeInDown 0.8s ease-out forwards;">
+                    <span class="w-2 h-2 bg-gold rounded-full animate-pulse"></span>
+                    <span class="text-sm font-medium text-ink-mid">&Eacute;glise &Eacute;vang&eacute;lique du Cameroun &mdash; Diaspora</span>
+                </div>
+
+                <!-- Headline -->
+                <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-forest leading-tight mb-6" style="animation: fadeInUp 0.8s ease-out 0.2s both;">
+                    Ensemble, o&ugrave; que
+                    <span class="relative inline-block">
+                        <span class="relative z-10">nous soyons</span>
+                        <svg class="absolute -bottom-2 left-0 w-full" viewBox="0 0 300 12" fill="none">
+                            <path d="M2 8C50 2 100 4 150 6C200 8 250 4 298 7" stroke="#D4A017" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
+                        </svg>
+                    </span>
+                </h1>
+
+                <!-- Subheadline -->
+                <p class="text-lg sm:text-xl text-ink-mid leading-relaxed max-w-2xl mx-auto mb-10" style="animation: fadeInUp 0.8s ease-out 0.4s both;">
+                    Rejoignez la premi&egrave;re plateforme qui connecte les fid&egrave;les de l'EEC &agrave; travers le monde.
+                    Pri&egrave;res, cultes en direct, dons et entraide &mdash; vivez votre foi en communaut&eacute;, sans fronti&egrave;res.
+                </p>
+
+                <!-- CTA Buttons -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16" style="animation: fadeInUp 0.8s ease-out 0.6s both;">
+                    <a href="#" class="btn-primary w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-forest text-white px-8 py-4 rounded-2xl font-semibold text-lg shadow-xl shadow-forest/20">
+                        <i data-lucide="users" class="w-5 h-5"></i>
+                        Rejoindre la communaut&eacute;
+                    </a>
+                    <a href="#dons" class="btn-gold w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-gold text-white px-8 py-4 rounded-2xl font-semibold text-lg shadow-xl shadow-gold/25">
+                        <i data-lucide="heart" class="w-5 h-5"></i>
+                        Faire un don
+                    </a>
+                </div>
+
+                <!-- Stats -->
+                <div class="grid grid-cols-3 gap-4 sm:gap-8 max-w-xl mx-auto" style="animation: fadeInUp 0.8s ease-out 0.8s both;">
+                    <div class="text-center">
+                        <div class="font-display text-3xl sm:text-4xl font-bold text-forest mb-1" data-count="100000">100 000+</div>
+                        <div class="text-sm text-ink-mid font-medium">Fid&egrave;les</div>
+                    </div>
+                    <div class="text-center border-x border-sage-light/50">
+                        <div class="font-display text-3xl sm:text-4xl font-bold text-forest mb-1">45+</div>
+                        <div class="text-sm text-ink-mid font-medium">Pays</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="font-display text-3xl sm:text-4xl font-bold text-forest mb-1">500+</div>
+                        <div class="text-sm text-ink-mid font-medium">&Eacute;v&eacute;nements</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll indicator -->
+        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-60" style="animation: float 3s ease-in-out infinite;">
+            <span class="text-xs font-medium text-ink-mid tracking-widest uppercase">D&eacute;couvrir</span>
+            <i data-lucide="chevron-down" class="w-5 h-5 text-forest"></i>
+        </div>
+    </section>
+
+
+    <!-- ============================================ -->
+    <!-- ABOUT / INTRO SECTION                         -->
+    <!-- ============================================ -->
+    <section id="apropos" class="py-24 lg:py-32 bg-cream relative">
+        <div class="pattern-divider max-w-xs mx-auto mb-16 rounded-full"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <!-- Left: Text -->
+                <div class="reveal-left">
+                    <span class="inline-block text-sm font-semibold text-gold uppercase tracking-widest mb-4">Notre Mission</span>
+                    <h2 class="font-display text-4xl lg:text-5xl font-bold text-forest leading-tight mb-6">
+                        Une foi vivante,<br>une communaut&eacute; unie
+                    </h2>
+                    <p class="text-lg text-ink-mid leading-relaxed mb-6">
+                        L'&Eacute;glise &Eacute;vang&eacute;lique du Cameroun rassemble des fid&egrave;les sur tous les continents.
+                        DiaspoEEC est n&eacute;e d'un r&ecirc;ve simple : que chaque membre, peu importe o&ugrave; il se trouve,
+                        puisse vivre sa foi, contribuer et rester connect&eacute; &agrave; sa communaut&eacute; d'origine.
+                    </p>
+                    <p class="text-lg text-ink-mid leading-relaxed mb-8">
+                        De Douala &agrave; Paris, de Yaound&eacute; &agrave; Montr&eacute;al, de Bafoussam &agrave; Berlin &mdash;
+                        nous sommes une seule famille dans le Christ.
+                    </p>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-sage-lighter flex items-center justify-center">
+                            <i data-lucide="book-open" class="w-6 h-6 text-forest"></i>
+                        </div>
+                        <p class="italic text-ink-mid font-display text-lg">
+                            &laquo; Car l&agrave; o&ugrave; deux ou trois sont assembl&eacute;s en mon nom, je suis au milieu d'eux. &raquo;
+                            <span class="block text-sm not-italic text-ink-light mt-1">Matthieu 18:20</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Right: Visual card -->
+                <div class="reveal-right">
+                    <div class="relative">
+                        <!-- Main card -->
+                        <div class="bg-white rounded-4xl p-8 shadow-xl shadow-forest/5 pattern-kente">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-sage-lighter rounded-3xl p-6 text-center">
+                                    <div class="w-14 h-14 bg-forest rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                        <i data-lucide="globe" class="w-7 h-7 text-white"></i>
+                                    </div>
+                                    <div class="font-display text-2xl font-bold text-forest">45+</div>
+                                    <div class="text-sm text-ink-mid">Pays repr&eacute;sent&eacute;s</div>
+                                </div>
+                                <div class="bg-gold-pale rounded-3xl p-6 text-center">
+                                    <div class="w-14 h-14 bg-gold rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                        <i data-lucide="church" class="w-7 h-7 text-white"></i>
+                                    </div>
+                                    <div class="font-display text-2xl font-bold text-forest">120+</div>
+                                    <div class="text-sm text-ink-mid">Paroisses connect&eacute;es</div>
+                                </div>
+                                <div class="bg-gold-pale rounded-3xl p-6 text-center">
+                                    <div class="w-14 h-14 bg-terra rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                        <i data-lucide="hand-heart" class="w-7 h-7 text-white"></i>
+                                    </div>
+                                    <div class="font-display text-2xl font-bold text-forest">2M+</div>
+                                    <div class="text-sm text-ink-mid">Euros collect&eacute;s</div>
+                                </div>
+                                <div class="bg-sage-lighter rounded-3xl p-6 text-center">
+                                    <div class="w-14 h-14 bg-forest-light rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                        <i data-lucide="video" class="w-7 h-7 text-white"></i>
+                                    </div>
+                                    <div class="font-display text-2xl font-bold text-forest">800+</div>
+                                    <div class="text-sm text-ink-mid">Cultes diffus&eacute;s</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Floating accent -->
+                        <div class="absolute -top-4 -right-4 w-20 h-20 bg-gold/10 rounded-full" style="animation: float 5s ease-in-out infinite;"></div>
+                        <div class="absolute -bottom-4 -left-4 w-16 h-16 bg-forest/10 rounded-full" style="animation: float 7s ease-in-out infinite 1s;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================ -->
+    <!-- FEATURES SECTION                              -->
+    <!-- ============================================ -->
+    <section id="fonctionnalites" class="py-24 lg:py-32 bg-cream-warm relative">
+        <div class="pattern-divider max-w-xs mx-auto mb-16 rounded-full"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Section Header -->
+            <div class="text-center max-w-2xl mx-auto mb-16 reveal">
+                <span class="inline-block text-sm font-semibold text-gold uppercase tracking-widest mb-4">Fonctionnalit&eacute;s</span>
+                <h2 class="font-display text-4xl lg:text-5xl font-bold text-forest leading-tight mb-6">
+                    Tout pour vivre votre foi<br>au quotidien
+                </h2>
+                <p class="text-lg text-ink-mid">
+                    Une plateforme compl&egrave;te, con&ccedil;ue avec amour pour les besoins de notre communaut&eacute;.
+                </p>
+            </div>
+
+            <!-- Feature Cards Grid -->
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                <!-- Card 1: M&eacute;ditations -->
+                <div class="card-hover reveal stagger-1 bg-white rounded-4xl p-8 shadow-md shadow-forest/5 border border-sage-lighter/50 group">
+                    <div class="w-16 h-16 bg-sage-lighter rounded-3xl flex items-center justify-center mb-6 group-hover:bg-forest group-hover:scale-110 transition-all duration-500">
+                        <i data-lucide="book-heart" class="w-8 h-8 text-forest group-hover:text-white transition-colors duration-500"></i>
+                    </div>
+                    <h3 class="font-display text-xl font-bold text-forest mb-3">M&eacute;ditations quotidiennes</h3>
+                    <p class="text-ink-mid leading-relaxed">
+                        Commencez chaque journ&eacute;e avec une m&eacute;ditation inspir&eacute;e de la Parole.
+                        Lectures bibliques, pri&egrave;res guid&eacute;es et r&eacute;flexions spirituelles.
+                    </p>
+                </div>
+
+                <!-- Card 2: &Eacute;v&eacute;nements -->
+                <div class="card-hover reveal stagger-2 bg-white rounded-4xl p-8 shadow-md shadow-forest/5 border border-sage-lighter/50 group">
+                    <div class="w-16 h-16 bg-gold-pale rounded-3xl flex items-center justify-center mb-6 group-hover:bg-gold group-hover:scale-110 transition-all duration-500">
+                        <i data-lucide="calendar-heart" class="w-8 h-8 text-gold group-hover:text-white transition-colors duration-500"></i>
+                    </div>
+                    <h3 class="font-display text-xl font-bold text-forest mb-3">&Eacute;v&eacute;nements &amp; Cultes</h3>
+                    <p class="text-ink-mid leading-relaxed">
+                        Retrouvez tous les &eacute;v&eacute;nements de votre paroisse et de la communaut&eacute; mondiale.
+                        Inscriptions, rappels et partage en un clic.
+                    </p>
+                </div>
+
+                <!-- Card 3: Dons -->
+                <div class="card-hover reveal stagger-3 bg-white rounded-4xl p-8 shadow-md shadow-forest/5 border border-sage-lighter/50 group">
+                    <div class="w-16 h-16 rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-all duration-500" style="background: rgba(193,120,23,0.12);">
+                        <i data-lucide="hand-heart" class="w-8 h-8 text-terra group-hover:text-white transition-colors duration-500" style="transition: color 0.5s;"></i>
+                    </div>
+                    <div class="group-hover:[&_.icon-wrap]:bg-terra"></div>
+                    <h3 class="font-display text-xl font-bold text-forest mb-3">Dons en ligne</h3>
+                    <p class="text-ink-mid leading-relaxed">
+                        Soutenez les projets de l'&eacute;glise par des dons s&eacute;curis&eacute;s.
+                        D&icirc;me, offrandes et contributions aux campagnes sp&eacute;ciales.
+                    </p>
+                </div>
+
+                <!-- Card 4: Guide Biblique -->
+                <div class="card-hover reveal stagger-4 bg-white rounded-4xl p-8 shadow-md shadow-forest/5 border border-sage-lighter/50 group">
+                    <div class="w-16 h-16 bg-sage-lighter rounded-3xl flex items-center justify-center mb-6 group-hover:bg-forest group-hover:scale-110 transition-all duration-500">
+                        <i data-lucide="scroll-text" class="w-8 h-8 text-forest group-hover:text-white transition-colors duration-500"></i>
+                    </div>
+                    <h3 class="font-display text-xl font-bold text-forest mb-3">Guide Biblique</h3>
+                    <p class="text-ink-mid leading-relaxed">
+                        Explorez la Bible avec des plans de lecture personnalis&eacute;s,
+                        des commentaires pastoraux et des groupes d'&eacute;tude.
+                    </p>
+                </div>
+
+                <!-- Card 5: Cultes en Direct -->
+                <div class="card-hover reveal stagger-5 bg-white rounded-4xl p-8 shadow-md shadow-forest/5 border border-sage-lighter/50 group">
+                    <div class="w-16 h-16 bg-gold-pale rounded-3xl flex items-center justify-center mb-6 group-hover:bg-gold group-hover:scale-110 transition-all duration-500">
+                        <i data-lucide="radio" class="w-8 h-8 text-gold group-hover:text-white transition-colors duration-500"></i>
+                    </div>
+                    <h3 class="font-display text-xl font-bold text-forest mb-3">Cultes en Direct</h3>
+                    <p class="text-ink-mid leading-relaxed">
+                        Suivez les cultes en direct depuis n'importe o&ugrave; dans le monde.
+                        Replays disponibles et notifications avant chaque diffusion.
+                    </p>
+                </div>
+
+                <!-- Card 6: Communaut&eacute; -->
+                <div class="card-hover reveal stagger-6 bg-white rounded-4xl p-8 shadow-md shadow-forest/5 border border-sage-lighter/50 group">
+                    <div class="w-16 h-16 rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-all duration-500" style="background: rgba(193,120,23,0.12);">
+                        <i data-lucide="users-round" class="w-8 h-8 text-terra group-hover:text-white transition-colors duration-500"></i>
+                    </div>
+                    <h3 class="font-display text-xl font-bold text-forest mb-3">Communaut&eacute;</h3>
+                    <p class="text-ink-mid leading-relaxed">
+                        &Eacute;changez avec des fid&egrave;les du monde entier. Groupes de pri&egrave;re,
+                        forums de discussion et entraide entre fr&egrave;res et s&oelig;urs.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================ -->
+    <!-- DONATION SECTION                              -->
+    <!-- ============================================ -->
+    <section id="dons" class="py-24 lg:py-32 relative overflow-hidden" style="background: linear-gradient(180deg, #FEFAE0 0%, #FFFBF0 100%);">
+        <div class="pattern-divider max-w-xs mx-auto mb-16 rounded-full"></div>
+
+        <!-- Background pattern -->
+        <div class="absolute inset-0 pattern-ndop opacity-50"></div>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Section Header -->
+            <div class="text-center max-w-2xl mx-auto mb-16 reveal">
+                <span class="inline-block text-sm font-semibold text-gold uppercase tracking-widest mb-4">Soutenir l'&oelig;uvre</span>
+                <h2 class="font-display text-4xl lg:text-5xl font-bold text-forest leading-tight mb-6">
+                    Votre g&eacute;n&eacute;rosit&eacute;<br>construit l'avenir
+                </h2>
+                <p class="text-lg text-ink-mid">
+                    Chaque don, petit ou grand, contribue &agrave; b&acirc;tir une communaut&eacute; plus forte et plus unie.
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-5 gap-8 items-start">
+                <!-- Donation Widget (Main) -->
+                <div class="lg:col-span-3 reveal-left">
+                    <div class="bg-white rounded-4xl shadow-xl shadow-forest/8 overflow-hidden border border-sage-lighter/30">
+                        <!-- Campaign Header -->
+                        <div class="bg-forest p-8 relative overflow-hidden">
+                            <div class="absolute inset-0 opacity-10">
+                                <div class="hero-pattern"></div>
+                            </div>
+                            <div class="relative z-10">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                                        <i data-lucide="building-2" class="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <span class="text-sage-light text-sm font-semibold uppercase tracking-wider">Campagne en cours</span>
+                                </div>
+                                <h3 class="font-display text-2xl sm:text-3xl font-bold text-white mb-2">
+                                    Construction du Centre Communautaire
+                                </h3>
+                                <p class="text-sage-light/80 text-sm">
+                                    Un lieu de rassemblement pour toute la diaspora EEC en r&eacute;gion parisienne.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="p-8">
+                            <!-- Progress Bar -->
+                            <div class="mb-8">
+                                <div class="flex justify-between items-end mb-3">
+                                    <div>
+                                        <span class="font-display text-3xl font-bold text-forest">72 000 &euro;</span>
+                                        <span class="text-ink-mid text-lg"> / 100 000 &euro;</span>
+                                    </div>
+                                    <span class="text-sm font-bold text-gold bg-gold-pale px-3 py-1 rounded-full">72%</span>
+                                </div>
+                                <div class="w-full h-4 bg-sage-lighter rounded-full overflow-hidden relative">
+                                    <div class="progress-animated progress-shimmer h-full rounded-full relative" style="width: 0%;"></div>
+                                </div>
+                                <div class="flex justify-between mt-2">
+                                    <span class="text-xs text-ink-light">342 donateurs</span>
+                                    <span class="text-xs text-ink-light">28 000 &euro; restants</span>
+                                </div>
+                            </div>
+
+                            <!-- Toggle: Ponctuel / Mensuel -->
+                            <div class="flex items-center justify-center gap-4 mb-8">
+                                <button id="togglePonctuel" class="donation-type-btn px-6 py-2.5 rounded-xl font-semibold text-sm transition-all bg-forest text-white shadow-md">
+                                    Don ponctuel
+                                </button>
+                                <button id="toggleMensuel" class="donation-type-btn px-6 py-2.5 rounded-xl font-semibold text-sm transition-all bg-sage-lighter text-forest hover:bg-sage-light">
+                                    Don mensuel
+                                </button>
+                            </div>
+
+                            <!-- Amount Selection -->
+                            <div class="grid grid-cols-4 gap-3 mb-6">
+                                <button class="amount-btn border-2 border-sage-light rounded-2xl py-3.5 font-bold text-forest hover:border-forest" data-amount="10">
+                                    10 &euro;
+                                </button>
+                                <button class="amount-btn border-2 border-sage-light rounded-2xl py-3.5 font-bold text-forest hover:border-forest active" data-amount="25">
+                                    25 &euro;
+                                </button>
+                                <button class="amount-btn border-2 border-sage-light rounded-2xl py-3.5 font-bold text-forest hover:border-forest" data-amount="50">
+                                    50 &euro;
+                                </button>
+                                <button class="amount-btn border-2 border-sage-light rounded-2xl py-3.5 font-bold text-forest hover:border-forest" data-amount="100">
+                                    100 &euro;
+                                </button>
+                            </div>
+
+                            <!-- Custom Amount + Currency -->
+                            <div class="flex gap-3 mb-8">
+                                <div class="flex-1 relative">
+                                    <input type="number" id="customAmount" placeholder="Autre montant"
+                                        class="w-full border-2 border-sage-light rounded-2xl px-5 py-3.5 text-forest font-semibold placeholder:text-ink-light focus:border-forest focus:ring-4 focus:ring-forest/10 outline-none transition-all">
+                                </div>
+                                <select id="currencySelect" class="border-2 border-sage-light rounded-2xl px-4 py-3.5 font-semibold text-forest bg-white focus:border-forest focus:ring-4 focus:ring-forest/10 outline-none transition-all appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%231B4332%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22m6 9 6 6 6-6%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 12px center; padding-right: 40px;">
+                                    <option value="EUR">EUR &euro;</option>
+                                    <option value="USD">USD $</option>
+                                    <option value="XAF">XAF &#8355;</option>
+                                </select>
+                            </div>
+
+                            <!-- Donate Button -->
+                            <button class="btn-gold w-full bg-gold text-white py-4.5 rounded-2xl font-bold text-lg shadow-xl shadow-gold/25 flex items-center justify-center gap-3" style="padding-top: 1.125rem; padding-bottom: 1.125rem; animation: pulse-gold 3s infinite;">
+                                <i data-lucide="heart" class="w-5 h-5"></i>
+                                Faire un don de 25 &euro;
+                            </button>
+
+                            <p class="text-center text-xs text-ink-light mt-4 flex items-center justify-center gap-1">
+                                <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                                Paiement 100% s&eacute;curis&eacute; &bull; Re&ccedil;u fiscal disponible
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Donors Sidebar -->
+                <div class="lg:col-span-2 reveal-right">
+                    <div class="bg-white rounded-4xl shadow-lg shadow-forest/5 p-8 border border-sage-lighter/30 mb-6">
+                        <h4 class="font-display text-lg font-bold text-forest mb-6 flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-5 h-5 text-gold"></i>
+                            Derniers donateurs
+                        </h4>
+                        <div class="space-y-5">
+                            <!-- Donor 1 -->
+                            <div class="flex items-center gap-4 group">
+                                <div class="avatar-gradient-1 w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                    MN
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-semibold text-ink text-sm">Marie Ngo Nyemb</div>
+                                    <div class="text-xs text-ink-light">Paris, France &bull; il y a 2h</div>
+                                </div>
+                                <span class="font-bold text-forest text-sm bg-sage-lighter px-3 py-1 rounded-full">50 &euro;</span>
+                            </div>
+                            <!-- Donor 2 -->
+                            <div class="flex items-center gap-4 group">
+                                <div class="avatar-gradient-2 w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                    JT
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-semibold text-ink text-sm">Jean Tagne</div>
+                                    <div class="text-xs text-ink-light">Montr&eacute;al, Canada &bull; il y a 5h</div>
+                                </div>
+                                <span class="font-bold text-forest text-sm bg-sage-lighter px-3 py-1 rounded-full">100 &euro;</span>
+                            </div>
+                            <!-- Donor 3 -->
+                            <div class="flex items-center gap-4 group">
+                                <div class="avatar-gradient-3 w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                    AF
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-semibold text-ink text-sm">Am&eacute;lie Fotso</div>
+                                    <div class="text-xs text-ink-light">Berlin, Allemagne &bull; il y a 8h</div>
+                                </div>
+                                <span class="font-bold text-forest text-sm bg-sage-lighter px-3 py-1 rounded-full">25 &euro;</span>
+                            </div>
+                            <!-- Donor 4 -->
+                            <div class="flex items-center gap-4 group">
+                                <div class="avatar-gradient-1 w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                    PE
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-semibold text-ink text-sm">Paul Essomba</div>
+                                    <div class="text-xs text-ink-light">Bruxelles, Belgique &bull; il y a 12h</div>
+                                </div>
+                                <span class="font-bold text-forest text-sm bg-sage-lighter px-3 py-1 rounded-full">75 &euro;</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Encouragement card -->
+                    <div class="bg-gradient-to-br from-forest to-forest-light rounded-4xl p-8 text-white relative overflow-hidden">
+                        <div class="absolute inset-0 opacity-10">
+                            <div class="hero-pattern"></div>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4">
+                                <i data-lucide="quote" class="w-6 h-6 text-gold-light"></i>
+                            </div>
+                            <p class="font-display text-lg italic leading-relaxed mb-4 text-white/90">
+                                &laquo; Celui qui s&egrave;me abondamment moissonnera aussi abondamment. &raquo;
+                            </p>
+                            <p class="text-sm text-sage-light">2 Corinthiens 9:6</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================ -->
+    <!-- TESTIMONIALS SECTION                          -->
+    <!-- ============================================ -->
+    <section id="temoignages" class="py-24 lg:py-32 bg-cream relative">
+        <div class="pattern-divider max-w-xs mx-auto mb-16 rounded-full"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Section Header -->
+            <div class="text-center max-w-2xl mx-auto mb-16 reveal">
+                <span class="inline-block text-sm font-semibold text-gold uppercase tracking-widest mb-4">T&eacute;moignages</span>
+                <h2 class="font-display text-4xl lg:text-5xl font-bold text-forest leading-tight mb-6">
+                    Ils vivent leur foi<br>avec DiaspoEEC
+                </h2>
+            </div>
+
+            <!-- Testimonial Cards -->
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Testimonial 1 -->
+                <div class="card-hover reveal stagger-1 bg-white rounded-4xl p-8 shadow-lg shadow-forest/5 border border-sage-lighter/30 relative">
+                    <div class="quote-mark absolute top-4 right-6">&ldquo;</div>
+                    <p class="text-ink-mid leading-relaxed mb-8 relative z-10">
+                        Depuis que j'utilise DiaspoEEC, je me sens connect&eacute;e &agrave; ma paroisse de Douala
+                        comme si j'y &eacute;tais encore. Les cultes en direct et les m&eacute;ditations quotidiennes
+                        nourrissent ma foi chaque jour.
+                    </p>
+                    <div class="flex items-center gap-4">
+                        <div class="avatar-gradient-1 w-12 h-12 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                            GE
+                        </div>
+                        <div>
+                            <div class="font-semibold text-ink">Grace Ekambi</div>
+                            <div class="text-sm text-ink-light flex items-center gap-1">
+                                <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                                Lyon, France
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 2 -->
+                <div class="card-hover reveal stagger-2 bg-white rounded-4xl p-8 shadow-lg shadow-forest/5 border border-sage-lighter/30 relative">
+                    <div class="quote-mark absolute top-4 right-6">&ldquo;</div>
+                    <p class="text-ink-mid leading-relaxed mb-8 relative z-10">
+                        La fonctionnalit&eacute; de dons en ligne a transform&eacute; notre fa&ccedil;on de contribuer.
+                        Je peux soutenir les projets de mon &eacute;glise au Cameroun directement depuis mon t&eacute;l&eacute;phone,
+                        en toute s&eacute;curit&eacute;.
+                    </p>
+                    <div class="flex items-center gap-4">
+                        <div class="avatar-gradient-2 w-12 h-12 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                            SM
+                        </div>
+                        <div>
+                            <div class="font-semibold text-ink">Samuel Mbarga</div>
+                            <div class="text-sm text-ink-light flex items-center gap-1">
+                                <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                                Toronto, Canada
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 3 -->
+                <div class="card-hover reveal stagger-3 bg-white rounded-4xl p-8 shadow-lg shadow-forest/5 border border-sage-lighter/30 relative">
+                    <div class="quote-mark absolute top-4 right-6">&ldquo;</div>
+                    <p class="text-ink-mid leading-relaxed mb-8 relative z-10">
+                        Les groupes de pri&egrave;re en ligne ont &eacute;t&eacute; une b&eacute;n&eacute;diction extraordinaire.
+                        Malgr&eacute; la distance, je prie chaque semaine avec mes fr&egrave;res et s&oelig;urs du Cameroun,
+                        d'Europe et d'Am&eacute;rique.
+                    </p>
+                    <div class="flex items-center gap-4">
+                        <div class="avatar-gradient-3 w-12 h-12 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                            RN
+                        </div>
+                        <div>
+                            <div class="font-semibold text-ink">Ruth Nkondock</div>
+                            <div class="text-sm text-ink-light flex items-center gap-1">
+                                <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                                Zurich, Suisse
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================ -->
+    <!-- APP DOWNLOAD / CTA SECTION                    -->
+    <!-- ============================================ -->
+    <section class="py-24 lg:py-32 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-forest via-forest-light to-forest"></div>
+        <div class="absolute inset-0 hero-pattern opacity-30"></div>
+
+        <!-- Floating decorations -->
+        <div class="deco-circle w-72 h-72 border-2 border-white/10 -top-12 -right-12 hidden lg:block"></div>
+        <div class="deco-circle w-48 h-48 border-2 border-white/10 bottom-8 -left-8 hidden lg:block"></div>
+        <div class="deco-circle w-24 h-24 bg-gold/10 top-1/3 left-1/4 hidden lg:block" style="animation: float 5s ease-in-out infinite;"></div>
+
+        <div class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="reveal">
+                <!-- Icon -->
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-white/10 backdrop-blur-sm rounded-3xl mb-8 mx-auto" style="animation: float 4s ease-in-out infinite;">
+                    <i data-lucide="smartphone" class="w-10 h-10 text-gold-light"></i>
+                </div>
+
+                <h2 class="font-display text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight mb-6">
+                    T&eacute;l&eacute;chargez l'application<br>
+                    <span class="text-gold-light">DiaspoEEC</span>
+                </h2>
+                <p class="text-xl text-sage-light/90 max-w-2xl mx-auto mb-12 leading-relaxed">
+                    Emportez votre communaut&eacute; partout avec vous. M&eacute;ditations, cultes en direct,
+                    dons et bien plus &mdash; le tout dans votre poche.
+                </p>
+
+                <!-- App Store Badges -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+                    <!-- Apple App Store -->
+                    <a href="#" class="group inline-flex items-center gap-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-2xl px-6 py-4 transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                        <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                        </svg>
+                        <div class="text-left">
+                            <div class="text-xs text-white/70">T&eacute;l&eacute;charger sur</div>
+                            <div class="text-white font-semibold text-lg leading-tight">App Store</div>
+                        </div>
+                    </a>
+
+                    <!-- Google Play -->
+                    <a href="#" class="group inline-flex items-center gap-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-2xl px-6 py-4 transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                        <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3.18 23.77c-.25-.07-.47-.2-.65-.38a1.13 1.13 0 01-.33-.57c-.04-.2-.04-.55-.04-3.5V3.55c0-3.17 0-3.44.05-3.6.06-.21.18-.42.35-.57.14-.13.32-.23.52-.3L3.18 0l8.53 5.35c4.7 2.94 8.56 5.37 8.58 5.4.03.04-1.06.73-2.42 1.56l-2.46 1.5-6.12 3.84L3.18 23.77zm10.24-8.34l2.19-1.36-2.19-1.37-5.32-3.34-2.38-1.49v12.12l2.38-1.49 5.32-3.07zm3.48-2.18l2.15-1.32-2.15-1.35-1.51-.95-2.2 1.37 2.2 1.37 1.51.88z"/>
+                        </svg>
+                        <div class="text-left">
+                            <div class="text-xs text-white/70">Disponible sur</div>
+                            <div class="text-white font-semibold text-lg leading-tight">Google Play</div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Trust indicators -->
+                <div class="flex items-center justify-center gap-6 text-white/60 text-sm">
+                    <span class="flex items-center gap-1.5">
+                        <i data-lucide="star" class="w-4 h-4 text-gold-light fill-gold-light"></i>
+                        4.8/5 &eacute;toiles
+                    </span>
+                    <span class="w-1 h-1 rounded-full bg-white/30"></span>
+                    <span>10 000+ t&eacute;l&eacute;chargements</span>
+                    <span class="w-1 h-1 rounded-full bg-white/30"></span>
+                    <span>Gratuit</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================ -->
+    <!-- FOOTER                                        -->
+    <!-- ============================================ -->
+    <footer id="contact" class="bg-ink pt-20 pb-8 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+                <!-- Brand Column -->
+                <div class="lg:col-span-1">
+                    <a href="#" class="flex items-center gap-3 mb-6">
+                        <div class="w-11 h-11 bg-forest rounded-2xl flex items-center justify-center">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2C12 2 4 7 4 13C4 17.4183 7.58172 21 12 21C16.4183 21 20 17.4183 20 13C20 7 12 2 12 2Z" fill="#95D5B2" opacity="0.6"/>
+                                <path d="M12 6V18M8 12H16" stroke="#FFFBF0" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <span class="font-display text-2xl font-bold text-white">
+                            Diaspo<span class="text-gold">EEC</span>
+                        </span>
+                    </a>
+                    <p class="text-white/50 leading-relaxed mb-6 text-sm">
+                        La plateforme num&eacute;rique de l'&Eacute;glise &Eacute;vang&eacute;lique du Cameroun pour
+                        la diaspora. Unis dans la foi, connect&eacute;s par la technologie.
+                    </p>
+                    <!-- Social Links -->
+                    <div class="flex gap-3">
+                        <a href="#" class="w-10 h-10 bg-white/10 hover:bg-forest rounded-xl flex items-center justify-center transition-all duration-300 group">
+                            <i data-lucide="facebook" class="w-4 h-4 text-white/60 group-hover:text-white transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-white/10 hover:bg-forest rounded-xl flex items-center justify-center transition-all duration-300 group">
+                            <i data-lucide="youtube" class="w-4 h-4 text-white/60 group-hover:text-white transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-white/10 hover:bg-forest rounded-xl flex items-center justify-center transition-all duration-300 group">
+                            <i data-lucide="instagram" class="w-4 h-4 text-white/60 group-hover:text-white transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-white/10 hover:bg-forest rounded-xl flex items-center justify-center transition-all duration-300 group">
+                            <i data-lucide="twitter" class="w-4 h-4 text-white/60 group-hover:text-white transition-colors"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="font-display text-white font-bold mb-6">Navigation</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#accueil" class="text-white/50 hover:text-gold transition-colors text-sm">Accueil</a></li>
+                        <li><a href="#apropos" class="text-white/50 hover:text-gold transition-colors text-sm">&Agrave; propos</a></li>
+                        <li><a href="#fonctionnalites" class="text-white/50 hover:text-gold transition-colors text-sm">Fonctionnalit&eacute;s</a></li>
+                        <li><a href="#dons" class="text-white/50 hover:text-gold transition-colors text-sm">Faire un don</a></li>
+                        <li><a href="#temoignages" class="text-white/50 hover:text-gold transition-colors text-sm">T&eacute;moignages</a></li>
+                    </ul>
+                </div>
+
+                <!-- Resources -->
+                <div>
+                    <h4 class="font-display text-white font-bold mb-6">Ressources</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-white/50 hover:text-gold transition-colors text-sm">Guide Biblique</a></li>
+                        <li><a href="#" class="text-white/50 hover:text-gold transition-colors text-sm">M&eacute;ditations</a></li>
+                        <li><a href="#" class="text-white/50 hover:text-gold transition-colors text-sm">Cultes en direct</a></li>
+                        <li><a href="#" class="text-white/50 hover:text-gold transition-colors text-sm">Annuaire des paroisses</a></li>
+                        <li><a href="#" class="text-white/50 hover:text-gold transition-colors text-sm">Aide &amp; Support</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact -->
+                <div>
+                    <h4 class="font-display text-white font-bold mb-6">Contact</h4>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="mail" class="w-4 h-4 text-gold mt-0.5 flex-shrink-0"></i>
+                            <a href="mailto:contact@diaspoeec.org" class="text-white/50 hover:text-gold transition-colors text-sm">contact@diaspoeec.org</a>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="phone" class="w-4 h-4 text-gold mt-0.5 flex-shrink-0"></i>
+                            <span class="text-white/50 text-sm">+33 1 23 45 67 89</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="map-pin" class="w-4 h-4 text-gold mt-0.5 flex-shrink-0"></i>
+                            <span class="text-white/50 text-sm">Si&egrave;ge : Douala, Cameroun<br>Bureau Europe : Paris, France</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Bottom Bar -->
+            <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-white/40 text-sm">
+                    &copy; 2026 &Eacute;glise &Eacute;vang&eacute;lique du Cameroun. Tous droits r&eacute;serv&eacute;s.
+                </p>
+                <div class="flex items-center gap-6">
+                    <a href="#" class="text-white/40 hover:text-gold transition-colors text-sm">Politique de confidentialit&eacute;</a>
+                    <a href="#" class="text-white/40 hover:text-gold transition-colors text-sm">Mentions l&eacute;gales</a>
+                    <a href="#" class="text-white/40 hover:text-gold transition-colors text-sm">CGU</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- ============================================ -->
+    <!-- SCRIPTS                                       -->
+    <!-- ============================================ -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // ====== NAVBAR SCROLL EFFECT ======
+        const navbar = document.getElementById('navbar');
+        let lastScroll = 0;
+
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            if (currentScroll > 60) {
+                navbar.classList.add('nav-scrolled');
+            } else {
+                navbar.classList.remove('nav-scrolled');
+            }
+            lastScroll = currentScroll;
+        });
+
+        // ====== MOBILE MENU ======
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileMenuClose = document.getElementById('mobileMenuClose');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+        const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+
+        function openMobileMenu() {
+            mobileMenu.classList.add('open');
+            mobileOverlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMobileMenu() {
+            mobileMenu.classList.remove('open');
+            mobileOverlay.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        mobileMenuBtn.addEventListener('click', openMobileMenu);
+        mobileMenuClose.addEventListener('click', closeMobileMenu);
+        mobileOverlay.addEventListener('click', closeMobileMenu);
+        mobileNavLinks.forEach(link => link.addEventListener('click', closeMobileMenu));
+
+        // ====== INTERSECTION OBSERVER (Scroll Reveal) ======
+        const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
+
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('revealed');
+                    // Don't unobserve to allow re-revealing if needed
+                }
+            });
+        }, {
+            threshold: 0.15,
+            rootMargin: '0px 0px -60px 0px'
+        });
+
+        revealElements.forEach(el => revealObserver.observe(el));
+
+        // ====== PROGRESS BAR ANIMATION ======
+        const progressBar = document.querySelector('.progress-animated');
+        const progressObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.width = '72%';
+                    progressObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        if (progressBar) {
+            progressBar.style.width = '0%';
+            progressBar.style.transition = 'width 2s cubic-bezier(0.16, 1, 0.3, 1)';
+            progressObserver.observe(progressBar);
+        }
+
+        // ====== DONATION AMOUNT BUTTONS ======
+        const amountBtns = document.querySelectorAll('.amount-btn');
+        const customAmountInput = document.getElementById('customAmount');
+        const donateBtn = document.querySelector('.btn-gold.w-full');
+        const currencySelect = document.getElementById('currencySelect');
+        let selectedAmount = 25;
+
+        const currencySymbols = { EUR: '\u20AC', USD: '$', XAF: 'FCFA' };
+
+        function updateDonateButton() {
+            const symbol = currencySymbols[currencySelect.value];
+            const prefix = currencySelect.value === 'XAF' ? '' : '';
+            if (currencySelect.value === 'XAF') {
+                donateBtn.innerHTML = `<i data-lucide="heart" class="w-5 h-5"></i> Faire un don de ${selectedAmount.toLocaleString('fr-FR')} FCFA`;
+            } else {
+                donateBtn.innerHTML = `<i data-lucide="heart" class="w-5 h-5"></i> Faire un don de ${selectedAmount} ${symbol}`;
+            }
+            lucide.createIcons();
+        }
+
+        amountBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                amountBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedAmount = parseInt(btn.dataset.amount);
+                customAmountInput.value = '';
+                updateDonateButton();
+            });
+        });
+
+        customAmountInput.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            if (val > 0) {
+                amountBtns.forEach(b => b.classList.remove('active'));
+                selectedAmount = val;
+                updateDonateButton();
+            }
+        });
+
+        currencySelect.addEventListener('change', () => {
+            // Convert amounts for display on buttons
+            const rates = { EUR: 1, USD: 1.1, XAF: 656 };
+            const rate = rates[currencySelect.value];
+            const baseAmounts = [10, 25, 50, 100];
+            amountBtns.forEach((btn, i) => {
+                const converted = Math.round(baseAmounts[i] * rate);
+                btn.dataset.amount = converted;
+                const sym = currencySymbols[currencySelect.value];
+                if (currencySelect.value === 'XAF') {
+                    btn.textContent = `${converted.toLocaleString('fr-FR')} F`;
+                } else {
+                    btn.textContent = `${converted} ${sym}`;
+                }
+            });
+            // Update selected amount
+            const activeBtn = document.querySelector('.amount-btn.active');
+            if (activeBtn) {
+                selectedAmount = parseInt(activeBtn.dataset.amount);
+            }
+            updateDonateButton();
+        });
+
+        // ====== DONATION TYPE TOGGLE ======
+        const togglePonctuel = document.getElementById('togglePonctuel');
+        const toggleMensuel = document.getElementById('toggleMensuel');
+
+        togglePonctuel.addEventListener('click', () => {
+            togglePonctuel.className = 'donation-type-btn px-6 py-2.5 rounded-xl font-semibold text-sm transition-all bg-forest text-white shadow-md';
+            toggleMensuel.className = 'donation-type-btn px-6 py-2.5 rounded-xl font-semibold text-sm transition-all bg-sage-lighter text-forest hover:bg-sage-light';
+        });
+
+        toggleMensuel.addEventListener('click', () => {
+            toggleMensuel.className = 'donation-type-btn px-6 py-2.5 rounded-xl font-semibold text-sm transition-all bg-forest text-white shadow-md';
+            togglePonctuel.className = 'donation-type-btn px-6 py-2.5 rounded-xl font-semibold text-sm transition-all bg-sage-lighter text-forest hover:bg-sage-light';
+        });
+
+        // ====== SMOOTH SCROLL for anchor links ======
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href === '#') return;
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) {
+                    const navHeight = navbar.offsetHeight;
+                    const targetPos = target.getBoundingClientRect().top + window.pageYOffset - navHeight;
+                    window.scrollTo({
+                        top: targetPos,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // ====== PARALLAX-LITE for decorative elements ======
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const decoCircles = document.querySelectorAll('.deco-circle');
+            decoCircles.forEach((circle, i) => {
+                const speed = (i + 1) * 0.02;
+                circle.style.transform = `translateY(${scrolled * speed}px)`;
+            });
+        });
+    </script>
+</body>
+</html>

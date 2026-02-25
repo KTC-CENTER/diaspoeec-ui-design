@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DiaspoEEC Admin - Tableau de bord</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        forest: { DEFAULT: '#1B4332', light: '#2D6A4F' },
+        mint: { light: '#D8F3DC', DEFAULT: '#95D5B2' },
+        gold: { DEFAULT: '#D4A017', light: '#F4D35E' },
+        cream: { DEFAULT: '#FEFAE0', warm: '#FFFBF0' },
+        terra: '#C17817',
+        ink: { DEFAULT: '#1A1A2E', light: '#4A4A5A' }
+      },
+      fontFamily: {
+        display: ['Fraunces', 'serif'],
+        body: ['Outfit', 'sans-serif']
+      }
+    }
+  }
+}
+</script>
+<style>
+* { font-family: 'Outfit', sans-serif; }
+.font-display { font-family: 'Fraunces', serif; }
+.sidebar-link.active { background: rgba(149,213,178,0.15); border-right: 3px solid #95D5B2; }
+.sidebar-link:hover { background: rgba(149,213,178,0.1); }
+.screen { display: none; }
+.screen.active { display: block; }
+.tab-btn.active { color: #1B4332; border-bottom: 3px solid #1B4332; font-weight: 600; }
+.sub-tab.active { color: #1B4332; border-bottom: 2px solid #D4A017; font-weight: 600; }
+
+/* Bar chart animations */
+@keyframes growUp { from { height: 0; } to { height: var(--h); } }
+@keyframes growRight { from { width: 0; } to { width: var(--w); } }
+.bar-animate { animation: growUp 0.8s ease-out forwards; }
+.bar-h-animate { animation: growRight 1s ease-out forwards; }
+
+/* Fade in */
+@keyframes fadeInUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+.fade-in { animation: fadeInUp 0.4s ease-out forwards; }
+.fade-in-d1 { animation-delay: 0.05s; opacity:0; }
+.fade-in-d2 { animation-delay: 0.1s; opacity:0; }
+.fade-in-d3 { animation-delay: 0.15s; opacity:0; }
+.fade-in-d4 { animation-delay: 0.2s; opacity:0; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #95D5B2; border-radius: 3px; }
+
+/* Table hover */
+.tbl-row:hover { background: #FEFAE0 !important; }
+
+/* Mobile sidebar */
+.sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:40; }
+.sidebar-overlay.open { display:block; }
+
+@media (max-width: 767px) {
+  .sidebar { transform: translateX(-100%); position: fixed !important; z-index: 50; }
+  .sidebar.open { transform: translateX(0); }
+  .main-content { margin-left: 0 !important; }
+}
+</style>
+</head>
+<body class="bg-cream-warm min-h-screen font-body text-ink">
+
+<!-- Mobile Overlay -->
+<div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- Sidebar -->
+<aside id="sidebar" class="sidebar fixed top-0 left-0 h-full w-[280px] bg-forest text-white flex flex-col transition-transform duration-300 z-50">
+  <!-- Logo -->
+  <div class="px-6 py-6 border-b border-white/10">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gold flex items-center justify-center">
+        <span class="text-white font-bold text-lg">E</span>
+      </div>
+      <div>
+        <h1 class="font-display text-lg font-semibold leading-tight">DiaspoEEC</h1>
+        <span class="text-xs text-mint opacity-80">Administration</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <nav class="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+    <a href="#" onclick="showScreen('dashboard')" data-nav="dashboard" class="sidebar-link active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all">
+      <i data-lucide="layout-dashboard" class="w-[18px] h-[18px] opacity-80"></i>
+      <span>Tableau de bord</span>
+    </a>
+    <a href="#" onclick="showScreen('fideles')" data-nav="fideles" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all">
+      <i data-lucide="users" class="w-[18px] h-[18px] opacity-80"></i>
+      <span>Fidèles</span>
+    </a>
+    <a href="#" onclick="showScreen('dons')" data-nav="dons" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all">
+      <i data-lucide="heart-handshake" class="w-[18px] h-[18px] opacity-80"></i>
+      <span>Dons & Campagnes</span>
+    </a>
+    <a href="#" onclick="showScreen('moderation')" data-nav="moderation" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all">
+      <i data-lucide="shield-check" class="w-[18px] h-[18px] opacity-80"></i>
+      <span>Modération</span>
+      <span class="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">7</span>
+    </a>
+    <div class="pt-3 pb-1 px-3"><span class="text-[10px] uppercase tracking-widest text-white/40">Contenu</span></div>
+    <a href="#" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all">
+      <i data-lucide="book-open" class="w-[18px] h-[18px] opacity-80"></i>
+      <span>Méditations</span>
+    </a>
+    <a href="#" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all">
+      <i data-lucide="calendar" class="w-[18px] h-[18px] opacity-80"></i>
+      <span>Événements</span>
+    </a>
+    <a href="#" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all">
+      <i data-lucide="youtube" class="w-[18px] h-[18px] opacity-80"></i>
+      <span>YouTube</span>
+    </a>
+    <a href="#" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all">
+      <i data-lucide="settings" class="w-[18px] h-[18px] opacity-80"></i>
+      <span>Paramètres</span>
+    </a>
+  </nav>
+
+  <!-- Admin -->
+  <div class="px-4 py-4 border-t border-white/10">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-full bg-gold/30 flex items-center justify-center text-sm font-semibold">AE</div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium truncate">Admin EEC</p>
+        <p class="text-[11px] text-white/50">Administrateur</p>
+      </div>
+      <button class="p-1.5 rounded-lg hover:bg-white/10 transition"><i data-lucide="log-out" class="w-4 h-4 opacity-60"></i></button>
+    </div>
+  </div>
+</aside>
+
+<!-- Main Content -->
+<main id="mainContent" class="main-content md:ml-[280px] min-h-screen">
+
+  <!-- Top bar -->
+  <header class="sticky top-0 z-30 bg-cream-warm/90 backdrop-blur-md border-b border-forest/5">
+    <div class="flex items-center justify-between px-4 md:px-8 py-3">
+      <!-- Mobile hamburger -->
+      <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-lg hover:bg-mint-light transition">
+        <i data-lucide="menu" class="w-5 h-5 text-forest"></i>
+      </button>
+      <!-- Tab nav -->
+      <div class="flex gap-1 overflow-x-auto">
+        <button onclick="showScreen('dashboard')" data-tab="dashboard" class="tab-btn active whitespace-nowrap px-4 py-2 text-sm text-ink-light border-b-3 border-transparent transition-all">Tableau de bord</button>
+        <button onclick="showScreen('fideles')" data-tab="fideles" class="tab-btn whitespace-nowrap px-4 py-2 text-sm text-ink-light border-b-3 border-transparent transition-all">Fidèles</button>
+        <button onclick="showScreen('dons')" data-tab="dons" class="tab-btn whitespace-nowrap px-4 py-2 text-sm text-ink-light border-b-3 border-transparent transition-all">Dons & Campagnes</button>
+        <button onclick="showScreen('moderation')" data-tab="moderation" class="tab-btn whitespace-nowrap px-4 py-2 text-sm text-ink-light border-b-3 border-transparent transition-all">Modération</button>
+      </div>
+      <!-- Notif -->
+      <div class="flex items-center gap-2">
+        <button class="relative p-2 rounded-lg hover:bg-mint-light transition">
+          <i data-lucide="bell" class="w-5 h-5 text-ink-light"></i>
+          <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== SCREEN 1: DASHBOARD ==================== -->
+  <section id="screen-dashboard" class="screen active p-4 md:p-8 max-w-[1400px] mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+      <h2 class="font-display text-2xl md:text-3xl font-semibold text-forest">Tableau de bord</h2>
+      <p class="text-ink-light text-sm mt-1">Vue d'ensemble de la communauté DiaspoEEC</p>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <!-- Stat 1 -->
+      <div class="fade-in fade-in-d1 bg-white rounded-2xl p-5 shadow-sm border border-forest/5 hover:shadow-md transition-shadow">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-xs text-ink-light font-medium uppercase tracking-wide">Fidèles inscrits</p>
+            <p class="text-3xl font-bold text-forest mt-1 font-display">2 847</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-mint-light flex items-center justify-center"><i data-lucide="users" class="w-5 h-5 text-forest"></i></div>
+        </div>
+        <div class="flex items-center gap-1 mt-3 text-xs"><span class="text-green-600 font-medium flex items-center gap-0.5"><i data-lucide="trending-up" class="w-3 h-3"></i> +124</span><span class="text-ink-light">ce mois</span></div>
+      </div>
+      <!-- Stat 2 -->
+      <div class="fade-in fade-in-d2 bg-white rounded-2xl p-5 shadow-sm border border-forest/5 hover:shadow-md transition-shadow">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-xs text-ink-light font-medium uppercase tracking-wide">Dons du mois</p>
+            <p class="text-3xl font-bold text-gold mt-1 font-display">12 450 €</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-gold-light/30 flex items-center justify-center"><i data-lucide="heart" class="w-5 h-5 text-gold"></i></div>
+        </div>
+        <div class="flex items-center gap-1 mt-3 text-xs"><span class="text-green-600 font-medium flex items-center gap-0.5"><i data-lucide="trending-up" class="w-3 h-3"></i> +18%</span><span class="text-ink-light">vs mois dernier</span></div>
+      </div>
+      <!-- Stat 3 -->
+      <div class="fade-in fade-in-d3 bg-white rounded-2xl p-5 shadow-sm border border-forest/5 hover:shadow-md transition-shadow">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-xs text-ink-light font-medium uppercase tracking-wide">Événements actifs</p>
+            <p class="text-3xl font-bold text-terra mt-1 font-display">8</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center"><i data-lucide="calendar" class="w-5 h-5 text-terra"></i></div>
+        </div>
+        <div class="flex items-center gap-1 mt-3 text-xs"><span class="text-terra font-medium">3</span><span class="text-ink-light">cette semaine</span></div>
+      </div>
+      <!-- Stat 4 -->
+      <div class="fade-in fade-in-d4 bg-white rounded-2xl p-5 shadow-sm border border-forest/5 hover:shadow-md transition-shadow">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-xs text-ink-light font-medium uppercase tracking-wide">Méditations publiées</p>
+            <p class="text-3xl font-bold text-forest-light mt-1 font-display">156</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-mint-light flex items-center justify-center"><i data-lucide="book-open" class="w-5 h-5 text-forest-light"></i></div>
+        </div>
+        <div class="flex items-center gap-1 mt-3 text-xs"><span class="text-forest-light font-medium">4</span><span class="text-ink-light">cette semaine</span></div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Bar Chart - Inscriptions -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-forest/5">
+        <h3 class="font-display text-lg font-semibold text-forest mb-6">Évolution des inscriptions</h3>
+        <div class="flex items-end gap-3 h-[200px] px-2">
+          <div class="flex flex-col items-center flex-1 justify-end h-full">
+            <span class="text-xs font-semibold text-forest mb-1">85</span>
+            <div class="w-full rounded-t-lg bg-gradient-to-t from-forest to-forest-light bar-animate" style="--h:55%;height:55%"></div>
+            <span class="text-[11px] text-ink-light mt-2">Sep</span>
+          </div>
+          <div class="flex flex-col items-center flex-1 justify-end h-full">
+            <span class="text-xs font-semibold text-forest mb-1">92</span>
+            <div class="w-full rounded-t-lg bg-gradient-to-t from-forest to-forest-light bar-animate" style="--h:60%;height:60%"></div>
+            <span class="text-[11px] text-ink-light mt-2">Oct</span>
+          </div>
+          <div class="flex flex-col items-center flex-1 justify-end h-full">
+            <span class="text-xs font-semibold text-forest mb-1">110</span>
+            <div class="w-full rounded-t-lg bg-gradient-to-t from-forest to-forest-light bar-animate" style="--h:72%;height:72%"></div>
+            <span class="text-[11px] text-ink-light mt-2">Nov</span>
+          </div>
+          <div class="flex flex-col items-center flex-1 justify-end h-full">
+            <span class="text-xs font-semibold text-forest mb-1">145</span>
+            <div class="w-full rounded-t-lg bg-gradient-to-t from-forest to-mint bar-animate" style="--h:95%;height:95%"></div>
+            <span class="text-[11px] text-ink-light mt-2">Déc</span>
+          </div>
+          <div class="flex flex-col items-center flex-1 justify-end h-full">
+            <span class="text-xs font-semibold text-forest mb-1">118</span>
+            <div class="w-full rounded-t-lg bg-gradient-to-t from-forest to-forest-light bar-animate" style="--h:77%;height:77%"></div>
+            <span class="text-[11px] text-ink-light mt-2">Jan</span>
+          </div>
+          <div class="flex flex-col items-center flex-1 justify-end h-full">
+            <span class="text-xs font-semibold text-forest mb-1">124</span>
+            <div class="w-full rounded-t-lg bg-gradient-to-t from-forest to-mint bar-animate" style="--h:81%;height:81%"></div>
+            <span class="text-[11px] text-ink-light mt-2">Fév</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Horizontal Bar - Dons par campagne -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-forest/5">
+        <h3 class="font-display text-lg font-semibold text-forest mb-6">Dons par campagne</h3>
+        <div class="space-y-5">
+          <div>
+            <div class="flex justify-between text-sm mb-1.5"><span class="text-ink font-medium">Centre Communautaire</span><span class="text-forest font-semibold">72 000 €</span></div>
+            <div class="w-full bg-mint-light rounded-full h-3"><div class="bg-gradient-to-r from-forest to-forest-light h-3 rounded-full bar-h-animate" style="--w:72%;width:72%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1.5"><span class="text-ink font-medium">Don général EEC</span><span class="text-forest font-semibold">45 000 €</span></div>
+            <div class="w-full bg-mint-light rounded-full h-3"><div class="bg-gradient-to-r from-forest to-mint h-3 rounded-full bar-h-animate" style="--w:45%;width:45%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1.5"><span class="text-ink font-medium">Étudiants EEC</span><span class="text-gold font-semibold">4 500 €</span></div>
+            <div class="w-full bg-gold-light/20 rounded-full h-3"><div class="bg-gradient-to-r from-gold to-gold-light h-3 rounded-full bar-h-animate" style="--w:18%;width:18%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1.5"><span class="text-ink font-medium">Aide Cameroun</span><span class="text-terra font-semibold">2 300 €</span></div>
+            <div class="w-full bg-orange-50 rounded-full h-3"><div class="bg-gradient-to-r from-terra to-orange-300 h-3 rounded-full bar-h-animate" style="--w:10%;width:10%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Diaspora Map -->
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-forest/5 mb-8">
+      <h3 class="font-display text-lg font-semibold text-forest mb-5">Répartition géographique</h3>
+      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        <div class="bg-gradient-to-br from-forest to-forest-light rounded-xl p-4 text-center text-white sm:col-span-2 lg:col-span-2">
+          <div class="text-2xl mb-1">&#127467;&#127479;</div>
+          <div class="font-display text-xl font-bold">1 245</div>
+          <div class="text-[11px] opacity-80">France</div>
+        </div>
+        <div class="bg-mint-light rounded-xl p-3 text-center">
+          <div class="text-lg mb-0.5">&#127465;&#127466;</div>
+          <div class="font-display text-lg font-bold text-forest">423</div>
+          <div class="text-[10px] text-ink-light">Allemagne</div>
+        </div>
+        <div class="bg-mint-light rounded-xl p-3 text-center">
+          <div class="text-lg mb-0.5">&#127463;&#127466;</div>
+          <div class="font-display text-lg font-bold text-forest">312</div>
+          <div class="text-[10px] text-ink-light">Belgique</div>
+        </div>
+        <div class="bg-mint-light rounded-xl p-3 text-center">
+          <div class="text-lg mb-0.5">&#127482;&#127480;</div>
+          <div class="font-display text-lg font-bold text-forest">287</div>
+          <div class="text-[10px] text-ink-light">États-Unis</div>
+        </div>
+        <div class="bg-cream rounded-xl p-3 text-center">
+          <div class="text-lg mb-0.5">&#127468;&#127463;</div>
+          <div class="font-display text-lg font-bold text-forest">198</div>
+          <div class="text-[10px] text-ink-light">Royaume-Uni</div>
+        </div>
+        <div class="bg-cream rounded-xl p-3 text-center">
+          <div class="text-lg mb-0.5">&#127464;&#127469;</div>
+          <div class="font-display text-lg font-bold text-forest">156</div>
+          <div class="text-[10px] text-ink-light">Suisse</div>
+        </div>
+        <div class="bg-cream rounded-xl p-3 text-center">
+          <div class="text-lg mb-0.5">&#127464;&#127462;</div>
+          <div class="font-display text-lg font-bold text-forest">134</div>
+          <div class="text-[10px] text-ink-light">Canada</div>
+        </div>
+      </div>
+      <div class="mt-3 text-center"><span class="inline-block bg-gray-100 rounded-lg px-4 py-2 text-sm text-ink-light">Autres pays : <strong class="text-forest">92</strong> fidèles</span></div>
+    </div>
+
+    <!-- Bottom row: Activity + Quick Actions -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Activity -->
+      <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-forest/5">
+        <h3 class="font-display text-lg font-semibold text-forest mb-4">Activité récente</h3>
+        <div class="space-y-0">
+          <div class="flex items-start gap-3 py-3 border-b border-gray-50">
+            <div class="w-8 h-8 rounded-full bg-mint-light flex items-center justify-center flex-shrink-0 mt-0.5"><i data-lucide="user-plus" class="w-4 h-4 text-forest"></i></div>
+            <div class="flex-1 min-w-0"><p class="text-sm text-ink"><span class="font-medium">Marie Fotso</span> s'est inscrite</p><p class="text-xs text-ink-light mt-0.5">Il y a 15 min</p></div>
+          </div>
+          <div class="flex items-start gap-3 py-3 border-b border-gray-50">
+            <div class="w-8 h-8 rounded-full bg-gold-light/30 flex items-center justify-center flex-shrink-0 mt-0.5"><i data-lucide="heart" class="w-4 h-4 text-gold"></i></div>
+            <div class="flex-1 min-w-0"><p class="text-sm text-ink">Don de <span class="font-semibold text-gold">100 €</span> reçu <span class="text-ink-light">(Centre Communautaire)</span></p><p class="text-xs text-ink-light mt-0.5">Il y a 30 min</p></div>
+          </div>
+          <div class="flex items-start gap-3 py-3 border-b border-gray-50">
+            <div class="w-8 h-8 rounded-full bg-mint-light flex items-center justify-center flex-shrink-0 mt-0.5"><i data-lucide="book-open" class="w-4 h-4 text-forest-light"></i></div>
+            <div class="flex-1 min-w-0"><p class="text-sm text-ink">Nouvelle méditation publiée par <span class="font-medium">Pasteur Ndongo</span></p><p class="text-xs text-ink-light mt-0.5">Il y a 1h</p></div>
+          </div>
+          <div class="flex items-start gap-3 py-3 border-b border-gray-50">
+            <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0 mt-0.5"><i data-lucide="calendar" class="w-4 h-4 text-terra"></i></div>
+            <div class="flex-1 min-w-0"><p class="text-sm text-ink"><span class="font-semibold">52 inscriptions</span> au Culte de Paris</p><p class="text-xs text-ink-light mt-0.5">Il y a 2h</p></div>
+          </div>
+          <div class="flex items-start gap-3 py-3">
+            <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0 mt-0.5"><i data-lucide="flag" class="w-4 h-4 text-red-400"></i></div>
+            <div class="flex-1 min-w-0"><p class="text-sm text-ink"><span class="font-medium">Samuel Biyong</span> a signalé un commentaire</p><p class="text-xs text-ink-light mt-0.5">Il y a 3h</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-forest/5">
+        <h3 class="font-display text-lg font-semibold text-forest mb-4">Actions rapides</h3>
+        <div class="space-y-3">
+          <button class="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-forest to-forest-light text-white rounded-xl text-sm font-medium hover:shadow-lg transition-all hover:-translate-y-0.5">
+            <i data-lucide="book-open" class="w-4 h-4"></i> Publier une méditation
+          </button>
+          <button class="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-terra to-orange-400 text-white rounded-xl text-sm font-medium hover:shadow-lg transition-all hover:-translate-y-0.5">
+            <i data-lucide="calendar-plus" class="w-4 h-4"></i> Créer un événement
+          </button>
+          <button class="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-gold to-gold-light text-white rounded-xl text-sm font-medium hover:shadow-lg transition-all hover:-translate-y-0.5">
+            <i data-lucide="megaphone" class="w-4 h-4"></i> Lancer une campagne
+          </button>
+          <button class="w-full flex items-center gap-3 px-4 py-3 bg-white border-2 border-forest/20 text-forest rounded-xl text-sm font-medium hover:bg-mint-light transition-all">
+            <i data-lucide="bell-ring" class="w-4 h-4"></i> Envoyer une notification
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SCREEN 2: FIDELES ==================== -->
+  <section id="screen-fideles" class="screen p-4 md:p-8 max-w-[1400px] mx-auto">
+    <div class="mb-6">
+      <h2 class="font-display text-2xl md:text-3xl font-semibold text-forest">Gestion des fidèles</h2>
+      <p class="text-ink-light text-sm mt-1">Gérer les membres de la communauté DiaspoEEC</p>
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-forest/5 mb-4">
+      <div class="flex flex-col md:flex-row gap-3">
+        <div class="relative flex-1">
+          <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-light"></i>
+          <input type="text" placeholder="Rechercher un fidèle..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-forest focus:ring-2 focus:ring-mint/30 bg-cream-warm">
+        </div>
+        <select class="px-3 py-2.5 rounded-xl border border-gray-200 text-sm bg-cream-warm focus:outline-none focus:border-forest">
+          <option>Toutes les diasporas</option><option>Étudiante</option><option>Professionnelle</option><option>Familiale</option><option>Missionnaire</option>
+        </select>
+        <select class="px-3 py-2.5 rounded-xl border border-gray-200 text-sm bg-cream-warm focus:outline-none focus:border-forest">
+          <option>Tous les pays</option><option>France</option><option>Allemagne</option><option>Belgique</option><option>USA</option><option>UK</option><option>Suisse</option><option>Canada</option>
+        </select>
+        <select class="px-3 py-2.5 rounded-xl border border-gray-200 text-sm bg-cream-warm focus:outline-none focus:border-forest">
+          <option>Tous les rôles</option><option>Fidèle</option><option>Pasteur</option><option>Responsable zone</option><option>Admin</option>
+        </select>
+        <select class="px-3 py-2.5 rounded-xl border border-gray-200 text-sm bg-cream-warm focus:outline-none focus:border-forest">
+          <option>Tous statuts</option><option>Actif</option><option>Inactif</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="flex flex-wrap gap-3 mb-4">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-full text-sm border border-forest/10"><i data-lucide="users" class="w-3.5 h-3.5 text-forest"></i> <strong>2 847</strong> fidèles</span>
+      <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-full text-sm border border-green-200"><span class="w-2 h-2 rounded-full bg-green-500"></span> <strong>2 612</strong> actifs</span>
+      <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-full text-sm border border-yellow-200"><span class="w-2 h-2 rounded-full bg-yellow-500"></span> <strong>235</strong> inactifs</span>
+      <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-mint-light rounded-full text-sm text-forest font-medium"><i data-lucide="trending-up" class="w-3.5 h-3.5"></i> +124 nouveaux ce mois</span>
+    </div>
+
+    <!-- Table Desktop -->
+    <div class="bg-white rounded-2xl shadow-sm border border-forest/5 overflow-hidden mb-4">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm hidden md:table">
+          <thead>
+            <tr class="bg-forest/[0.03] border-b border-forest/5">
+              <th class="text-left py-3 px-4 font-semibold text-ink-light text-xs uppercase tracking-wide">Nom</th>
+              <th class="text-left py-3 px-4 font-semibold text-ink-light text-xs uppercase tracking-wide">Email</th>
+              <th class="text-left py-3 px-4 font-semibold text-ink-light text-xs uppercase tracking-wide">Diaspora</th>
+              <th class="text-left py-3 px-4 font-semibold text-ink-light text-xs uppercase tracking-wide">Pays</th>
+              <th class="text-left py-3 px-4 font-semibold text-ink-light text-xs uppercase tracking-wide">Rôle</th>
+              <th class="text-left py-3 px-4 font-semibold text-ink-light text-xs uppercase tracking-wide">Statut</th>
+              <th class="text-right py-3 px-4 font-semibold text-ink-light text-xs uppercase tracking-wide">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="tbl-row border-b border-gray-50 transition-colors">
+              <td class="py-3 px-4 font-medium">Jean-Paul Mbarga</td>
+              <td class="py-3 px-4 text-ink-light">jp.mbarga@gmail.com</td>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full">Professionnelle</span></td>
+              <td class="py-3 px-4">&#127467;&#127479; France</td>
+              <td class="py-3 px-4">Fidèle</td>
+              <td class="py-3 px-4"><span class="inline-flex items-center gap-1 text-green-600 text-xs font-medium"><span class="w-2 h-2 rounded-full bg-green-500"></span> Actif</span></td>
+              <td class="py-3 px-4 text-right"><div class="relative inline-block"><button onclick="toggleMenu(this)" class="p-1.5 rounded-lg hover:bg-gray-100"><i data-lucide="more-horizontal" class="w-4 h-4 text-ink-light"></i></button><div class="action-menu hidden absolute right-0 top-full mt-1 w-44 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-20"><a href="#" class="block px-3 py-2 text-sm hover:bg-mint-light transition">Voir profil</a><a href="#" class="block px-3 py-2 text-sm hover:bg-mint-light transition">Modifier rôle</a><a href="#" class="block px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition">Désactiver</a></div></div></td>
+            </tr>
+            <tr class="tbl-row border-b border-gray-50 bg-cream-warm/30 transition-colors">
+              <td class="py-3 px-4 font-medium">Marie-Claire Fotso</td>
+              <td class="py-3 px-4 text-ink-light">mc.fotso@yahoo.fr</td>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 bg-purple-50 text-purple-700 text-xs rounded-full">Étudiante</span></td>
+              <td class="py-3 px-4">&#127465;&#127466; Allemagne</td>
+              <td class="py-3 px-4">Fidèle</td>
+              <td class="py-3 px-4"><span class="inline-flex items-center gap-1 text-green-600 text-xs font-medium"><span class="w-2 h-2 rounded-full bg-green-500"></span> Actif</span></td>
+              <td class="py-3 px-4 text-right"><div class="relative inline-block"><button onclick="toggleMenu(this)" class="p-1.5 rounded-lg hover:bg-gray-100"><i data-lucide="more-horizontal" class="w-4 h-4 text-ink-light"></i></button><div class="action-menu hidden absolute right-0 top-full mt-1 w-44 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-20"><a href="#" class="block px-3 py-2 text-sm hover:bg-mint-light transition">Voir profil</a><a href="#" class="block px-3 py-2 text-sm hover:bg-mint-light transition">Modifier rôle</a><a href="#" class="block px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition">Désactiver</a></div></div></td>
+            </tr>
+            <tr class="tbl-row border-b border-gray-50 transition-colors">
+              <td class="py-3 px-4 font-medium">Pasteur Emmanuel Ndongo</td>
+              <td class="py-3 px-4 text-ink-light">e.ndongo@eec.cm</td>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 bg-green-50 text-green-700 text-xs rounded-full">Missionnaire</span></td>
+              <td class="py-3 px-4">&#127467;&#127479; France</td>
+              <td class="py-3 px-4"><span class="font-medium text-forest">Pasteur</span></td>
+              <td class="py-3 px-4"><span class="inline-flex items-center gap-1 text-green-600 text-xs font-medium"><span class="w-2 h-2 rounded-full bg-green-500"></span> Actif</span></td>
+              <td class="py-3 px-4 text-right"><div class="relative inline-block"><button onclick="toggleMenu(this)" class="p-1.5 rounded-lg hover:bg-gray-100"><i data-lucide="more-horizontal" class="w-4 h-4 text-ink-light"></i></button><div class="action-menu hidden absolute right-0 top-full mt-1 w-44 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-20"><a href="#" class="block px-3 py-2 text-sm hover:bg-mint-light transition">Voir profil</a><a href="#" class="block px-3 py-2 text-sm hover:bg-mint-light transition">Modifier rôle</a><a href="#" class="block px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition">Désactiver</a></div></div></td>
+            </tr>
+            <tr class="tbl-row border-b border-gray-50 bg-cream-warm/30 transition-colors">
+              <td class="py-3 px-4 font-medium">Samuel Biyong</td>
+              <td class="py-3 px-4 text-ink-light">s.biyong@outlook.com</td>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full">Professionnelle</span></td>
+              <td class="py-3 px-4">&#127463;&#127466; Belgique</td>
+              <td class="py-3 px-4">Fidèle</td>
+              <td class="py-3 px-4"><span class="inline-flex items-center gap-1 text-green-600 text-xs font-medium"><span class="w-2 h-2 rounded-full bg-green-500"></span> Actif</span></td>
+              <td class="py-3 px-4 text-right"><div class="relative inline-block"><button onclick="toggleMenu(this)" class="p-1.5 rounded-lg hover:bg-gray-100"><i data-lucide="more-horizontal" class="w-4 h-4 text-ink-light"></i></button><div class="action-menu hidden absolute right-0 top-full mt-1 w-44 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-20"><a href="#" class="block px-3 py-2 text-sm hover:bg-mint-light transition">Voir profil</a><a href="#" class="block px-3 py-2 text-sm hover:bg-mint-light transition">Modifier rôle</a><a href="#" class="block px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition">Désactiver</a></div></div></td>
+            </tr>
+            <tr class="tbl-row border-b border-gray-50 transition-colors">
+              <td class="py-3 px-4 font-medium">Jeanne Atangana</td>
+              <td class="py-3 px-4 text-ink-light">j.atangana@gmail.com</td>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 bg-pink-50 text-pink-700 text-xs rounded-full">Familiale</span></td>
+              <td class="py-3 px-4">&#127464;&#127469; Suisse</td>
+              <td class="py-3 px-4"><span class="font-medium text-terra">Resp. zone</span></td>
+              <td class="py-3 px-4"><span class="inline-flex items-center gap-1 text-green-600 text-xs font-medium"><span class="w-2 h-2 rounded-full bg-green-500"></span> Actif</span></td>
+              <td class="py-3 px-4 text-right"><div class="relative inline-block"><button onclick="toggleMenu(this)" class="p-1.5 rounded-lg hover:bg-gray-100"><i data-lucide="more-horizontal" class="w-4 h-4 text-ink-light"></i></button><div class="action-menu hidden absolute right-0 top-full mt-1 w-44 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-20"><a href="#" class="block px-3 py-2 text-sm hover:bg-mint-light transition">Voir profil</a><a href="#" class="block px-3 py-2 text-sm hover:bg-mint-light transition">Modifier rôle</a><a href="#" class="block px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition">Désactiver</a></div></div></td>
+            </tr>
+            <tr class="tbl-row border-b border-gray-50 bg-cream-warm/30 transition-colors">
+              <td class="py-3 px-4 font-medium">David Eyinga</td>
+              <td class="py-3 px-4 text-ink-light">d.eyinga@eec.cm</td>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full">Professionnelle</span></td>
+              <td class="py-3 px-4">&#127468;&#127463; UK</td>
+              <td class="py-3 px-4"><span class="font-medium text-forest">Pasteur</span></td>
+              <td class="py-3 px-4"><span class="inline-flex items-center gap-1 text-green-600 text-xs font-medium"><span class="w-2 h-2 rounded-full bg-green-500"></span> Actif</span></td>
+              <td class="py-3 px-4 text-right"><div class="relative inline-block"><button onclick="toggleMenu(this)" class="p-1.5 rounded-lg hover:bg-gray-100"><i data-lucide="more-horizontal" class="w-4 h-4 text-ink-light"></i></button><div class="action-menu hidden absolute right-0 top-full mt-1 w-44 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-20"><a href="#" class="block px-3 py-2 text-sm hover:bg-mint-light transition">Voir profil</a><a href="#" class="block px-3 py-2 text-sm hover:bg-mint-light transition">Modifier rôle</a><a href="#" class="block px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition">Désactiver</a></div></div></td>
+            </tr>
+            <tr class="tbl-row border-b border-gray-50 transition-colors">
+              <td class="py-3 px-4 font-medium">Élise Nkotto</td>
+              <td class="py-3 px-4 text-ink-light">e.nkotto@gmail.com</td>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 bg-purple-50 text-purple-700 text-xs rounded-full">Étudiante</span></td>
+              <td class="py-3 px-4">&#127467;&#127479; France</td>
+              <td class="py-3 px-4">Fidèle</td>
+              <td class="py-3 px-4"><span class="inline-flex items-center gap-1 text-yellow-600 text-xs font-medium"><span class="w-2 h-2 rounded-full bg-yellow-500"></span> Inactif</span></td>
+              <td class="py-3 px-4 text-right"><div class="relative inline-block"><button onclick="toggleMenu(this)" class="p-1.5 rounded-lg hover:bg-gray-100"><i data-lucide="more-horizontal" class="w-4 h-4 text-ink-light"></i></button><div class="action-menu hidden absolute right-0 top-full mt-1 w-44 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-20"><a href="#" class="block px-3 py-2 text-sm hover:bg-mint-light transition">Voir profil</a><a href="#" class="block px-3 py-2 text-sm hover:bg-mint-light transition">Modifier rôle</a><a href="#" class="block px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition">Désactiver</a></div></div></td>
+            </tr>
+            <tr class="tbl-row transition-colors bg-cream-warm/30">
+              <td class="py-3 px-4 font-medium">Paul Essomba</td>
+              <td class="py-3 px-4 text-ink-light">p.essomba@hotmail.com</td>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 bg-pink-50 text-pink-700 text-xs rounded-full">Familiale</span></td>
+              <td class="py-3 px-4">&#127482;&#127480; USA</td>
+              <td class="py-3 px-4">Fidèle</td>
+              <td class="py-3 px-4"><span class="inline-flex items-center gap-1 text-green-600 text-xs font-medium"><span class="w-2 h-2 rounded-full bg-green-500"></span> Actif</span></td>
+              <td class="py-3 px-4 text-right"><div class="relative inline-block"><button onclick="toggleMenu(this)" class="p-1.5 rounded-lg hover:bg-gray-100"><i data-lucide="more-horizontal" class="w-4 h-4 text-ink-light"></i></button><div class="action-menu hidden absolute right-0 top-full mt-1 w-44 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-20"><a href="#" class="block px-3 py-2 text-sm hover:bg-mint-light transition">Voir profil</a><a href="#" class="block px-3 py-2 text-sm hover:bg-mint-light transition">Modifier rôle</a><a href="#" class="block px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition">Désactiver</a></div></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile cards -->
+      <div class="md:hidden divide-y divide-gray-50">
+        <div class="p-4"><div class="flex justify-between items-start mb-2"><div><p class="font-medium">Jean-Paul Mbarga</p><p class="text-xs text-ink-light">jp.mbarga@gmail.com</p></div><span class="inline-flex items-center gap-1 text-green-600 text-xs font-medium"><span class="w-2 h-2 rounded-full bg-green-500"></span> Actif</span></div><div class="flex flex-wrap gap-2 mt-2"><span class="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full">Professionnelle</span><span class="text-xs text-ink-light">&#127467;&#127479; France</span><span class="text-xs">Fidèle</span></div></div>
+        <div class="p-4"><div class="flex justify-between items-start mb-2"><div><p class="font-medium">Marie-Claire Fotso</p><p class="text-xs text-ink-light">mc.fotso@yahoo.fr</p></div><span class="inline-flex items-center gap-1 text-green-600 text-xs font-medium"><span class="w-2 h-2 rounded-full bg-green-500"></span> Actif</span></div><div class="flex flex-wrap gap-2 mt-2"><span class="px-2 py-0.5 bg-purple-50 text-purple-700 text-xs rounded-full">Étudiante</span><span class="text-xs text-ink-light">&#127465;&#127466; Allemagne</span><span class="text-xs">Fidèle</span></div></div>
+        <div class="p-4"><div class="flex justify-between items-start mb-2"><div><p class="font-medium">Pasteur Emmanuel Ndongo</p><p class="text-xs text-ink-light">e.ndongo@eec.cm</p></div><span class="inline-flex items-center gap-1 text-green-600 text-xs font-medium"><span class="w-2 h-2 rounded-full bg-green-500"></span> Actif</span></div><div class="flex flex-wrap gap-2 mt-2"><span class="px-2 py-0.5 bg-green-50 text-green-700 text-xs rounded-full">Missionnaire</span><span class="text-xs text-ink-light">&#127467;&#127479; France</span><span class="text-xs font-medium text-forest">Pasteur</span></div></div>
+        <div class="p-4"><div class="flex justify-between items-start mb-2"><div><p class="font-medium">Élise Nkotto</p><p class="text-xs text-ink-light">e.nkotto@gmail.com</p></div><span class="inline-flex items-center gap-1 text-yellow-600 text-xs font-medium"><span class="w-2 h-2 rounded-full bg-yellow-500"></span> Inactif</span></div><div class="flex flex-wrap gap-2 mt-2"><span class="px-2 py-0.5 bg-purple-50 text-purple-700 text-xs rounded-full">Étudiante</span><span class="text-xs text-ink-light">&#127467;&#127479; France</span><span class="text-xs">Fidèle</span></div></div>
+      </div>
+    </div>
+
+    <!-- Pagination + Export -->
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+      <span class="text-sm text-ink-light">1-8 sur <strong>2 847</strong></span>
+      <div class="flex items-center gap-2">
+        <button class="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-white transition disabled:opacity-40" disabled>Précédent</button>
+        <span class="px-3 py-2 text-sm bg-forest text-white rounded-lg">1</span>
+        <span class="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-white cursor-pointer transition">2</span>
+        <span class="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-white cursor-pointer transition">3</span>
+        <span class="text-ink-light">...</span>
+        <button class="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-white transition">Suivant</button>
+      </div>
+      <div class="flex gap-2">
+        <button class="flex items-center gap-1.5 px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-white transition"><i data-lucide="file-text" class="w-3.5 h-3.5"></i> CSV</button>
+        <button class="flex items-center gap-1.5 px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-white transition"><i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i> Excel</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SCREEN 3: DONS & CAMPAGNES ==================== -->
+  <section id="screen-dons" class="screen p-4 md:p-8 max-w-[1400px] mx-auto">
+    <div class="mb-6">
+      <h2 class="font-display text-2xl md:text-3xl font-semibold text-forest">Dons & Campagnes</h2>
+      <p class="text-ink-light text-sm mt-1">Suivi des dons et gestion des campagnes de collecte</p>
+    </div>
+
+    <!-- Sub Tabs -->
+    <div class="flex gap-1 mb-6 border-b border-gray-200">
+      <button onclick="showDonTab('overview')" data-dontab="overview" class="sub-tab active px-4 py-2.5 text-sm text-ink-light transition-all">Vue d'ensemble</button>
+      <button onclick="showDonTab('campaigns')" data-dontab="campaigns" class="sub-tab px-4 py-2.5 text-sm text-ink-light transition-all">Campagnes</button>
+      <button onclick="showDonTab('history')" data-dontab="history" class="sub-tab px-4 py-2.5 text-sm text-ink-light transition-all">Historique des dons</button>
+    </div>
+
+    <!-- Overview Tab -->
+    <div id="dontab-overview" class="don-tab">
+      <!-- Stats -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white rounded-2xl p-5 shadow-sm border-l-4 border-forest">
+          <p class="text-xs text-ink-light uppercase tracking-wide">Total collecté</p>
+          <p class="text-2xl font-bold text-forest mt-1 font-display">123 800 €</p>
+          <p class="text-xs text-ink-light mt-1">Depuis le lancement</p>
+        </div>
+        <div class="bg-white rounded-2xl p-5 shadow-sm border-l-4 border-gold">
+          <p class="text-xs text-ink-light uppercase tracking-wide">Ce mois</p>
+          <p class="text-2xl font-bold text-gold mt-1 font-display">12 450 €</p>
+          <p class="text-xs text-green-600 mt-1 font-medium">+18% vs mois dernier</p>
+        </div>
+        <div class="bg-white rounded-2xl p-5 shadow-sm border-l-4 border-forest-light">
+          <p class="text-xs text-ink-light uppercase tracking-wide">Donateurs actifs</p>
+          <p class="text-2xl font-bold text-forest-light mt-1 font-display">342</p>
+          <p class="text-xs text-ink-light mt-1">Ce mois</p>
+        </div>
+        <div class="bg-white rounded-2xl p-5 shadow-sm border-l-4 border-terra">
+          <p class="text-xs text-ink-light uppercase tracking-wide">Don moyen</p>
+          <p class="text-2xl font-bold text-terra mt-1 font-display">36,40 €</p>
+          <p class="text-xs text-ink-light mt-1">Par transaction</p>
+        </div>
+      </div>
+
+      <!-- Monthly trend -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-forest/5 mb-8">
+        <h3 class="font-display text-lg font-semibold text-forest mb-6">Évolution des dons mensuels</h3>
+        <div class="flex items-end gap-3 h-[180px] px-2">
+          <div class="flex flex-col items-center flex-1 justify-end h-full">
+            <span class="text-[10px] font-semibold text-gold mb-1">8.2k</span>
+            <div class="w-full rounded-t-lg bg-gradient-to-t from-gold to-gold-light bar-animate" style="--h:50%;height:50%"></div>
+            <span class="text-[11px] text-ink-light mt-2">Sep</span>
+          </div>
+          <div class="flex flex-col items-center flex-1 justify-end h-full">
+            <span class="text-[10px] font-semibold text-gold mb-1">9.5k</span>
+            <div class="w-full rounded-t-lg bg-gradient-to-t from-gold to-gold-light bar-animate" style="--h:58%;height:58%"></div>
+            <span class="text-[11px] text-ink-light mt-2">Oct</span>
+          </div>
+          <div class="flex flex-col items-center flex-1 justify-end h-full">
+            <span class="text-[10px] font-semibold text-gold mb-1">10.8k</span>
+            <div class="w-full rounded-t-lg bg-gradient-to-t from-gold to-gold-light bar-animate" style="--h:66%;height:66%"></div>
+            <span class="text-[11px] text-ink-light mt-2">Nov</span>
+          </div>
+          <div class="flex flex-col items-center flex-1 justify-end h-full">
+            <span class="text-[10px] font-semibold text-gold mb-1">15.2k</span>
+            <div class="w-full rounded-t-lg bg-gradient-to-t from-gold to-gold-light bar-animate" style="--h:92%;height:92%"></div>
+            <span class="text-[11px] text-ink-light mt-2">Déc</span>
+          </div>
+          <div class="flex flex-col items-center flex-1 justify-end h-full">
+            <span class="text-[10px] font-semibold text-gold mb-1">10.5k</span>
+            <div class="w-full rounded-t-lg bg-gradient-to-t from-gold to-gold-light bar-animate" style="--h:64%;height:64%"></div>
+            <span class="text-[11px] text-ink-light mt-2">Jan</span>
+          </div>
+          <div class="flex flex-col items-center flex-1 justify-end h-full">
+            <span class="text-[10px] font-semibold text-gold mb-1">12.4k</span>
+            <div class="w-full rounded-t-lg bg-gradient-to-t from-gold to-gold-light bar-animate" style="--h:76%;height:76%"></div>
+            <span class="text-[11px] text-ink-light mt-2">Fév</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Top Donors -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-forest/5">
+          <h3 class="font-display text-lg font-semibold text-forest mb-4">Top donateurs ce mois</h3>
+          <div class="space-y-3">
+            <div class="flex items-center gap-3 p-3 bg-gold-light/10 rounded-xl">
+              <span class="w-7 h-7 rounded-full bg-gold text-white flex items-center justify-center text-xs font-bold">1</span>
+              <div class="flex-1"><p class="text-sm font-medium">Anonyme</p><p class="text-xs text-ink-light">3 dons</p></div>
+              <span class="font-display font-bold text-gold">500 €</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+              <span class="w-7 h-7 rounded-full bg-gray-300 text-white flex items-center justify-center text-xs font-bold">2</span>
+              <div class="flex-1"><p class="text-sm font-medium">Marie-Claire Fotso</p><p class="text-xs text-ink-light">2 dons</p></div>
+              <span class="font-display font-bold text-forest">350 €</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 bg-orange-50/50 rounded-xl">
+              <span class="w-7 h-7 rounded-full bg-terra text-white flex items-center justify-center text-xs font-bold">3</span>
+              <div class="flex-1"><p class="text-sm font-medium">Jean-Paul Mbarga</p><p class="text-xs text-ink-light">5 dons</p></div>
+              <span class="font-display font-bold text-forest">250 €</span>
+            </div>
+            <div class="flex items-center gap-3 p-2.5 rounded-xl">
+              <span class="w-7 h-7 rounded-full bg-gray-100 text-ink-light flex items-center justify-center text-xs font-bold">4</span>
+              <div class="flex-1"><p class="text-sm font-medium">Samuel Biyong</p><p class="text-xs text-ink-light">1 don</p></div>
+              <span class="font-medium text-forest">200 €</span>
+            </div>
+            <div class="flex items-center gap-3 p-2.5 rounded-xl">
+              <span class="w-7 h-7 rounded-full bg-gray-100 text-ink-light flex items-center justify-center text-xs font-bold">5</span>
+              <div class="flex-1"><p class="text-sm font-medium">Paul Essomba</p><p class="text-xs text-ink-light">3 dons</p></div>
+              <span class="font-medium text-forest">150 €</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-forest/5">
+          <h3 class="font-display text-lg font-semibold text-forest mb-4">Par méthode de paiement</h3>
+          <div class="space-y-5 mt-6">
+            <div>
+              <div class="flex justify-between text-sm mb-2"><span class="font-medium flex items-center gap-2"><span class="w-3 h-3 rounded-sm bg-forest"></span>Stripe</span><span class="font-semibold">78%</span></div>
+              <div class="w-full bg-mint-light rounded-full h-4"><div class="bg-gradient-to-r from-forest to-forest-light h-4 rounded-full bar-h-animate" style="--w:78%;width:78%"></div></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-sm mb-2"><span class="font-medium flex items-center gap-2"><span class="w-3 h-3 rounded-sm bg-blue-500"></span>PayPal</span><span class="font-semibold">22%</span></div>
+              <div class="w-full bg-blue-50 rounded-full h-4"><div class="bg-gradient-to-r from-blue-500 to-blue-400 h-4 rounded-full bar-h-animate" style="--w:22%;width:22%"></div></div>
+            </div>
+          </div>
+          <div class="mt-8 p-4 bg-cream rounded-xl">
+            <p class="text-xs text-ink-light">Total des transactions ce mois</p>
+            <p class="font-display text-xl font-bold text-forest mt-1">342 transactions</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Campaigns Tab -->
+    <div id="dontab-campaigns" class="don-tab hidden">
+      <div class="space-y-4 mb-6">
+        <!-- Campaign 1 -->
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-forest/5 hover:shadow-md transition-shadow">
+          <div class="flex flex-col md:flex-row md:items-center gap-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-2">
+                <h4 class="font-display font-semibold text-forest text-lg">Construction Centre Communautaire</h4>
+                <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium">Active</span>
+              </div>
+              <div class="w-full bg-mint-light rounded-full h-3 mb-2"><div class="bg-gradient-to-r from-forest to-mint h-3 rounded-full bar-h-animate" style="--w:72%;width:72%"></div></div>
+              <div class="flex justify-between text-sm"><span class="text-ink-light"><strong class="text-forest">72 000 €</strong> collectés sur 100 000 €</span><span class="font-semibold text-forest">72%</span></div>
+            </div>
+            <button class="px-4 py-2 border border-forest/20 text-forest rounded-xl text-sm hover:bg-mint-light transition">Modifier</button>
+          </div>
+        </div>
+        <!-- Campaign 2 -->
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-forest/5 hover:shadow-md transition-shadow">
+          <div class="flex flex-col md:flex-row md:items-center gap-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-2">
+                <h4 class="font-display font-semibold text-forest text-lg">Soutien aux étudiants EEC</h4>
+                <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium">Active</span>
+              </div>
+              <div class="w-full bg-gold-light/20 rounded-full h-3 mb-2"><div class="bg-gradient-to-r from-gold to-gold-light h-3 rounded-full bar-h-animate" style="--w:45%;width:45%"></div></div>
+              <div class="flex justify-between text-sm"><span class="text-ink-light"><strong class="text-gold">4 500 €</strong> collectés sur 10 000 €</span><span class="font-semibold text-gold">45%</span></div>
+            </div>
+            <button class="px-4 py-2 border border-forest/20 text-forest rounded-xl text-sm hover:bg-mint-light transition">Modifier</button>
+          </div>
+        </div>
+        <!-- Campaign 3 -->
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-forest/5 hover:shadow-md transition-shadow">
+          <div class="flex flex-col md:flex-row md:items-center gap-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-2">
+                <h4 class="font-display font-semibold text-forest text-lg">Aide humanitaire Cameroun</h4>
+                <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium">Active</span>
+              </div>
+              <div class="w-full bg-orange-50 rounded-full h-3 mb-2"><div class="bg-gradient-to-r from-terra to-orange-300 h-3 rounded-full bar-h-animate" style="--w:23%;width:23%"></div></div>
+              <div class="flex justify-between text-sm"><span class="text-ink-light"><strong class="text-terra">2 300 €</strong> collectés sur 10 000 €</span><span class="font-semibold text-terra">23%</span></div>
+            </div>
+            <button class="px-4 py-2 border border-forest/20 text-forest rounded-xl text-sm hover:bg-mint-light transition">Modifier</button>
+          </div>
+        </div>
+        <!-- Campaign 4 - Completed -->
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-forest/5 opacity-80">
+          <div class="flex flex-col md:flex-row md:items-center gap-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-2">
+                <h4 class="font-display font-semibold text-ink-light text-lg">Rénovation Temple Douala</h4>
+                <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full font-medium">Terminée</span>
+              </div>
+              <div class="w-full bg-mint-light rounded-full h-3 mb-2"><div class="bg-gradient-to-r from-forest to-mint h-3 rounded-full" style="width:100%"></div></div>
+              <div class="flex justify-between text-sm"><span class="text-ink-light"><strong class="text-forest">15 000 €</strong> collectés sur 15 000 €</span><span class="font-semibold text-green-600">100%</span></div>
+            </div>
+            <span class="text-2xl">&#9989;</span>
+          </div>
+        </div>
+      </div>
+      <button class="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-forest to-forest-light text-white rounded-xl text-sm font-medium hover:shadow-lg transition-all hover:-translate-y-0.5">
+        <i data-lucide="plus" class="w-4 h-4"></i> Nouvelle campagne
+      </button>
+    </div>
+
+    <!-- History Tab -->
+    <div id="dontab-history" class="don-tab hidden">
+      <div class="bg-white rounded-2xl shadow-sm border border-forest/5 overflow-hidden mb-4">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-forest/[0.03] border-b border-forest/5">
+                <th class="text-left py-3 px-4 font-semibold text-ink-light text-xs uppercase tracking-wide">Date</th>
+                <th class="text-left py-3 px-4 font-semibold text-ink-light text-xs uppercase tracking-wide">Donateur</th>
+                <th class="text-left py-3 px-4 font-semibold text-ink-light text-xs uppercase tracking-wide">Campagne</th>
+                <th class="text-right py-3 px-4 font-semibold text-ink-light text-xs uppercase tracking-wide">Montant</th>
+                <th class="text-left py-3 px-4 font-semibold text-ink-light text-xs uppercase tracking-wide">Méthode</th>
+                <th class="text-center py-3 px-4 font-semibold text-ink-light text-xs uppercase tracking-wide">Reçu</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="tbl-row border-b border-gray-50 transition-colors">
+                <td class="py-3 px-4 text-ink-light">20/02/2026</td>
+                <td class="py-3 px-4 font-medium">Anonyme</td>
+                <td class="py-3 px-4">Centre Communautaire</td>
+                <td class="py-3 px-4 text-right font-semibold text-forest">200 €</td>
+                <td class="py-3 px-4"><span class="px-2 py-0.5 bg-forest/10 text-forest text-xs rounded-full">Stripe</span></td>
+                <td class="py-3 px-4 text-center"><button class="text-ink-light hover:text-forest transition"><i data-lucide="file-text" class="w-4 h-4"></i></button></td>
+              </tr>
+              <tr class="tbl-row border-b border-gray-50 bg-cream-warm/30 transition-colors">
+                <td class="py-3 px-4 text-ink-light">20/02/2026</td>
+                <td class="py-3 px-4 font-medium">Marie Fotso</td>
+                <td class="py-3 px-4">Étudiants EEC</td>
+                <td class="py-3 px-4 text-right font-semibold text-forest">50 €</td>
+                <td class="py-3 px-4"><span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-xs rounded-full">PayPal</span></td>
+                <td class="py-3 px-4 text-center"><button class="text-ink-light hover:text-forest transition"><i data-lucide="file-text" class="w-4 h-4"></i></button></td>
+              </tr>
+              <tr class="tbl-row border-b border-gray-50 transition-colors">
+                <td class="py-3 px-4 text-ink-light">19/02/2026</td>
+                <td class="py-3 px-4 font-medium">Jean-Paul Mbarga</td>
+                <td class="py-3 px-4">Don mensuel EEC</td>
+                <td class="py-3 px-4 text-right font-semibold text-forest">50 €</td>
+                <td class="py-3 px-4"><span class="px-2 py-0.5 bg-forest/10 text-forest text-xs rounded-full">Stripe</span></td>
+                <td class="py-3 px-4 text-center"><button class="text-ink-light hover:text-forest transition"><i data-lucide="file-text" class="w-4 h-4"></i></button></td>
+              </tr>
+              <tr class="tbl-row border-b border-gray-50 bg-cream-warm/30 transition-colors">
+                <td class="py-3 px-4 text-ink-light">19/02/2026</td>
+                <td class="py-3 px-4 font-medium">Samuel Biyong</td>
+                <td class="py-3 px-4">Centre Communautaire</td>
+                <td class="py-3 px-4 text-right font-semibold text-forest">200 €</td>
+                <td class="py-3 px-4"><span class="px-2 py-0.5 bg-forest/10 text-forest text-xs rounded-full">Stripe</span></td>
+                <td class="py-3 px-4 text-center"><button class="text-ink-light hover:text-forest transition"><i data-lucide="file-text" class="w-4 h-4"></i></button></td>
+              </tr>
+              <tr class="tbl-row border-b border-gray-50 transition-colors">
+                <td class="py-3 px-4 text-ink-light">18/02/2026</td>
+                <td class="py-3 px-4 font-medium">Paul Essomba</td>
+                <td class="py-3 px-4">Don mensuel EEC</td>
+                <td class="py-3 px-4 text-right font-semibold text-forest">75 €</td>
+                <td class="py-3 px-4"><span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-xs rounded-full">PayPal</span></td>
+                <td class="py-3 px-4 text-center"><button class="text-ink-light hover:text-forest transition"><i data-lucide="file-text" class="w-4 h-4"></i></button></td>
+              </tr>
+              <tr class="tbl-row border-b border-gray-50 bg-cream-warm/30 transition-colors">
+                <td class="py-3 px-4 text-ink-light">18/02/2026</td>
+                <td class="py-3 px-4 font-medium">Anonyme</td>
+                <td class="py-3 px-4">Aide Cameroun</td>
+                <td class="py-3 px-4 text-right font-semibold text-forest">150 €</td>
+                <td class="py-3 px-4"><span class="px-2 py-0.5 bg-forest/10 text-forest text-xs rounded-full">Stripe</span></td>
+                <td class="py-3 px-4 text-center"><button class="text-ink-light hover:text-forest transition"><i data-lucide="file-text" class="w-4 h-4"></i></button></td>
+              </tr>
+              <tr class="tbl-row border-b border-gray-50 transition-colors">
+                <td class="py-3 px-4 text-ink-light">17/02/2026</td>
+                <td class="py-3 px-4 font-medium">Jeanne Atangana</td>
+                <td class="py-3 px-4">Centre Communautaire</td>
+                <td class="py-3 px-4 text-right font-semibold text-forest">100 €</td>
+                <td class="py-3 px-4"><span class="px-2 py-0.5 bg-forest/10 text-forest text-xs rounded-full">Stripe</span></td>
+                <td class="py-3 px-4 text-center"><button class="text-ink-light hover:text-forest transition"><i data-lucide="file-text" class="w-4 h-4"></i></button></td>
+              </tr>
+              <tr class="tbl-row border-b border-gray-50 bg-cream-warm/30 transition-colors">
+                <td class="py-3 px-4 text-ink-light">17/02/2026</td>
+                <td class="py-3 px-4 font-medium">David Eyinga</td>
+                <td class="py-3 px-4">Étudiants EEC</td>
+                <td class="py-3 px-4 text-right font-semibold text-forest">30 €</td>
+                <td class="py-3 px-4"><span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-xs rounded-full">PayPal</span></td>
+                <td class="py-3 px-4 text-center"><button class="text-ink-light hover:text-forest transition"><i data-lucide="file-text" class="w-4 h-4"></i></button></td>
+              </tr>
+              <tr class="tbl-row border-b border-gray-50 transition-colors">
+                <td class="py-3 px-4 text-ink-light">16/02/2026</td>
+                <td class="py-3 px-4 font-medium">Marie-Claire Fotso</td>
+                <td class="py-3 px-4">Centre Communautaire</td>
+                <td class="py-3 px-4 text-right font-semibold text-forest">300 €</td>
+                <td class="py-3 px-4"><span class="px-2 py-0.5 bg-forest/10 text-forest text-xs rounded-full">Stripe</span></td>
+                <td class="py-3 px-4 text-center"><button class="text-ink-light hover:text-forest transition"><i data-lucide="file-text" class="w-4 h-4"></i></button></td>
+              </tr>
+              <tr class="tbl-row bg-cream-warm/30 transition-colors">
+                <td class="py-3 px-4 text-ink-light">15/02/2026</td>
+                <td class="py-3 px-4 font-medium">Anonyme</td>
+                <td class="py-3 px-4">Don mensuel EEC</td>
+                <td class="py-3 px-4 text-right font-semibold text-forest">150 €</td>
+                <td class="py-3 px-4"><span class="px-2 py-0.5 bg-forest/10 text-forest text-xs rounded-full">Stripe</span></td>
+                <td class="py-3 px-4 text-center"><button class="text-ink-light hover:text-forest transition"><i data-lucide="file-text" class="w-4 h-4"></i></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button class="flex items-center gap-1.5 px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-white transition"><i data-lucide="file-text" class="w-3.5 h-3.5"></i> Exporter CSV</button>
+        <button class="flex items-center gap-1.5 px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-white transition"><i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i> Exporter Excel</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SCREEN 4: MODERATION ==================== -->
+  <section id="screen-moderation" class="screen p-4 md:p-8 max-w-[1400px] mx-auto">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+      <div>
+        <h2 class="font-display text-2xl md:text-3xl font-semibold text-forest">Modération</h2>
+        <p class="text-ink-light text-sm mt-1">Gérer les contenus signalés</p>
+      </div>
+      <span class="inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-full text-sm font-medium">
+        <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+        7 éléments à modérer
+      </span>
+    </div>
+
+    <!-- Moderation Queue -->
+    <div class="space-y-4 mb-8">
+      <!-- Item 1 -->
+      <div class="bg-white rounded-2xl shadow-sm border border-forest/5 overflow-hidden border-l-4 border-l-red-400">
+        <div class="p-5">
+          <div class="flex flex-wrap items-center gap-2 mb-3">
+            <span class="px-2.5 py-1 bg-red-50 text-red-600 text-xs rounded-full font-medium">Commentaire signalé</span>
+            <span class="text-xs text-ink-light">sur</span>
+            <span class="text-xs font-medium text-forest">Méditation : La force dans l'épreuve</span>
+            <span class="ml-auto text-xs text-ink-light">Il y a 2 heures</span>
+          </div>
+          <div class="flex items-start gap-3 mb-3">
+            <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0"><i data-lucide="user" class="w-4 h-4 text-gray-400"></i></div>
+            <div class="flex-1">
+              <p class="text-sm font-medium">Utilisateur inconnu</p>
+              <div class="mt-1.5 p-3 bg-red-50/50 rounded-lg border border-red-100">
+                <p class="text-sm text-ink-light italic">Message inapproprié censuré partiellement... Ce contenu a été signalé pour non-respect des règles de la communauté.</p>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <p class="text-xs text-ink-light">Signalé par <strong>Samuel Biyong</strong> + 2 autres</p>
+            <div class="flex gap-2">
+              <button class="px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-sm font-medium hover:bg-green-100 transition">Approuver</button>
+              <button class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition">Supprimer</button>
+              <button class="px-3 py-1.5 bg-orange-50 text-orange-600 rounded-lg text-sm font-medium hover:bg-orange-100 transition">Suspendre l'utilisateur</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 2 -->
+      <div class="bg-white rounded-2xl shadow-sm border border-forest/5 overflow-hidden border-l-4 border-l-orange-400">
+        <div class="p-5">
+          <div class="flex flex-wrap items-center gap-2 mb-3">
+            <span class="px-2.5 py-1 bg-orange-50 text-orange-600 text-xs rounded-full font-medium">Commentaire signalé</span>
+            <span class="text-xs text-ink-light">sur</span>
+            <span class="text-xs font-medium text-forest">Événement : Culte de Paris</span>
+            <span class="ml-auto text-xs text-ink-light">Il y a 5 heures</span>
+          </div>
+          <div class="flex items-start gap-3 mb-3">
+            <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-blue-600">PD</div>
+            <div class="flex-1">
+              <p class="text-sm font-medium">Paul Durand</p>
+              <div class="mt-1.5 p-3 bg-orange-50/50 rounded-lg border border-orange-100">
+                <p class="text-sm text-ink-light italic">Contenu promotionnel non sollicité... Lien vers un site commercial externe sans rapport avec la communauté.</p>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <p class="text-xs text-ink-light">Signalé par <strong>Jeanne Atangana</strong></p>
+            <div class="flex gap-2">
+              <button class="px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-sm font-medium hover:bg-green-100 transition">Approuver</button>
+              <button class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition">Supprimer</button>
+              <button class="px-3 py-1.5 bg-orange-50 text-orange-600 rounded-lg text-sm font-medium hover:bg-orange-100 transition">Suspendre l'utilisateur</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 3 -->
+      <div class="bg-white rounded-2xl shadow-sm border border-forest/5 overflow-hidden border-l-4 border-l-yellow-400">
+        <div class="p-5">
+          <div class="flex flex-wrap items-center gap-2 mb-3">
+            <span class="px-2.5 py-1 bg-yellow-50 text-yellow-700 text-xs rounded-full font-medium">Témoignage signalé</span>
+            <span class="ml-auto text-xs text-ink-light">Il y a 8 heures</span>
+          </div>
+          <div class="flex items-start gap-3 mb-3">
+            <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0"><i data-lucide="user" class="w-4 h-4 text-gray-400"></i></div>
+            <div class="flex-1">
+              <p class="text-sm font-medium">Compte récent <span class="text-xs text-ink-light font-normal">(inscrit il y a 2 jours)</span></p>
+              <div class="mt-1.5 p-3 bg-yellow-50/50 rounded-lg border border-yellow-100">
+                <p class="text-sm text-ink-light italic">Témoignage dont le contenu semble contenir des informations douteuses et des liens externes suspects...</p>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <p class="text-xs text-ink-light">2 signalements</p>
+            <div class="flex gap-2">
+              <button class="px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-sm font-medium hover:bg-green-100 transition">Approuver</button>
+              <button class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition">Supprimer</button>
+              <button class="px-3 py-1.5 bg-orange-50 text-orange-600 rounded-lg text-sm font-medium hover:bg-orange-100 transition">Suspendre l'utilisateur</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom row: History + Stats -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Moderation History -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-forest/5">
+        <h3 class="font-display text-lg font-semibold text-forest mb-4">Historique de modération</h3>
+        <div class="space-y-0">
+          <div class="flex items-start gap-3 py-3 border-b border-gray-50">
+            <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0"><i data-lucide="trash-2" class="w-4 h-4 text-red-400"></i></div>
+            <div class="flex-1">
+              <p class="text-sm text-ink"><span class="font-medium">Commentaire supprimé</span> - <span class="text-ink-light">Spam</span></p>
+              <p class="text-xs text-ink-light mt-0.5">Par <strong>Admin</strong> - Hier</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3 py-3 border-b border-gray-50">
+            <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0"><i data-lucide="user-x" class="w-4 h-4 text-orange-400"></i></div>
+            <div class="flex-1">
+              <p class="text-sm text-ink"><span class="font-medium">Utilisateur suspendu</span> <span class="text-ink-light">(3 jours)</span></p>
+              <p class="text-xs text-ink-light mt-0.5">Par <strong>Admin</strong> - Avant-hier</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3 py-3">
+            <div class="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0"><i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i></div>
+            <div class="flex-1">
+              <p class="text-sm text-ink"><span class="font-medium">Commentaire approuvé</span></p>
+              <p class="text-xs text-ink-light mt-0.5">Par <strong>Pasteur Ndongo</strong> - 17/02</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Moderation Stats -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-forest/5">
+        <h3 class="font-display text-lg font-semibold text-forest mb-4">Statistiques de modération</h3>
+        <p class="text-xs text-ink-light uppercase tracking-wide mb-1">Ce mois</p>
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div class="bg-cream rounded-xl p-4 text-center">
+            <p class="font-display text-2xl font-bold text-forest">23</p>
+            <p class="text-xs text-ink-light mt-1">Signalements traités</p>
+          </div>
+          <div class="bg-cream rounded-xl p-4 text-center">
+            <p class="font-display text-2xl font-bold text-terra">4h</p>
+            <p class="text-xs text-ink-light mt-1">Temps moyen de traitement</p>
+          </div>
+        </div>
+        <h4 class="text-sm font-semibold text-ink mb-3">Actions réalisées</h4>
+        <div class="space-y-3">
+          <div>
+            <div class="flex justify-between text-sm mb-1"><span class="text-ink-light">Suppressions</span><span class="font-semibold text-red-500">15</span></div>
+            <div class="w-full bg-red-50 rounded-full h-2.5"><div class="bg-red-400 h-2.5 rounded-full" style="width:65%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1"><span class="text-ink-light">Approbations</span><span class="font-semibold text-green-600">5</span></div>
+            <div class="w-full bg-green-50 rounded-full h-2.5"><div class="bg-green-400 h-2.5 rounded-full" style="width:22%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1"><span class="text-ink-light">Suspensions</span><span class="font-semibold text-orange-500">3</span></div>
+            <div class="w-full bg-orange-50 rounded-full h-2.5"><div class="bg-orange-400 h-2.5 rounded-full" style="width:13%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+// Initialize Lucide icons
+lucide.createIcons();
+
+// Screen navigation
+function showScreen(screen) {
+  // Hide all screens
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + screen).classList.add('active');
+
+  // Update sidebar
+  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+  const navLink = document.querySelector('[data-nav="' + screen + '"]');
+  if (navLink) navLink.classList.add('active');
+
+  // Update tabs
+  document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+  const tabBtn = document.querySelector('[data-tab="' + screen + '"]');
+  if (tabBtn) tabBtn.classList.add('active');
+
+  // Close mobile sidebar
+  closeSidebar();
+
+  // Re-init icons for new screen
+  lucide.createIcons();
+}
+
+// Sidebar toggle
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
+// Dons sub-tabs
+function showDonTab(tab) {
+  document.querySelectorAll('.don-tab').forEach(t => t.classList.add('hidden'));
+  document.getElementById('dontab-' + tab).classList.remove('hidden');
+  document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('[data-dontab="' + tab + '"]').classList.add('active');
+  lucide.createIcons();
+}
+
+// Action menu toggle
+function toggleMenu(btn) {
+  // Close all other menus first
+  document.querySelectorAll('.action-menu').forEach(m => {
+    if (m !== btn.nextElementSibling) m.classList.add('hidden');
+  });
+  btn.nextElementSibling.classList.toggle('hidden');
+}
+
+// Close menus on outside click
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.relative')) {
+    document.querySelectorAll('.action-menu').forEach(m => m.classList.add('hidden'));
+  }
+});
+</script>
+</body>
+</html>
