@@ -1,0 +1,516 @@
+'use client';
+
+import { useState } from 'react';
+import {
+  Search,
+  Edit3,
+  Trash2,
+  Eye,
+  Play,
+  Heart,
+  Clock,
+  TrendingUp,
+  Video,
+  Upload,
+  X,
+} from 'lucide-react';
+import { mockVideos } from '@/lib/mock/cultes.mock';
+import { useToastStore } from '@/stores/toast.store';
+import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import type { Video as VideoType } from '@/types';
+
+function formatDuration(seconds?: number) {
+  if (!seconds) return '';
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+type ModalState =
+  | { type: 'view'; video: VideoType }
+  | { type: 'edit'; video: VideoType }
+  | { type: 'create' }
+  | null;
+
+export default function AdminYoutubePage() {
+  const [search, setSearch] = useState('');
+  const [items, setItems] = useState(mockVideos);
+  const [modal, setModal] = useState<ModalState>(null);
+  const [deleteTarget, setDeleteTarget] = useState<VideoType | null>(null);
+
+  // Edit form state
+  const [editTitre, setEditTitre] = useState('');
+  const [editAuteur, setEditAuteur] = useState('');
+
+  // Create form state
+  const [createTitre, setCreateTitre] = useState('');
+  const [createYoutubeId, setCreateYoutubeId] = useState('');
+  const [createAuteur, setCreateAuteur] = useState('');
+
+  const { addToast } = useToastStore();
+
+  const filtered = items.filter(
+    (v) => !search || v.titre.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const totalViews = items.reduce((acc, v) => acc + v.vues, 0);
+  const totalLikes = items.reduce((acc, v) => acc + v.likes, 0);
+
+  const openView = (video: VideoType) => {
+    setModal({ type: 'view', video });
+  };
+
+  const openEdit = (video: VideoType) => {
+    setEditTitre(video.titre);
+    setEditAuteur(video.auteur);
+    setModal({ type: 'edit', video });
+  };
+
+  const openCreate = () => {
+    setCreateTitre('');
+    setCreateYoutubeId('');
+    setCreateAuteur('');
+    setModal({ type: 'create' });
+  };
+
+  const closeModal = () => setModal(null);
+
+  const handleEditSave = () => {
+    if (modal?.type !== 'edit') return;
+    setItems((prev) =>
+      prev.map((v) =>
+        v.id === modal.video.id
+          ? { ...v, titre: editTitre, auteur: editAuteur }
+          : v
+      )
+    );
+    addToast('Video mise a jour', 'success');
+    closeModal();
+  };
+
+  const handleCreateSubmit = () => {
+    if (!createTitre.trim() || !createYoutubeId.trim() || !createAuteur.trim()) return;
+    const newVideo: VideoType = {
+      id: `vid_${Date.now()}`,
+      titre: createTitre,
+      type: 'enregistre',
+      youtubeId: createYoutubeId,
+      thumbnailGradient: 'from-forest-700 to-forest-500',
+      vues: 0,
+      likes: 0,
+      auteur: createAuteur,
+      publishedAt: new Date().toISOString(),
+    };
+    setItems((prev) => [newVideo, ...prev]);
+    addToast('Video ajoutee', 'success');
+    closeModal();
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!deleteTarget) return;
+    setItems((prev) => prev.filter((v) => v.id !== deleteTarget.id));
+    addToast('Video supprimee', 'success');
+    setDeleteTarget(null);
+  };
+
+  return (
+    <section className="mx-auto max-w-[1400px] p-4 md:p-8">
+      {/* Header */}
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2
+            className="text-2xl font-semibold text-forest-900 md:text-3xl"
+            style={{ fontFamily: 'var(--font-heading)' }}
+          >
+            YouTube & Videos
+          </h2>
+          <p className="mt-1 text-sm text-ink-500">
+            Gerez les videos et contenus multimedia
+          </p>
+        </div>
+        <button
+          onClick={openCreate}
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-red-500 px-5 py-3 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
+        >
+          <Upload className="h-4 w-4" />
+          Ajouter une video
+        </button>
+      </div>
+
+      {/* Stats */}
+      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="rounded-2xl border border-forest-900/5 bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50">
+              <Video className="h-5 w-5 text-red-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-forest-900" style={{ fontFamily: 'var(--font-heading)' }}>
+                {items.length}
+              </p>
+              <p className="text-xs text-ink-500">Videos</p>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-forest-900/5 bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sage-200">
+              <Eye className="h-5 w-5 text-forest-900" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-forest-900" style={{ fontFamily: 'var(--font-heading)' }}>
+                {totalViews.toLocaleString('fr-FR')}
+              </p>
+              <p className="text-xs text-ink-500">Vues totales</p>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-forest-900/5 bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold-200/50">
+              <Heart className="h-5 w-5 text-gold-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gold-600" style={{ fontFamily: 'var(--font-heading)' }}>
+                {totalLikes.toLocaleString('fr-FR')}
+              </p>
+              <p className="text-xs text-ink-500">Likes totaux</p>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-forest-900/5 bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-terra-500/10">
+              <TrendingUp className="h-5 w-5 text-terra-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-terra-600" style={{ fontFamily: 'var(--font-heading)' }}>
+                +12%
+              </p>
+              <p className="text-xs text-ink-500">Croissance</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Search */}
+      <div className="mb-6">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+          <input
+            type="text"
+            placeholder="Rechercher une video..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-xl border border-forest-900/10 bg-cream-50 py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
+          />
+        </div>
+      </div>
+
+      {/* Video grid */}
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {filtered.map((video) => (
+          <div
+            key={video.id}
+            className="group overflow-hidden rounded-2xl border border-forest-900/5 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+          >
+            {/* Thumbnail */}
+            <div className={`relative aspect-video bg-gradient-to-br ${video.thumbnailGradient}`}>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20 opacity-0 backdrop-blur-sm transition-all group-hover:opacity-100 group-hover:scale-110">
+                  <Play className="h-6 w-6 text-white" fill="white" />
+                </div>
+              </div>
+              {video.dureeSeconds && (
+                <span className="absolute bottom-2 right-2 rounded-md bg-black/70 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                  {formatDuration(video.dureeSeconds)}
+                </span>
+              )}
+              {video.type === 'live' && (
+                <span className="absolute left-2 top-2 flex items-center gap-1 rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
+                  LIVE
+                </span>
+              )}
+              {video.badge && (
+                <span className={`absolute left-2 top-2 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase text-white ${
+                  video.badge === 'POPULAIRE' ? 'bg-gold-600/90' : 'bg-red-500/90'
+                }`}>
+                  {video.badge}
+                </span>
+              )}
+            </div>
+
+            {/* Info */}
+            <div className="p-4">
+              <h3 className="font-medium text-ink-900 line-clamp-2">{video.titre}</h3>
+              <p className="mt-1 text-xs text-ink-400">{video.auteur}</p>
+              <div className="mt-2 flex items-center gap-4 text-xs text-ink-500">
+                <span className="flex items-center gap-1">
+                  <Eye className="h-3.5 w-3.5" /> {video.vues.toLocaleString('fr-FR')} vues
+                </span>
+                <span className="flex items-center gap-1">
+                  <Heart className="h-3.5 w-3.5" /> {video.likes}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5" />
+                  {new Date(video.publishedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                </span>
+              </div>
+
+              {/* Actions */}
+              <div className="mt-3 flex items-center gap-2 border-t border-gray-50 pt-3">
+                <button
+                  onClick={() => openView(video)}
+                  className="rounded-lg p-1.5 text-ink-400 transition hover:bg-sage-200 hover:text-forest-900"
+                >
+                  <Eye className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => openEdit(video)}
+                  className="rounded-lg p-1.5 text-ink-400 transition hover:bg-sage-200 hover:text-forest-900"
+                >
+                  <Edit3 className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setDeleteTarget(video)}
+                  className="rounded-lg p-1.5 text-ink-400 transition hover:bg-red-50 hover:text-red-600"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Delete Confirm Dialog */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Supprimer la video"
+        message={`Etes-vous sur de vouloir supprimer "${deleteTarget?.titre}" ? Cette action est irreversible.`}
+        confirmLabel="Supprimer"
+        cancelLabel="Annuler"
+        variant="danger"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteTarget(null)}
+      />
+
+      {/* View Modal */}
+      {modal?.type === 'view' && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/50" onClick={closeModal} />
+          <div className="relative max-h-[85vh] w-full max-w-[600px] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+            <button
+              onClick={closeModal}
+              className="absolute right-4 top-4 rounded-lg p-1 text-ink-400 transition hover:bg-ink-50"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            <h3
+              className="mb-6 text-xl font-semibold text-forest-900"
+              style={{ fontFamily: 'var(--font-heading)' }}
+            >
+              Details de la video
+            </h3>
+
+            <div className={`mb-5 aspect-video rounded-xl bg-gradient-to-br ${modal.video.thumbnailGradient} flex items-center justify-center`}>
+              <Play className="h-12 w-12 text-white/60" fill="white" />
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Titre</p>
+                <p className="mt-1 text-sm font-medium text-ink-900">{modal.video.titre}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Auteur</p>
+                  <p className="mt-1 text-sm text-ink-700">{modal.video.auteur}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Date de publication</p>
+                  <p className="mt-1 text-sm text-ink-700">
+                    {new Date(modal.video.publishedAt).toLocaleDateString('fr-FR', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Vues</p>
+                  <p className="mt-1 text-lg font-bold text-forest-900" style={{ fontFamily: 'var(--font-heading)' }}>
+                    {modal.video.vues.toLocaleString('fr-FR')}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Likes</p>
+                  <p className="mt-1 text-lg font-bold text-gold-600" style={{ fontFamily: 'var(--font-heading)' }}>
+                    {modal.video.likes}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Duree</p>
+                  <p className="mt-1 text-lg font-bold text-ink-700" style={{ fontFamily: 'var(--font-heading)' }}>
+                    {modal.video.dureeSeconds ? formatDuration(modal.video.dureeSeconds) : 'Live'}
+                  </p>
+                </div>
+              </div>
+              {modal.video.badge && (
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Badge</p>
+                  <span className={`mt-1 inline-block rounded-md px-2.5 py-1 text-xs font-bold uppercase text-white ${
+                    modal.video.badge === 'POPULAIRE' ? 'bg-gold-600' : 'bg-red-500'
+                  }`}>
+                    {modal.video.badge}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={closeModal}
+                className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {modal?.type === 'edit' && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/50" onClick={closeModal} />
+          <div className="relative max-h-[85vh] w-full max-w-[600px] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+            <button
+              onClick={closeModal}
+              className="absolute right-4 top-4 rounded-lg p-1 text-ink-400 transition hover:bg-ink-50"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            <h3
+              className="mb-6 text-xl font-semibold text-forest-900"
+              style={{ fontFamily: 'var(--font-heading)' }}
+            >
+              Modifier la video
+            </h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">Titre</label>
+                <input
+                  type="text"
+                  value={editTitre}
+                  onChange={(e) => setEditTitre(e.target.value)}
+                  className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">Auteur</label>
+                <input
+                  type="text"
+                  value={editAuteur}
+                  onChange={(e) => setEditAuteur(e.target.value)}
+                  className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={closeModal}
+                className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleEditSave}
+                className="rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg"
+              >
+                Enregistrer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Modal */}
+      {modal?.type === 'create' && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/50" onClick={closeModal} />
+          <div className="relative max-h-[85vh] w-full max-w-[600px] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+            <button
+              onClick={closeModal}
+              className="absolute right-4 top-4 rounded-lg p-1 text-ink-400 transition hover:bg-ink-50"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            <h3
+              className="mb-6 text-xl font-semibold text-forest-900"
+              style={{ fontFamily: 'var(--font-heading)' }}
+            >
+              Ajouter une video
+            </h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">Titre</label>
+                <input
+                  type="text"
+                  value={createTitre}
+                  onChange={(e) => setCreateTitre(e.target.value)}
+                  placeholder="Titre de la video"
+                  className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">YouTube ID</label>
+                <input
+                  type="text"
+                  value={createYoutubeId}
+                  onChange={(e) => setCreateYoutubeId(e.target.value)}
+                  placeholder="ex: dQw4w9WgXcQ"
+                  className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">Auteur</label>
+                <input
+                  type="text"
+                  value={createAuteur}
+                  onChange={(e) => setCreateAuteur(e.target.value)}
+                  placeholder="Nom de l'auteur"
+                  className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={closeModal}
+                className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleCreateSubmit}
+                className="rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg"
+              >
+                Ajouter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}

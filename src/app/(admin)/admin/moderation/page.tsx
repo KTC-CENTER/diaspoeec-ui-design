@@ -1,0 +1,31 @@
+'use client';
+
+import { ModerationQueue } from '@/features/admin/components/moderation-queue';
+
+export default function AdminModerationPage() {
+  return (
+    <section className="mx-auto max-w-[1400px] p-4 md:p-8">
+      {/* Header */}
+      <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <div>
+          <h2
+            className="text-2xl font-semibold text-forest-900 md:text-3xl"
+            style={{ fontFamily: 'var(--font-heading)' }}
+          >
+            Moderation
+          </h2>
+          <p className="mt-1 text-sm text-ink-500">
+            Gerer les contenus signales
+          </p>
+        </div>
+        <span className="inline-flex items-center gap-2 rounded-full bg-red-50 px-4 py-2 text-sm font-medium text-red-600">
+          <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-red-500" />
+          7 elements a moderer
+        </span>
+      </div>
+
+      {/* Moderation queue */}
+      <ModerationQueue />
+    </section>
+  );
+}

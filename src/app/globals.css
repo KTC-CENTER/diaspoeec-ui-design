@@ -1,0 +1,549 @@
+@import "tailwindcss";
+
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Outfit:wght@100..900&display=swap');
+
+/* ============================================
+   EEC DESIGN TOKENS - Custom Theme
+   ============================================ */
+
+@theme {
+  /* Colors - Forest */
+  --color-forest-900: #1B4332;
+  --color-forest-700: #2D6A4F;
+  --color-forest-600: #3A7D5E;
+  --color-forest-500: #52B788;
+  --color-forest-400: #74C69D;
+
+  /* Colors - Sage */
+  --color-sage-400: #95D5B2;
+  --color-sage-300: #B7E4C7;
+  --color-sage-200: #D8F3DC;
+  --color-sage-100: #E8F8EE;
+
+  /* Colors - Gold */
+  --color-gold-700: #B8860B;
+  --color-gold-600: #D4A017;
+  --color-gold-500: #E4B429;
+  --color-gold-400: #F4D35E;
+  --color-gold-300: #F7E08A;
+  --color-gold-200: #FAF0C8;
+
+  /* Colors - Cream */
+  --color-cream-100: #FEFAE0;
+  --color-cream-50: #FFFBF0;
+  --color-cream-white: #FFFDF5;
+
+  /* Colors - Terra */
+  --color-terra-600: #C17817;
+  --color-terra-500: #D4922A;
+  --color-terra-400: #E0A94E;
+
+  /* Colors - Ink */
+  --color-ink-900: #1A1A2E;
+  --color-ink-800: #2A2A3E;
+  --color-ink-700: #3A3A4E;
+  --color-ink-600: #4A4A5A;
+  --color-ink-500: #6A6A7A;
+  --color-ink-400: #8A8A9A;
+  --color-ink-300: #AAAABC;
+  --color-ink-200: #D0D0DC;
+  --color-ink-100: #E8E8EE;
+
+  /* Semantic Colors */
+  --color-primary: #1B4332;
+  --color-primary-hover: #2D6A4F;
+  --color-secondary: #D4A017;
+  --color-secondary-hover: #B8860B;
+  --color-background: #FFFBF0;
+  --color-surface: #FFFFFF;
+  --color-surface-elevated: #FFFDF5;
+  --color-text-primary: #1A1A2E;
+  --color-text-secondary: #4A4A5A;
+  --color-text-muted: #8A8A9A;
+  --color-border: #E8E8EE;
+  --color-border-strong: #D0D0DC;
+
+  /* Status Colors */
+  --color-success: #2D6A4F;
+  --color-warning: #D4A017;
+  --color-error: #DC3545;
+  --color-info: #3B82F6;
+
+  /* Typography */
+  --font-heading: 'Fraunces', serif;
+  --font-body: 'Outfit', sans-serif;
+
+  /* Font Sizes */
+  --text-display: 3rem;
+  --text-h1: 2.25rem;
+  --text-h2: 1.875rem;
+  --text-h3: 1.5rem;
+  --text-h4: 1.25rem;
+  --text-body-lg: 1.125rem;
+  --text-body: 1rem;
+  --text-body-sm: 0.875rem;
+  --text-caption: 0.75rem;
+
+  /* Spacing */
+  --spacing-page-x: 1.5rem;
+  --spacing-page-y: 2rem;
+  --spacing-section: 3rem;
+  --spacing-card: 1.5rem;
+
+  /* Border Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(27, 67, 50, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(27, 67, 50, 0.07), 0 2px 4px -2px rgba(27, 67, 50, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(27, 67, 50, 0.08), 0 4px 6px -4px rgba(27, 67, 50, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(27, 67, 50, 0.1), 0 8px 10px -6px rgba(27, 67, 50, 0.06);
+  --shadow-card: 0 2px 8px rgba(27, 67, 50, 0.06);
+  --shadow-card-hover: 0 8px 24px rgba(27, 67, 50, 0.12);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease;
+
+  /* Animations */
+  --animate-fade-up: fade-up 0.5s ease-out;
+  --animate-slide-in: slide-in 0.3s ease-out;
+  --animate-shimmer: shimmer 2s infinite linear;
+  --animate-pulse-soft: pulse-soft 2s infinite ease-in-out;
+  --animate-confetti: confetti 0.8s ease-out;
+}
+
+/* ============================================
+   DARK MODE OVERRIDES
+   ============================================ */
+
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: #0F1A14;
+  color: #E8E8EE;
+}
+
+html.dark .bg-white,
+html.dark .bg-surface {
+  background-color: #1A2B22 !important;
+}
+
+html.dark .bg-background {
+  background-color: #0F1A14 !important;
+}
+
+html.dark .bg-cream-50,
+html.dark .bg-cream-100,
+html.dark .bg-cream-50\/50,
+html.dark .bg-cream-100\/50 {
+  background-color: #162420 !important;
+}
+
+html.dark .text-ink-900,
+html.dark .text-forest-900 {
+  color: #E8F3EE !important;
+}
+
+html.dark .text-ink-600,
+html.dark .text-ink-500 {
+  color: #9AABB0 !important;
+}
+
+html.dark .text-ink-400 {
+  color: #7A8B90 !important;
+}
+
+html.dark .border-sage-400\/10,
+html.dark .border-forest-900\/5 {
+  border-color: rgba(149, 213, 178, 0.12) !important;
+}
+
+html.dark .border-gray-50,
+html.dark .border-gray-200 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark .shadow-sm,
+html.dark .shadow-md {
+  --tw-shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+html.dark .divide-sage-400\/10 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(149, 213, 178, 0.1);
+}
+
+html.dark .tbl-row:hover {
+  background: #1E3A2A !important;
+}
+
+html.dark .shimmer-bg {
+  background: linear-gradient(
+    90deg,
+    #1A2B22 25%,
+    #243832 50%,
+    #1A2B22 75%
+  );
+  background-size: 200% 100%;
+}
+
+/* ============================================
+   ANIMATION KEYFRAMES
+   ============================================ */
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.4); }
+}
+
+@keyframes flicker {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes progressFill {
+  from {
+    width: 0;
+  }
+}
+
+@keyframes confetti {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1) rotate(180deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(360deg);
+  }
+}
+
+/* Admin bar chart animations */
+@keyframes growUp {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--h);
+  }
+}
+
+@keyframes growRight {
+  from {
+    width: 0;
+  }
+  to {
+    width: var(--w);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bar-animate {
+  animation: growUp 0.8s ease-out forwards;
+}
+
+.bar-h-animate {
+  animation: growRight 1s ease-out forwards;
+}
+
+.fade-in {
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+
+.fade-in-d1 {
+  animation-delay: 0.05s;
+  opacity: 0;
+}
+
+.fade-in-d2 {
+  animation-delay: 0.1s;
+  opacity: 0;
+}
+
+.fade-in-d3 {
+  animation-delay: 0.15s;
+  opacity: 0;
+}
+
+.fade-in-d4 {
+  animation-delay: 0.2s;
+  opacity: 0;
+}
+
+/* Table row hover for admin */
+.tbl-row:hover {
+  background: #FEFAE0 !important;
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+}
+
+/* Headings use Fraunces */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-ink-900);
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid var(--color-forest-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Selection color */
+::selection {
+  background-color: var(--color-sage-300);
+  color: var(--color-forest-900);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-ink-200);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ink-300);
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.gradient-forest {
+  background: linear-gradient(135deg, #1B4332 0%, #40916C 100%);
+}
+
+.gradient-gold {
+  background: linear-gradient(135deg, var(--color-gold-600) 0%, var(--color-gold-400) 100%);
+}
+
+.gradient-sage {
+  background: linear-gradient(135deg, var(--color-sage-400) 0%, var(--color-sage-200) 100%);
+}
+
+.gradient-warm {
+  background: linear-gradient(135deg, #2D6A4F 0%, #95D5B2 100%);
+}
+
+.gradient-hero {
+  background: linear-gradient(
+    160deg,
+    var(--color-forest-900) 0%,
+    var(--color-forest-700) 40%,
+    var(--color-forest-500) 100%
+  );
+}
+
+.shimmer-bg {
+  background: linear-gradient(
+    90deg,
+    var(--color-ink-100) 25%,
+    var(--color-ink-200) 50%,
+    var(--color-ink-100) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+.text-gradient-forest {
+  background: linear-gradient(135deg, var(--color-forest-900), var(--color-forest-500));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, var(--color-gold-700), var(--color-gold-400));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================
+   GRADIENT BACKGROUNDS (from HTML design)
+   ============================================ */
+
+.gradient-green {
+  background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 50%, #52B788 100%);
+}
+
+.gradient-terra {
+  background: linear-gradient(135deg, #C17817 0%, #E8A849 100%);
+}
+
+.gradient-sunset {
+  background: linear-gradient(135deg, #C17817 0%, #D4A017 50%, #F4D35E 100%);
+}
+
+.gradient-deep {
+  background: linear-gradient(135deg, #1A1A2E 0%, #1B4332 100%);
+}
+
+/* ============================================
+   AFRICAN GEOMETRIC PATTERN DIVIDERS
+   ============================================ */
+
+.afro-divider {
+  height: 20px;
+  background-image:
+    linear-gradient(45deg, transparent 40%, #D4A017 40%, #D4A017 45%, transparent 45%),
+    linear-gradient(-45deg, transparent 40%, #D4A017 40%, #D4A017 45%, transparent 45%),
+    linear-gradient(45deg, transparent 55%, #95D5B2 55%, #95D5B2 60%, transparent 60%),
+    linear-gradient(-45deg, transparent 55%, #95D5B2 55%, #95D5B2 60%, transparent 60%);
+  background-size: 30px 20px;
+  opacity: 0.35;
+}
+
+.afro-divider-sm {
+  height: 12px;
+  background-image:
+    repeating-linear-gradient(90deg, transparent, transparent 8px, #D4A017 8px, #D4A017 10px, transparent 10px, transparent 14px, #2D6A4F 14px, #2D6A4F 16px, transparent 16px, transparent 24px);
+  opacity: 0.25;
+}
+
+/* ============================================
+   CARD HOVER EFFECTS
+   ============================================ */
+
+.card-hover {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(27, 67, 50, 0.10), 0 4px 12px rgba(0,0,0,0.06);
+}
+
+/* ============================================
+   PROGRESS BAR ANIMATION
+   ============================================ */
+
+.progress-fill {
+  transition: width 1s ease-out;
+}
+
+/* ============================================
+   BIBLE QUOTE STYLING
+   ============================================ */
+
+.bible-quote {
+  border-left: 4px solid #D4A017;
+  background: linear-gradient(135deg, #FEFAE0 0%, #FFFBF0 100%);
+}
+
+/* ============================================
+   STREAK BADGE
+   ============================================ */
+
+.streak-badge {
+  background: linear-gradient(135deg, #F4D35E 0%, #D4A017 100%);
+}
+
+/* ============================================
+   SCROLLBAR HIDE
+   ============================================ */
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
