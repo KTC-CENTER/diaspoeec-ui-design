@@ -14,4 +14,5 @@ export interface Meditation {
   likes: number;
   commentCount: number;
   publishedAt: string;
+  userLiked?: boolean;
 }

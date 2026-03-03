@@ -3,91 +3,69 @@
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth.store';
-import { mockUsers } from '@/lib/mock/users.mock';
+import { apiClient, clearTokens } from '@/lib/api/client';
+import { ENDPOINTS } from '@/lib/api/endpoints';
 import type { LoginFormData, RegisterFormData } from '@/features/auth/schemas/auth.schema';
 import type { User } from '@/types';
 
 // ============================================================================
-// Demo accounts for quick login
+// Demo accounts for quick login (kept for convenience)
 // ============================================================================
 
 export const DEMO_ACCOUNTS = {
   admin: {
     email: 'admin@eec-diaspora.org',
-    password: 'admin123',
+    password: 'Admin123!',
     label: 'Admin',
     description: 'Tableau de bord administration',
   },
   pasteur: {
     email: 'emmanuel.ndongo@eec-diaspora.org',
-    password: 'pasteur123',
+    password: 'Pasteur123!',
     label: 'Pasteur',
     description: 'Gestion meditations & evenements',
   },
   responsable: {
     email: 'jeanne.atangana@eec-diaspora.org',
-    password: 'resp123',
+    password: 'Resp123!',
     label: 'Resp. Zone',
     description: 'Evenements & membres zone',
   },
   user: {
     email: 'jeanpaul.mbarga@email.com',
-    password: 'user123',
+    password: 'User123!',
     label: 'Utilisateur',
-    description: 'Espace membre fidèle',
+    description: 'Espace membre fidele',
   },
 } as const;
 
 // ============================================================================
-// Simulated API calls (to be replaced with real API)
+// API Types
 // ============================================================================
 
-async function simulateLogin(data: LoginFormData): Promise<User> {
-  await new Promise((resolve) => setTimeout(resolve, 800));
-
-  // Check admin account
-  if (data.email === DEMO_ACCOUNTS.admin.email && data.password === DEMO_ACCOUNTS.admin.password) {
-    const adminUser = mockUsers.find((u) => u.role === 'admin');
-    if (adminUser) return adminUser;
-  }
-
-  // Check pasteur account
-  if (data.email === DEMO_ACCOUNTS.pasteur.email && data.password === DEMO_ACCOUNTS.pasteur.password) {
-    const pasteurUser = mockUsers.find((u) => u.id === 'usr_002');
-    if (pasteurUser) return pasteurUser;
-  }
-
-  // Check responsable zone account
-  if (data.email === DEMO_ACCOUNTS.responsable.email && data.password === DEMO_ACCOUNTS.responsable.password) {
-    const respUser = mockUsers.find((u) => u.id === 'usr_005');
-    if (respUser) return respUser;
-  }
-
-  // Check user account
-  if (data.email === DEMO_ACCOUNTS.user.email && data.password === DEMO_ACCOUNTS.user.password) {
-    const normalUser = mockUsers.find((u) => u.id === 'usr_001');
-    if (normalUser) return normalUser;
-  }
-
-  // Any other email/password combo: reject
-  throw new Error('Email ou mot de passe incorrect');
+interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  user: User;
 }
 
-async function simulateRegister(data: RegisterFormData): Promise<User> {
-  await new Promise((resolve) => setTimeout(resolve, 1500));
+// ============================================================================
+// API calls
+// ============================================================================
 
-  if (data.email === 'exists@test.com') {
-    throw new Error('Un compte avec cet email existe déjà');
-  }
+async function apiLogin(data: LoginFormData): Promise<AuthResponse> {
+  return apiClient.post<AuthResponse>(ENDPOINTS.AUTH.LOGIN, {
+    email: data.email,
+    password: data.password,
+  });
+}
 
-  const baseUser = mockUsers[0];
-  return {
-    ...baseUser,
-    id: `usr_new_${Date.now()}`,
+async function apiRegister(data: RegisterFormData): Promise<AuthResponse> {
+  return apiClient.post<AuthResponse>(ENDPOINTS.AUTH.REGISTER, {
     nomComplet: data.nomComplet,
     email: data.email,
-    role: 'fidele',
-  };
+    password: data.password,
+  });
 }
 
 // ============================================================================
@@ -99,10 +77,10 @@ export function useLogin() {
   const { login } = useAuthStore();
 
   return useMutation({
-    mutationFn: simulateLogin,
-    onSuccess: (user) => {
-      login(user);
-      if (user.role === 'admin') {
+    mutationFn: apiLogin,
+    onSuccess: (response) => {
+      login(response.user, response.accessToken, response.refreshToken);
+      if (response.user.role === 'admin') {
         router.push('/admin');
       } else {
         router.push('/accueil');
@@ -120,9 +98,9 @@ export function useRegister() {
   const { login } = useAuthStore();
 
   return useMutation({
-    mutationFn: simulateRegister,
-    onSuccess: (user) => {
-      login(user);
+    mutationFn: apiRegister,
+    onSuccess: (response) => {
+      login(response.user, response.accessToken, response.refreshToken);
       router.push('/onboarding/identity');
     },
   });
@@ -137,6 +115,7 @@ export function useLogout() {
   const { logout } = useAuthStore();
 
   const handleLogout = () => {
+    clearTokens();
     logout();
     router.push('/login');
   };

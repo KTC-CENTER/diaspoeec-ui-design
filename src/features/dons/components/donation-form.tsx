@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  CreditCard,
   Heart,
   Loader2,
   Check,
@@ -17,13 +16,34 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { formatMontant } from '@/lib/utils/format';
+import { CustomSelect } from '@/components/forms/custom-select';
 import { useCampagnes, useCreateDon } from '@/features/dons/hooks/use-dons';
 import {
   donationSchema,
   type DonationFormData,
 } from '@/features/dons/schemas/donation.schema';
 
-const PRESET_AMOUNTS = [10, 25, 50, 100, 200];
+const BASE_AMOUNTS_EUR = [10, 25, 50, 100, 200];
+
+// Taux de conversion approximatifs depuis l'EUR
+const EUR_RATES: Record<string, number> = {
+  EUR: 1,
+  USD: 1.10,
+  XAF: 655.957, // Parite fixe CFA
+  GBP: 0.86,
+  CHF: 0.95,
+};
+
+function getPresetAmounts(devise: string): number[] {
+  const rate = EUR_RATES[devise] || 1;
+  return BASE_AMOUNTS_EUR.map((eur) => {
+    const converted = Math.round(eur * rate);
+    if (converted >= 100000) return Math.round(converted / 10000) * 10000;
+    if (converted >= 10000) return Math.round(converted / 5000) * 5000;
+    if (converted >= 1000) return Math.round(converted / 500) * 500;
+    return converted;
+  });
+}
 
 const DEVISES = [
   { value: 'EUR', label: 'EUR - Euro' },
@@ -137,9 +157,10 @@ export function DonationForm() {
             {campagnes
               ?.filter((c) => c.statut === 'active')
               .map((campagne, index) => {
-                const progress = Math.round(
-                  (campagne.montantCollecte / campagne.objectifMontant) * 100
-                );
+                const hasObjectif = campagne.objectifMontant != null && campagne.objectifMontant > 0;
+                const progress = hasObjectif
+                  ? Math.min(Math.round((campagne.montantCollecte / campagne.objectifMontant!) * 100), 100)
+                  : null;
                 const isSelected = watchedValues.campagneId === campagne.id;
                 return (
                   <label
@@ -155,7 +176,7 @@ export function DonationForm() {
                     <div className="flex items-center gap-3">
                       {/* Radio circle */}
                       <div className={cn(
-                        'w-5 h-5 rounded-full border-2 flex items-center justify-center',
+                        'w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0',
                         isSelected ? 'border-forest-900' : 'border-ink-300'
                       )}>
                         {isSelected && (
@@ -168,31 +189,41 @@ export function DonationForm() {
                         {...register('campagneId')}
                         className="sr-only"
                       />
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <p className="font-semibold text-ink-900">
                           {campagne.titre}
                         </p>
-                        {/* Show progress bar for campaigns with progress */}
-                        {progress > 0 && index > 0 && (
+                        {/* Barre de progression pour toutes les campagnes avec objectif */}
+                        {progress !== null && (
                           <div className="mt-2">
                             <div className="flex justify-between text-xs text-ink-600 mb-1">
-                              <span>{formatMontant(campagne.montantCollecte, 'EUR')}</span>
-                              <span>{progress}%</span>
+                              <span>{formatMontant(campagne.montantCollecte, 'EUR')} collectes</span>
+                              <span className="font-medium text-forest-900">{progress}%</span>
                             </div>
                             <div className="w-full h-2 bg-ink-100 rounded-full overflow-hidden">
                               <div
-                                className="h-full bg-gradient-to-r from-forest-900 to-sage-400 rounded-full"
-                                style={{ width: `${Math.min(progress, 100)}%` }}
+                                className="h-full bg-gradient-to-r from-forest-900 to-sage-400 rounded-full transition-all duration-500"
+                                style={{ width: `${progress}%` }}
                               />
                             </div>
+                            <p className="mt-1 text-xs text-ink-400">
+                              sur {formatMontant(campagne.objectifMontant, 'EUR')} objectif
+                            </p>
                           </div>
+                        )}
+                        {progress === null && campagne.montantCollecte > 0 && (
+                          <p className="mt-1 text-xs text-ink-500">
+                            {formatMontant(campagne.montantCollecte, 'EUR')} collectes · objectif libre
+                          </p>
                         )}
                       </div>
                       {/* Icon based on campaign type */}
-                      {index === 0 ? campaignIcons.default :
-                       index === 1 ? campaignIcons.building :
-                       index === 2 ? campaignIcons.education :
-                       campaignIcons.global}
+                      <div className="flex-shrink-0">
+                        {index === 0 ? campaignIcons.default :
+                         index === 1 ? campaignIcons.building :
+                         index === 2 ? campaignIcons.education :
+                         campaignIcons.global}
+                      </div>
                     </div>
                   </label>
                 );
@@ -210,7 +241,7 @@ export function DonationForm() {
           Montant
         </h2>
         <div className="flex flex-wrap gap-3 mb-4">
-          {PRESET_AMOUNTS.map((amount) => (
+          {getPresetAmounts(watchedValues.devise || 'EUR').map((amount) => (
             <button
               key={amount}
               type="button"
@@ -225,15 +256,15 @@ export function DonationForm() {
                   : 'text-forest-900 hover:bg-forest-900 hover:text-white'
               )}
             >
-              {amount} EUR
+              {amount.toLocaleString('fr-FR')} {watchedValues.devise || 'EUR'}
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
           <label className="text-sm font-medium text-ink-600 whitespace-nowrap">
             Autre montant :
           </label>
-          <div className="relative flex-1 max-w-[200px]">
+          <div className="relative flex-1 sm:max-w-[200px]">
             <input
               type="number"
               placeholder="0,00"
@@ -245,7 +276,7 @@ export function DonationForm() {
               }
             />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-600 font-medium text-sm">
-              EUR
+              {watchedValues.devise || 'EUR'}
             </span>
           </div>
         </div>
@@ -255,20 +286,16 @@ export function DonationForm() {
       </div>
 
       {/* Currency */}
-      <div className="animate-[fade-up_0.5s_ease-out_0.2s_both]">
+      <div className="relative z-20 animate-[fade-up_0.5s_ease-out_0.2s_both]">
         <h2 className="font-heading text-xl font-bold text-forest-900 mb-4">
           Devise
         </h2>
-        <select
-          {...register('devise')}
-          className="px-4 py-2.5 rounded-xl border border-ink-200 text-sm bg-white focus:border-forest-900 focus:ring-2 focus:ring-sage-200 outline-none min-w-[160px]"
-        >
-          {DEVISES.map((d) => (
-            <option key={d.value} value={d.value}>
-              {d.label}
-            </option>
-          ))}
-        </select>
+        <CustomSelect
+          value={watchedValues.devise || 'EUR'}
+          onChange={(value) => setValue('devise', value as DonationFormData['devise'])}
+          options={DEVISES}
+          className="w-full sm:w-auto sm:min-w-[200px]"
+        />
       </div>
 
       {/* Frequency */}
@@ -305,7 +332,7 @@ export function DonationForm() {
         {watchedValues.frequence === 'mensuel' && (
           <div className="mt-3 p-3 bg-sage-200/50 rounded-xl text-sm text-forest-900">
             <Info className="w-4 h-4 inline-block mr-1" />
-            Vous serez debite de {watchedValues.montant || '...'} EUR chaque mois. Annulable a tout moment.
+            Vous serez debite de {watchedValues.montant || '...'} {watchedValues.devise || 'EUR'} chaque mois. Annulable a tout moment.
           </div>
         )}
       </div>
@@ -360,6 +387,7 @@ export function DonationForm() {
           Methode de paiement
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Stripe / Carte bancaire */}
           <label
             className={cn(
               'bg-white rounded-2xl shadow-sm border-2 p-5 text-left cursor-pointer transition-all',
@@ -369,25 +397,35 @@ export function DonationForm() {
                 : 'border-ink-200 hover:border-forest-900/50'
             )}
           >
-            <input
-              type="radio"
-              value="stripe"
-              {...register('methodePaiement')}
-              className="sr-only"
-            />
+            <input type="radio" value="stripe" {...register('methodePaiement')} className="sr-only" />
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <CreditCard className="w-6 h-6 text-white" />
+              {/* Stripe — logo local public/logos/stripe.svg */}
+              <div className="w-14 h-9 bg-[#635BFF] rounded-lg flex items-center justify-center px-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logos/stripe.svg" alt="Stripe" className="h-4 w-auto" />
               </div>
               <div>
                 <p className="font-semibold text-ink-900">Carte bancaire</p>
-                <div className="flex gap-2 mt-1">
-                  <div className="h-5 px-1.5 bg-blue-900 rounded text-white text-[8px] font-bold flex items-center">VISA</div>
-                  <div className="h-5 px-1.5 bg-red-500 rounded text-white text-[8px] font-bold flex items-center">MC</div>
+                <div className="flex items-center gap-2 mt-1.5">
+                  {/* Visa — logo local public/logos/visa.svg */}
+                  <div className="h-6 w-10 bg-white border border-gray-200 rounded flex items-center justify-center px-1">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/logos/visa.svg" alt="Visa" className="h-3.5 w-auto" />
+                  </div>
+                  {/* Mastercard — deux cercles SVG inline (logo coloré officiel) */}
+                  <div className="h-6 w-10 bg-white border border-gray-200 rounded flex items-center justify-center">
+                    <svg viewBox="0 0 38 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-auto" aria-label="Mastercard">
+                      <circle cx="15" cy="12" r="10" fill="#EB001B"/>
+                      <circle cx="23" cy="12" r="10" fill="#F79E1B"/>
+                      <path d="M19 4.9A10 10 0 0 1 22.6 12 10 10 0 0 1 19 19.1 10 10 0 0 1 15.4 12 10 10 0 0 1 19 4.9z" fill="#FF5F00"/>
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
           </label>
+
+          {/* PayPal */}
           <label
             className={cn(
               'bg-white rounded-2xl shadow-sm border-2 p-5 text-left cursor-pointer transition-all',
@@ -397,19 +435,16 @@ export function DonationForm() {
                 : 'border-ink-200 hover:border-forest-900/50'
             )}
           >
-            <input
-              type="radio"
-              value="paypal"
-              {...register('methodePaiement')}
-              className="sr-only"
-            />
+            <input type="radio" value="paypal" {...register('methodePaiement')} className="sr-only" />
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-400 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-sm">PP</span>
+              {/* PayPal — logo local public/logos/paypal.svg */}
+              <div className="w-14 h-9 bg-[#003087] rounded-lg flex items-center justify-center px-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logos/paypal.svg" alt="PayPal" className="h-5 w-auto" />
               </div>
               <div>
                 <p className="font-semibold text-ink-900">PayPal</p>
-                <p className="text-xs text-ink-600">Paiement securise</p>
+                <p className="text-xs text-ink-500">Compte PayPal ou carte</p>
               </div>
             </div>
           </label>

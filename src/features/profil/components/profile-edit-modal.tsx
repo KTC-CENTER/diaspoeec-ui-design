@@ -5,7 +5,8 @@ import { X, Loader2, Check, User, Globe, Church } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { InputField } from '@/components/forms/input-field';
 import { SelectField } from '@/components/forms/select-field';
-import { PAYS_LIST, PAROISSES, DIASPORA_TYPES, MINISTERES_OPTIONS } from '@/lib/utils/constants';
+import { PAYS_LIST, DIASPORA_TYPES, MINISTERES_OPTIONS } from '@/lib/utils/constants';
+import { PAROISSES } from '@/lib/constants/onboarding';
 import { useUpdateProfile } from '@/features/profil/hooks/use-profil';
 import { useToastStore } from '@/stores/toast.store';
 import type { User as UserType, Ministere } from '@/types';
@@ -31,30 +32,30 @@ export function ProfileEditModal({ open, user, initialTab = 'personnel', onClose
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
 
   // Form state
-  const [nomComplet, setNomComplet] = useState(user.nomComplet);
-  const [email, setEmail] = useState(user.email);
-  const [telephone, setTelephone] = useState(user.telephone || '');
-  const [dateNaissance, setDateNaissance] = useState(user.dateNaissance);
-  const [sexe, setSexe] = useState(user.sexe);
-  const [typeDiaspora, setTypeDiaspora] = useState(user.typeDiaspora);
-  const [paysResidence, setPaysResidence] = useState(user.paysResidence);
-  const [ville, setVille] = useState(user.ville);
-  const [paroisseOrigine, setParoisseOrigine] = useState(user.paroisseOrigine);
-  const [ministeres, setMinisteres] = useState<Ministere[]>([...user.ministeres]);
+  const [nomComplet, setNomComplet] = useState(user.nomComplet ?? '');
+  const [email, setEmail] = useState(user.email ?? '');
+  const [telephone, setTelephone] = useState(user.telephone ?? '');
+  const [dateNaissance, setDateNaissance] = useState(user.dateNaissance ?? '');
+  const [sexe, setSexe] = useState(user.sexe ?? '');
+  const [typeDiaspora, setTypeDiaspora] = useState(user.typeDiaspora ?? '');
+  const [paysResidence, setPaysResidence] = useState(user.paysResidence ?? '');
+  const [ville, setVille] = useState(user.ville ?? '');
+  const [paroisseOrigine, setParoisseOrigine] = useState(user.paroisseOrigine ?? '');
+  const [ministeres, setMinisteres] = useState<Ministere[]>([...(user.ministeres ?? [])]);
 
   // Reset form when user changes or modal reopens
   useEffect(() => {
     if (open) {
-      setNomComplet(user.nomComplet);
-      setEmail(user.email);
-      setTelephone(user.telephone || '');
-      setDateNaissance(user.dateNaissance);
-      setSexe(user.sexe);
-      setTypeDiaspora(user.typeDiaspora);
-      setPaysResidence(user.paysResidence);
-      setVille(user.ville);
-      setParoisseOrigine(user.paroisseOrigine);
-      setMinisteres([...user.ministeres]);
+      setNomComplet(user.nomComplet ?? '');
+      setEmail(user.email ?? '');
+      setTelephone(user.telephone ?? '');
+      setDateNaissance(user.dateNaissance ?? '');
+      setSexe(user.sexe ?? '');
+      setTypeDiaspora(user.typeDiaspora ?? '');
+      setPaysResidence(user.paysResidence ?? '');
+      setVille(user.ville ?? '');
+      setParoisseOrigine(user.paroisseOrigine ?? '');
+      setMinisteres([...(user.ministeres ?? [])]);
       setActiveTab(initialTab);
     }
   }, [open, user, initialTab]);
@@ -80,12 +81,12 @@ export function ProfileEditModal({ open, user, initialTab = 'personnel', onClose
         nomComplet: nomComplet.trim(),
         email: email.trim(),
         telephone: telephone.trim() || undefined,
-        dateNaissance,
-        sexe,
-        typeDiaspora,
-        paysResidence,
-        ville: ville.trim(),
-        paroisseOrigine,
+        dateNaissance: dateNaissance || undefined,
+        sexe: sexe || undefined,
+        typeDiaspora: typeDiaspora || undefined,
+        paysResidence: paysResidence || undefined,
+        ville: ville.trim() || undefined,
+        paroisseOrigine: paroisseOrigine || undefined,
         ministeres,
       },
       {
@@ -103,7 +104,7 @@ export function ProfileEditModal({ open, user, initialTab = 'personnel', onClose
   if (!open) return null;
 
   const paysOptions = PAYS_LIST.map((p) => ({ value: p.value, label: `${p.flag} ${p.label}` }));
-  const paroisseOptions = PAROISSES.map((p) => ({ value: p, label: p }));
+  const paroisseOptions = PAROISSES.map((p) => ({ value: p.value, label: p.label }));
   const diasporaOptions = DIASPORA_TYPES.map((d) => ({ value: d.value, label: d.label }));
   const sexeOptions = [
     { value: 'homme', label: 'Homme' },
@@ -185,7 +186,7 @@ export function ProfileEditModal({ open, user, initialTab = 'personnel', onClose
               <SelectField
                 label="Sexe"
                 value={sexe}
-                onChange={(e) => setSexe(e.target.value as 'homme' | 'femme')}
+                onChange={(value) => setSexe(value as 'homme' | 'femme')}
                 options={sexeOptions}
               />
             </div>
@@ -197,13 +198,13 @@ export function ProfileEditModal({ open, user, initialTab = 'personnel', onClose
               <SelectField
                 label="Type de diaspora"
                 value={typeDiaspora}
-                onChange={(e) => setTypeDiaspora(e.target.value as UserType['typeDiaspora'])}
+                onChange={(value) => setTypeDiaspora(value as UserType['typeDiaspora'])}
                 options={diasporaOptions}
               />
               <SelectField
                 label="Pays de residence"
                 value={paysResidence}
-                onChange={(e) => setPaysResidence(e.target.value)}
+                onChange={(value) => setPaysResidence(value)}
                 options={paysOptions}
               />
               <InputField
@@ -221,7 +222,7 @@ export function ProfileEditModal({ open, user, initialTab = 'personnel', onClose
               <SelectField
                 label="Paroisse d'origine"
                 value={paroisseOrigine}
-                onChange={(e) => setParoisseOrigine(e.target.value)}
+                onChange={(value) => setParoisseOrigine(value)}
                 options={paroisseOptions}
               />
               <div>

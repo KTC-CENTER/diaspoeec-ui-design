@@ -2,7 +2,7 @@ export interface Campagne {
   id: string;
   titre: string;
   description: string;
-  objectifMontant: number;
+  objectifMontant: number | null;
   montantCollecte: number;
   nombreDonateurs: number;
   affectationFonds: string[];

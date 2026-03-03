@@ -7,7 +7,9 @@ export type NotificationType =
   | 'like'
   | 'rappel_lecture'
   | 'culte_en_direct'
-  | 'nouvel_evenement_zone';
+  | 'nouvel_evenement_zone'
+  | 'nouveau_membre'
+  | 'moderation';
 
 export interface Notification {
   id: string;

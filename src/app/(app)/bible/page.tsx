@@ -7,6 +7,7 @@ import {
   usePlansLecture,
   usePlansDecouverte,
   useNotesBible,
+  useStartPlan,
 } from '@/features/bible/hooks/use-bible';
 import { DailyReading } from '@/features/bible/components/daily-reading';
 import { ReadingPlanCard } from '@/features/bible/components/reading-plan-card';
@@ -34,6 +35,7 @@ export default function BiblePage() {
   const { data: plansDecouverte, isLoading: loadingDecouverte } = usePlansDecouverte();
   const { data: notes, isLoading: loadingNotes } = useNotesBible();
   const { addToast } = useToastStore();
+  const startPlanMutation = useStartPlan();
   const [showAllPlans, setShowAllPlans] = useState(false);
 
   return (
@@ -79,13 +81,11 @@ export default function BiblePage() {
 
         {loadingPlans ? (
           <SectionSkeleton count={2} />
-        ) : plans && plans.filter((p) => p.joursCompletes > 0).length > 0 ? (
+        ) : plans && plans.length > 0 ? (
           <div className="space-y-4">
-            {plans
-              .filter((p) => p.joursCompletes > 0)
-              .map((plan) => (
-                <ReadingPlanCard key={plan.id} plan={plan} />
-              ))}
+            {plans.map((plan) => (
+              <ReadingPlanCard key={plan.id} plan={plan} />
+            ))}
           </div>
         ) : (
           <div className="rounded-2xl bg-white border border-forest-900/6 p-8 text-center shadow-sm">
@@ -131,39 +131,53 @@ export default function BiblePage() {
             ))}
           </div>
         ) : (
-          <div className={`flex gap-4 pb-2 hide-scrollbar ${showAllPlans ? 'flex-wrap' : 'overflow-x-auto'}`}>
-            {plansDecouverte?.map((plan, index) => {
-              const gradients = ['gradient-gold', 'gradient-terra', 'gradient-forest', 'gradient-sunset'];
-              const emojis = ['\u{1F4D6}', '\u{1F451}', '\u{2709}\u{FE0F}', '\u{1F4A1}'];
-              const gradientClass = gradients[index % gradients.length];
-              const emoji = emojis[index % emojis.length];
-
-              return (
-                <div
-                  key={plan.id}
-                  className="flex-shrink-0 w-[200px] bg-white rounded-2xl border border-forest-900/6 overflow-hidden card-hover shadow-sm"
-                >
-                  <div className={`${gradientClass} h-24 flex items-center justify-center`}>
-                    <span className="text-4xl">{emoji}</span>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="text-sm font-bold text-ink-900 mb-1">
-                      {plan.titre}
-                    </h3>
-                    <p className="text-xs text-ink-400 mb-3">
-                      {plan.dureeJours} jours
-                    </p>
-                    <button
-                      onClick={() => addToast(`Plan "${plan.titre}" demarre ! Bonne lecture.`, 'success')}
-                      className="w-full py-2 bg-cream-100 border border-forest-900/10 text-forest-900 text-xs font-semibold rounded-lg hover:bg-sage-200 transition-colors"
+          (() => {
+            // Set of plan IDs the user has already started (joursCompletes may be 0)
+            const startedIds = new Set(plans?.map((p) => p.id) ?? []);
+            const gradients = ['gradient-gold', 'gradient-terra', 'gradient-forest', 'gradient-sunset'];
+            return (
+              <div className={`flex gap-4 pb-2 hide-scrollbar ${showAllPlans ? 'flex-wrap' : 'overflow-x-auto'}`}>
+                {plansDecouverte?.map((plan, index) => {
+                  const isStarted = startedIds.has(plan.id);
+                  const gradientClass = gradients[index % gradients.length];
+                  return (
+                    <div
+                      key={plan.id}
+                      className="flex-shrink-0 w-[200px] bg-white rounded-2xl border border-forest-900/6 overflow-hidden card-hover shadow-sm"
                     >
-                      Commencer
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                      <div className={`${gradientClass} h-24 flex items-center justify-center`}>
+                        <span className="text-4xl">{plan.icone ?? '📖'}</span>
+                      </div>
+                      <div className="p-4">
+                        <h3 className="text-sm font-bold text-ink-900 mb-1">
+                          {plan.titre}
+                        </h3>
+                        <p className="text-xs text-ink-400 mb-3">
+                          {plan.dureeJours} jours
+                        </p>
+                        <button
+                          disabled={startPlanMutation.isPending || isStarted}
+                          onClick={() => {
+                            startPlanMutation.mutate(plan.id, {
+                              onSuccess: () => addToast(`Plan "${plan.titre}" demarre ! Bonne lecture.`, 'success'),
+                              onError: () => addToast('Erreur lors du demarrage', 'error'),
+                            });
+                          }}
+                          className={`w-full py-2 text-xs font-semibold rounded-lg transition-colors ${
+                            isStarted
+                              ? 'bg-forest-900 text-white cursor-default'
+                              : 'bg-cream-100 border border-forest-900/10 text-forest-900 hover:bg-sage-200'
+                          } disabled:opacity-60`}
+                        >
+                          {isStarted ? 'En cours ✓' : 'Commencer'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()
         )}
       </section>
 

@@ -6,20 +6,10 @@ import { FeedCard } from './feed-card';
 interface FeedBibleProps {
   reference: string;
   titre: string;
-  planNom: string;
-  jour: number;
-  totalJours: number;
+  texte?: string | null;
 }
 
-export function FeedBible({
-  reference,
-  titre,
-  planNom,
-  jour,
-  totalJours,
-}: FeedBibleProps) {
-  const percentage = Math.round((jour / totalJours) * 100);
-
+export function FeedBible({ reference, titre, texte }: FeedBibleProps) {
   return (
     <FeedCard>
       <div className="p-5">
@@ -31,35 +21,27 @@ export function FeedBible({
           </span>
         </div>
 
-        {/* Title */}
-        <h3 className="text-lg font-bold text-ink-900 mb-2">
-          {reference} : {titre}
-        </h3>
+        {/* Reference */}
+        <h3 className="text-lg font-bold text-ink-900 mb-1">{reference}</h3>
 
-        {/* Progress Bar */}
-        <div className="flex items-center gap-2 mb-4">
-          <div className="flex-1 h-2 bg-sage-200 rounded-full overflow-hidden">
-            <div
-              className="progress-fill h-full rounded-full gradient-green"
-              style={{ width: `${percentage}%` }}
-            />
-          </div>
-          <span className="text-xs text-ink-400 font-medium whitespace-nowrap">
-            Jour {jour}/{totalJours}
-          </span>
-        </div>
+        {/* Titre (si différent de la référence) */}
+        {titre && titre !== reference && (
+          <p className="text-sm font-medium text-forest-700 mb-3">{titre}</p>
+        )}
 
-        {/* Plan Name */}
-        <p className="text-sm text-ink-400 mb-4">
-          Plan &laquo;{planNom}&raquo;
-        </p>
+        {/* Extrait du texte */}
+        {texte && (
+          <p className="text-sm text-ink-600 leading-relaxed mb-4 line-clamp-4 italic">
+            &ldquo;{texte}&rdquo;
+          </p>
+        )}
 
-        {/* Action */}
+        {/* CTA */}
         <Link
           href="/bible"
           className="block w-full py-2.5 bg-forest-900 text-white text-sm font-semibold rounded-xl hover:bg-forest-700 transition-colors shadow-sm text-center"
         >
-          Continuer la lecture
+          Lire dans la Bible
         </Link>
       </div>
     </FeedCard>

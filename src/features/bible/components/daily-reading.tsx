@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { BookOpen, Heart, PenLine } from 'lucide-react';
+import { BookOpen, Heart, PenLine, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useToastStore } from '@/stores/toast.store';
+import { useChapter, useCreateNote } from '@/features/bible/hooks/use-bible';
+import { parseReference } from '@/lib/utils/parse-bible-reference';
 import type { LectureJour } from '@/types';
 
 interface DailyReadingProps {
@@ -17,31 +19,48 @@ export function DailyReading({ lecture }: DailyReadingProps) {
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteText, setNoteText] = useState('');
   const { addToast } = useToastStore();
+  const createNote = useCreateNote();
+
+  // Extraire le livre et chapitre depuis la référence pour charger le chapitre complet
+  const parsed = parseReference(lecture.reference);
+  const { data: chapter, isLoading: loadingChapter } = useChapter(
+    parsed?.livre ?? '',
+    parsed?.chapitre ?? 0,
+  );
 
   const handleLike = () => {
     setLiked((prev) => !prev);
     setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
   };
 
+  const handleSaveNote = () => {
+    if (!noteText.trim()) return;
+    createNote.mutate(
+      { reference: lecture.reference, contenu: noteText.trim() },
+      {
+        onSuccess: () => {
+          addToast('Note enregistree', 'success');
+          setNoteText('');
+          setNoteOpen(false);
+        },
+        onError: () => addToast('Erreur lors de l\'enregistrement', 'error'),
+      },
+    );
+  };
+
   return (
     <div className="bg-white rounded-2xl border border-forest-900/6 overflow-hidden shadow-sm">
-      {/* Gradient Header with decorative circles */}
+      {/* Gradient Header */}
       <div className="gradient-forest p-6 pb-4 relative overflow-hidden">
-        {/* Decorative circles */}
         <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-white/5 -translate-y-8 translate-x-8" />
         <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full bg-white/5 translate-y-8 -translate-x-8" />
 
-        {/* Badge */}
         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-sm text-white text-xs font-semibold mb-4">
           {'\u{1F4D6}'} Lecture du jour
         </span>
-
-        {/* Reference */}
         <p className="text-white/70 text-sm font-medium uppercase tracking-wider mb-1">
           {lecture.reference}
         </p>
-
-        {/* Title */}
         <h2 className="text-2xl font-bold text-white mb-4">
           {lecture.titre}
         </h2>
@@ -62,11 +81,31 @@ export function DailyReading({ lecture }: DailyReadingProps) {
           </p>
         </blockquote>
 
-        {/* Full chapter (expandable) */}
+        {/* Chapitre complet (expandable) */}
         {showFull && (
-          <div className="mb-5 rounded-xl bg-cream-50 p-5 text-sm leading-relaxed text-ink-700 border border-forest-900/6">
-            <p className="mb-3">{lecture.texte}</p>
-            <p className="italic text-ink-500">Le texte complet du chapitre sera disponible avec l&apos;integration de l&apos;API Bible. Pour le moment, relisez le verset du jour ci-dessus.</p>
+          <div className="mb-5 rounded-xl bg-cream-50 p-5 border border-forest-900/6">
+            {loadingChapter ? (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="w-5 h-5 animate-spin text-forest-700" />
+              </div>
+            ) : chapter && chapter.versets.length > 0 ? (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-forest-700 uppercase tracking-wider mb-3">
+                  {chapter.livre} {chapter.chapitre}
+                </p>
+                {chapter.versets.map((v) => (
+                  <p key={v.numero} className="text-sm leading-relaxed text-ink-700">
+                    <span className="text-xs font-bold text-gold-600 mr-2">{v.numero}</span>
+                    {v.texte}
+                  </p>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm italic text-ink-500 text-center py-4">
+                Le texte complet sera disponible après l&apos;import de la Bible.
+                Lancez <code className="bg-sage-200 px-1 rounded">npm run import:bible</code> dans le dossier api/.
+              </p>
+            )}
           </div>
         )}
 
@@ -118,16 +157,11 @@ export function DailyReading({ lecture }: DailyReadingProps) {
               placeholder={`Note sur ${lecture.reference}...`}
             />
             <button
-              onClick={() => {
-                if (noteText.trim()) {
-                  addToast('Note enregistree', 'success');
-                  setNoteText('');
-                  setNoteOpen(false);
-                }
-              }}
-              className="px-5 py-2 bg-forest-900 text-white text-sm font-semibold rounded-xl hover:bg-forest-700 transition-colors"
+              disabled={createNote.isPending || !noteText.trim()}
+              onClick={handleSaveNote}
+              className="px-5 py-2 bg-forest-900 text-white text-sm font-semibold rounded-xl hover:bg-forest-700 transition-colors disabled:opacity-60"
             >
-              Enregistrer
+              {createNote.isPending ? 'Enregistrement...' : 'Enregistrer'}
             </button>
           </div>
         )}

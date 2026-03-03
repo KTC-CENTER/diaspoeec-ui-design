@@ -1,6 +1,7 @@
 'use client';
 
 import { use, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -11,15 +12,20 @@ import {
   ExternalLink,
   CalendarPlus,
   Send,
+  Heart,
   Loader2,
   Link as LinkIcon,
+  Video,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
-import { formatDate } from '@/lib/utils/format';
-import { useEvenement } from '@/features/evenements/hooks/use-evenements';
+import { formatDate, formatRelativeTime, getInitials } from '@/lib/utils/format';
+import { useEvenement, useEventComments, useCreateEventComment } from '@/features/evenements/hooks/use-evenements';
 import { ProgrammeList } from '@/features/evenements/components/programme-list';
 import { RSVPForm } from '@/features/evenements/components/rsvp-form';
+import { EmojiPicker } from '@/components/shared/emoji-picker';
 import { useToastStore } from '@/stores/toast.store';
+import { useAuthStore } from '@/stores/auth.store';
+import type { Comment } from '@/types';
 
 const typeGradients: Record<string, string> = {
   culte: 'from-forest-900 via-forest-700 to-sage-400',
@@ -57,11 +63,255 @@ const XIcon = () => (
   </svg>
 );
 
-const initialComments = [
-  { initials: 'MF', nom: 'Marie', texte: "Hate d'y etre !", gradient: 'from-gold-600 to-gold-400' },
-  { initials: 'SB', nom: 'Samuel', texte: 'Je viens avec ma famille', gradient: 'from-forest-900 to-sage-400' },
-  { initials: 'PE', nom: 'Paul', texte: "Quelqu'un propose du covoiturage depuis le 13e ?", gradient: 'from-terra-600 to-gold-600' },
+const commentAvatarColors = [
+  'bg-terra-600',
+  'bg-gold-600',
+  'bg-forest-700',
+  'bg-forest-900',
+  'bg-sage-400',
 ];
+
+function ReplyItem({ reply }: { reply: Comment }) {
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(reply.likes);
+
+  return (
+    <div className="flex items-start gap-3">
+      <div className="w-8 h-8 rounded-full text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0 gradient-forest">
+        {getInitials(reply.auteurNom)}
+      </div>
+      <div className="flex-1">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <h4 className="text-sm font-semibold text-ink-900">{reply.auteurNom}</h4>
+          </div>
+          <span className="text-xs text-ink-400">
+            {formatRelativeTime(reply.createdAt)}
+          </span>
+        </div>
+        <p className="text-sm text-ink-600 leading-relaxed mb-2">
+          {reply.contenu}
+        </p>
+        <button
+          onClick={() => {
+            setLiked((prev) => !prev);
+            setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
+          }}
+          className={cn(
+            'flex items-center gap-1 text-xs transition-colors',
+            liked ? 'text-red-500' : 'text-ink-400 hover:text-red-500'
+          )}
+        >
+          <Heart className={cn('w-3.5 h-3.5', liked && 'fill-current')} />
+          <span>{likeCount}</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function EventCommentItem({ comment, index = 0, evenementId }: { comment: Comment; index?: number; evenementId: string }) {
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(comment.likes);
+  const [replyOpen, setReplyOpen] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const { addToast } = useToastStore();
+  const createReply = useCreateEventComment();
+
+  const handleReply = () => {
+    if (!replyText.trim()) return;
+    createReply.mutate(
+      { targetType: 'evenement', targetId: evenementId, contenu: replyText.trim(), parentId: comment.id },
+      {
+        onSuccess: () => {
+          addToast(`Reponse envoyee a ${comment.auteurNom}`, 'success');
+          setReplyText('');
+          setReplyOpen(false);
+        },
+        onError: () => {
+          addToast('Erreur lors de l\'envoi', 'error');
+        },
+      }
+    );
+  };
+
+  const avatarColor = commentAvatarColors[index % commentAvatarColors.length];
+
+  return (
+    <div className="bg-white rounded-2xl border border-forest-900/6 p-4 shadow-sm">
+      <div className="flex items-start gap-3">
+        <div className={cn(
+          'w-9 h-9 rounded-full text-white flex items-center justify-center text-xs font-bold flex-shrink-0',
+          avatarColor
+        )}>
+          {getInitials(comment.auteurNom)}
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <h4 className="text-sm font-semibold text-ink-900">{comment.auteurNom}</h4>
+              {comment.auteurRole && (
+                <span className="px-1.5 py-0.5 rounded-full bg-forest-900/10 text-forest-900 text-[10px] font-medium">
+                  {comment.auteurRole}
+                </span>
+              )}
+            </div>
+            <span className="text-xs text-ink-400">
+              {formatRelativeTime(comment.createdAt)}
+            </span>
+          </div>
+          <p className="text-sm text-ink-600 leading-relaxed mb-2">
+            {comment.contenu}
+          </p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => {
+                setLiked((prev) => !prev);
+                setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
+              }}
+              className={cn(
+                'flex items-center gap-1 text-xs transition-colors',
+                liked ? 'text-red-500' : 'text-ink-400 hover:text-red-500'
+              )}
+            >
+              <Heart className={cn('w-3.5 h-3.5', liked && 'fill-current')} />
+              <span>{likeCount}</span>
+            </button>
+            <button
+              onClick={() => setReplyOpen((prev) => !prev)}
+              className={cn(
+                'text-xs transition-colors',
+                replyOpen ? 'text-forest-900 font-medium' : 'text-ink-400 hover:text-forest-900'
+              )}
+            >
+              Repondre
+            </button>
+          </div>
+
+          {replyOpen && (
+            <div className="mt-3">
+              <textarea
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleReply(); } }}
+                placeholder={`Repondre a ${comment.auteurNom}...`}
+                className="w-full resize-none border border-forest-900/10 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-900/20 h-10 focus:h-20 transition-all"
+                rows={1}
+              />
+              <div className="mt-1.5 flex items-center justify-between">
+                <EmojiPicker onSelect={(emoji) => setReplyText((prev) => prev + emoji)} />
+                <button
+                  onClick={handleReply}
+                  className="w-8 h-8 rounded-lg bg-forest-900 text-white flex items-center justify-center hover:bg-forest-700 transition-colors"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {comment.replies && comment.replies.length > 0 && (
+            <div className="mt-4 border-l-2 border-sage-400 pl-4 space-y-3">
+              {comment.replies.map((reply) => (
+                <ReplyItem key={reply.id} reply={reply} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EventCommentSection({ evenementId }: { evenementId: string }) {
+  const { data: comments, isLoading } = useEventComments(evenementId);
+  const [newComment, setNewComment] = useState('');
+  const { addToast } = useToastStore();
+  const user = useAuthStore((s) => s.user);
+  const createComment = useCreateEventComment();
+
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!newComment.trim()) return;
+    createComment.mutate(
+      { targetType: 'evenement', targetId: evenementId, contenu: newComment.trim() },
+      {
+        onSuccess: () => {
+          addToast('Commentaire publie !', 'success');
+          setNewComment('');
+        },
+        onError: () => {
+          addToast('Erreur lors de la publication', 'error');
+        },
+      }
+    );
+  };
+
+  return (
+    <div>
+      <h2 className="font-heading text-xl font-bold text-forest-900 mb-5">
+        {comments?.length || 0} Commentaires
+      </h2>
+
+      {/* Add Comment */}
+      <div className="bg-white rounded-2xl border border-forest-900/6 p-4 mb-5 shadow-sm">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-full gradient-forest flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+            {user ? getInitials(user.nomComplet) : 'U'}
+          </div>
+          <div className="flex-1">
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
+              placeholder="Ecrire un commentaire..."
+              className="w-full resize-none border border-forest-900/10 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest-900/20 focus:border-forest-900/30 transition-all h-12 focus:h-24"
+              rows={1}
+            />
+            <div className="mt-2 flex items-center justify-between">
+              <EmojiPicker onSelect={(emoji) => setNewComment((prev) => prev + emoji)} />
+              <button
+                onClick={() => handleSubmit()}
+                className="w-8 h-8 rounded-lg bg-forest-900 text-white flex items-center justify-center hover:bg-forest-700 transition-colors"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Comments List */}
+      {isLoading ? (
+        <div className="space-y-4">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-2xl border border-forest-900/6 p-4 shadow-sm">
+              <div className="flex gap-3">
+                <div className="h-9 w-9 shrink-0 rounded-full shimmer-bg" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3 w-24 rounded shimmer-bg" />
+                  <div className="h-3 w-full rounded shimmer-bg" />
+                  <div className="h-3 w-2/3 rounded shimmer-bg" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {comments?.map((comment, index) => (
+            <EventCommentItem key={comment.id} comment={comment} index={index} evenementId={evenementId} />
+          ))}
+          {comments?.length === 0 && (
+            <p className="py-8 text-center text-sm text-ink-400">
+              Soyez le premier a commenter cet evenement.
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function EvenementDetailPage({
   params,
@@ -70,9 +320,10 @@ export default function EvenementDetailPage({
 }) {
   const { id } = use(params);
   const { data: evenement, isLoading } = useEvenement(id);
+  const searchParams = useSearchParams();
+  const backTo = searchParams.get('from') === 'cultes' ? '/cultes' : '/evenements';
+  const backLabel = searchParams.get('from') === 'cultes' ? 'Cultes' : 'Evenements';
   const { addToast } = useToastStore();
-  const [commentText, setCommentText] = useState('');
-  const [comments, setComments] = useState(initialComments);
 
   if (isLoading) {
     return (
@@ -133,32 +384,16 @@ export default function EvenementDetailPage({
     );
   };
 
-  // Participant avatars for display
-  const avatarData = [
-    { initials: 'MC', gradient: 'from-forest-900 to-sage-400' },
-    { initials: 'SB', gradient: 'from-gold-600 to-gold-400' },
-    { initials: 'PE', gradient: 'from-terra-600 to-gold-600' },
-    { initials: 'JA', gradient: 'from-forest-700 to-forest-900' },
-    { initials: 'EN', gradient: 'from-sage-400 to-forest-900' },
-    { initials: 'DN', gradient: 'from-gold-400 to-terra-600' },
-    { initials: 'RM', gradient: 'from-forest-900 to-forest-700' },
-    { initials: 'AB', gradient: 'from-terra-600 to-gold-600' },
+  const participantGradients = [
+    'from-forest-900 to-sage-400',
+    'from-gold-600 to-gold-400',
+    'from-terra-600 to-gold-600',
+    'from-forest-700 to-forest-900',
+    'from-sage-400 to-forest-900',
+    'from-gold-400 to-terra-600',
+    'from-forest-900 to-forest-700',
+    'from-terra-600 to-gold-600',
   ];
-
-  const handleAddComment = () => {
-    if (!commentText.trim()) return;
-    setComments((prev) => [
-      ...prev,
-      {
-        initials: 'JP',
-        nom: 'Jean-Paul',
-        texte: commentText.trim(),
-        gradient: 'from-forest-700 to-forest-900',
-      },
-    ]);
-    setCommentText('');
-    addToast('Commentaire ajoute', 'success');
-  };
 
   const handleAddToCalendar = () => {
     const start = new Date(evenement.date);
@@ -191,11 +426,11 @@ export default function EvenementDetailPage({
       {/* Back button */}
       <div className="px-4 md:px-8 pt-4">
         <Link
-          href="/evenements"
+          href={backTo}
           className="flex items-center gap-2 text-forest-900 font-medium hover:text-forest-700 transition text-sm mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
-          Evenements
+          {backLabel}
         </Link>
       </div>
 
@@ -327,9 +562,34 @@ export default function EvenementDetailPage({
           )}
         </div>
 
+        {/* Lien en ligne (culte YouTube/Zoom) */}
+        {evenement.lienZoom && (
+          <div className="mb-8 overflow-hidden rounded-2xl bg-gradient-to-r from-forest-900 to-forest-700 p-6 shadow-lg animate-[fade-up_0.5s_ease-out_0.25s_both]">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-white/60 mb-1">
+                  Culte en ligne
+                </p>
+                <p className="text-white font-semibold">
+                  Rejoignez ce culte depuis chez vous
+                </p>
+              </div>
+              <a
+                href={evenement.lienZoom}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex shrink-0 items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-forest-900 shadow-md transition-opacity hover:opacity-90"
+              >
+                <Video className="h-4 w-4" />
+                Rejoindre en ligne
+              </a>
+            </div>
+          </div>
+        )}
+
         {/* RSVP */}
         <div className="mb-8 animate-[fade-up_0.5s_ease-out_0.3s_both]">
-          <RSVPForm eventId={evenement.id} />
+          <RSVPForm eventId={evenement.id} userParticipe={evenement.userParticipe} />
         </div>
 
         {/* Attendees */}
@@ -338,28 +598,30 @@ export default function EvenementDetailPage({
             <h2 className="font-heading text-xl font-bold text-forest-900 mb-4">
               Participants ({evenement.participantsInscrits})
             </h2>
-            <div className="flex gap-4 overflow-x-auto pb-2">
-              {avatarData.slice(0, Math.min(8, evenement.participantsInscrits)).map((avatar, i) => (
-                <div key={i} className="flex flex-col items-center flex-shrink-0">
-                  <div className={cn(
-                    'w-12 h-12 rounded-full bg-gradient-to-br flex items-center justify-center text-white text-xs font-bold',
-                    avatar.gradient
-                  )}>
-                    {avatar.initials}
+            <div className="flex gap-4 overflow-x-auto pb-2 items-center">
+              <div className="flex [&>*:not(:first-child)]:-ml-3">
+                {Array.from({ length: Math.min(8, evenement.participantsInscrits) }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      'w-11 h-11 rounded-full bg-gradient-to-br border-2 border-white flex items-center justify-center',
+                      participantGradients[i % participantGradients.length]
+                    )}
+                  >
+                    <svg className="w-5 h-5 text-white opacity-80" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd"/>
+                    </svg>
                   </div>
-                  <span className="text-[10px] text-ink-600 mt-1">
-                    {avatar.initials.charAt(0)}.
-                  </span>
-                </div>
-              ))}
-              {evenement.participantsInscrits > 8 && (
-                <div className="flex flex-col items-center flex-shrink-0">
-                  <div className="w-12 h-12 rounded-full bg-ink-200 flex items-center justify-center text-ink-600 text-xs font-bold">
+                ))}
+                {evenement.participantsInscrits > 8 && (
+                  <div className="w-11 h-11 rounded-full bg-ink-200 border-2 border-white flex items-center justify-center text-ink-700 text-xs font-bold">
                     +{evenement.participantsInscrits - 8}
                   </div>
-                  <span className="text-[10px] text-ink-600 mt-1">autres</span>
-                </div>
-              )}
+                )}
+              </div>
+              <span className="text-sm text-ink-500 ml-2 whitespace-nowrap">
+                {evenement.participantsInscrits} participant{evenement.participantsInscrits > 1 ? 's' : ''} inscrit{evenement.participantsInscrits > 1 ? 's' : ''}
+              </span>
             </div>
           </div>
         )}
@@ -402,48 +664,8 @@ export default function EvenementDetailPage({
         </div>
 
         {/* Comments */}
-        <div className="bg-white rounded-2xl shadow-sm border border-sage-200/30 p-6 mb-8 animate-[fade-up_0.5s_ease-out_0.4s_both]">
-          <h2 className="font-heading text-xl font-bold text-forest-900 mb-4">
-            Commentaires ({evenement.commentCount})
-          </h2>
-          {evenement.commentCount === 0 ? (
-            <p className="text-sm text-ink-500 text-center py-4">
-              Aucun commentaire pour le moment. Soyez le premier !
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {comments.map((comment, i) => (
-                <div key={i} className="flex gap-3">
-                  <div className={cn(
-                    'w-9 h-9 rounded-full bg-gradient-to-br flex items-center justify-center text-white text-xs font-bold flex-shrink-0',
-                    comment.gradient
-                  )}>
-                    {comment.initials}
-                  </div>
-                  <div className="flex-1 bg-cream-50 rounded-xl p-3">
-                    <p className="text-sm font-semibold text-ink-900 mb-0.5">{comment.nom}</p>
-                    <p className="text-sm text-ink-600">{comment.texte}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          <div className="mt-4 flex gap-2">
-            <input
-              type="text"
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
-              placeholder="Ajouter un commentaire..."
-              className="flex-1 px-4 py-2.5 rounded-xl border border-ink-200 text-sm focus:border-forest-900 focus:ring-2 focus:ring-sage-200 outline-none"
-            />
-            <button
-              onClick={handleAddComment}
-              className="px-4 py-2.5 bg-forest-900 text-white rounded-xl text-sm font-medium hover:bg-forest-700 transition hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </div>
+        <div className="mb-8 animate-[fade-up_0.5s_ease-out_0.4s_both]">
+          <EventCommentSection evenementId={id} />
         </div>
 
         {/* Add to calendar */}

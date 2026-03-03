@@ -1,11 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowRight, User, Phone } from 'lucide-react';
+import { ArrowRight, User, Phone, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { OnboardingSteps } from '@/features/auth/components/onboarding-steps';
+import { useAuthStore } from '@/stores/auth.store';
+import { updateMember } from '@/lib/api/members.api';
 import {
   onboardingIdentitySchema,
   type OnboardingIdentityFormData,
@@ -13,6 +16,8 @@ import {
 
 export default function OnboardingIdentityPage() {
   const router = useRouter();
+  const { user, updateUser } = useAuthStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
@@ -31,8 +36,20 @@ export default function OnboardingIdentityPage() {
 
   const selectedSexe = watch('sexe');
 
-  const onSubmit = (_data: OnboardingIdentityFormData) => {
-    router.push('/onboarding/diaspora');
+  const onSubmit = async (data: OnboardingIdentityFormData) => {
+    if (!user) return;
+    setIsSubmitting(true);
+    try {
+      const updated = await updateMember(user.id, {
+        ...data,
+      });
+      updateUser(updated);
+      router.push('/onboarding/diaspora');
+    } catch {
+      router.push('/onboarding/diaspora');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -131,13 +148,20 @@ export default function OnboardingIdentityPage() {
         {/* Submit */}
         <button
           type="submit"
+          disabled={isSubmitting}
           className={cn(
             'flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white transition-all',
-            'bg-forest-900 hover:bg-forest-700 active:scale-[0.98]'
+            'bg-forest-900 hover:bg-forest-700 active:scale-[0.98] disabled:opacity-60'
           )}
         >
-          Continuer
-          <ArrowRight className="h-4 w-4" />
+          {isSubmitting ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <>
+              Continuer
+              <ArrowRight className="h-4 w-4" />
+            </>
+          )}
         </button>
       </form>
     </div>

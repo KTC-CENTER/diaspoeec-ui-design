@@ -12,9 +12,13 @@ import {
   Radio,
   CalendarPlus,
   MoreHorizontal,
+  Users,
+  Shield,
+  Check,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { formatRelativeTime } from '@/lib/utils/format';
+import { useMarkAsRead } from '@/features/notifications/hooks/use-notifications';
 import type { Notification, NotificationType } from '@/types';
 
 interface NotificationListProps {
@@ -80,6 +84,18 @@ const typeConfig: Record<
     iconBg: 'bg-gold-600/10',
     borderColor: 'border-l-gold-600/50',
   },
+  nouveau_membre: {
+    icon: Users,
+    iconColor: 'text-forest-600',
+    iconBg: 'bg-forest-600/10',
+    borderColor: 'border-l-forest-600/50',
+  },
+  moderation: {
+    icon: Shield,
+    iconColor: 'text-red-500',
+    iconBg: 'bg-red-50',
+    borderColor: 'border-l-red-400',
+  },
 };
 
 function groupNotificationsByPeriod(notifications: Notification[]) {
@@ -119,6 +135,7 @@ function NotificationItem({ notification }: { notification: Notification }) {
     borderColor: 'border-l-ink-300',
   };
   const Icon = config.icon;
+  const markAsRead = useMarkAsRead();
 
   const content = (
     <div
@@ -126,6 +143,7 @@ function NotificationItem({ notification }: { notification: Notification }) {
         'flex items-start gap-4 rounded-2xl border border-sage-400/10 bg-white p-4 shadow-sm transition-all duration-200',
         'border-l-4',
         config.borderColor,
+        !notification.lu && 'bg-cream-50/80',
         'hover:bg-cream-100/60 hover:translate-x-1'
       )}
     >
@@ -157,10 +175,24 @@ function NotificationItem({ notification }: { notification: Notification }) {
         </p>
       </div>
 
-      {/* More options button */}
-      <button className="flex-shrink-0 rounded-lg p-1.5 transition-colors hover:bg-sage-100/50">
-        <MoreHorizontal className="h-4 w-4 text-ink-500" />
-      </button>
+      {/* Mark as read button */}
+      {!notification.lu ? (
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            markAsRead.mutate(notification.id);
+          }}
+          className="flex-shrink-0 rounded-lg p-1.5 transition-colors hover:bg-sage-100/50"
+          title="Marquer comme lu"
+        >
+          <Check className="h-4 w-4 text-ink-500" />
+        </button>
+      ) : (
+        <button className="flex-shrink-0 rounded-lg p-1.5 transition-colors hover:bg-sage-100/50">
+          <MoreHorizontal className="h-4 w-4 text-ink-500" />
+        </button>
+      )}
     </div>
   );
 

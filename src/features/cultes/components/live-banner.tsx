@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { Radio, Video } from 'lucide-react';
 import { formatRelativeTime } from '@/lib/utils/format';
 import type { Video as VideoType } from '@/types';
@@ -9,6 +10,7 @@ interface LiveBannerProps {
 }
 
 export function LiveBanner({ video }: LiveBannerProps) {
+  const router = useRouter();
   const startedAgo = formatRelativeTime(video.publishedAt);
 
   return (
@@ -31,8 +33,11 @@ export function LiveBanner({ video }: LiveBannerProps) {
         </span>
       </div>
 
-      {/* Video placeholder */}
-      <div className="group relative mx-5 my-3 flex aspect-video cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[#1a1a2e] via-[#2d1b45] to-forest-900/40">
+      {/* Video placeholder — clique ouvre le player intégré */}
+      <div
+        onClick={() => router.push(`/cultes/${video.id}`)}
+        className="group relative mx-5 my-3 flex aspect-video cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[#1a1a2e] via-[#2d1b45] to-forest-900/40"
+      >
         {/* Decorative rings */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="h-32 w-32 rounded-full border border-white/5" />
@@ -62,7 +67,7 @@ export function LiveBanner({ video }: LiveBannerProps) {
           Commence {startedAgo}
         </p>
         <button
-          onClick={() => window.open(video.youtubeUrl || `https://www.youtube.com/results?search_query=${encodeURIComponent(video.titre)}`, '_blank')}
+          onClick={() => router.push(`/cultes/${video.id}`)}
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-terra-600 px-8 py-3 font-semibold text-white shadow-lg shadow-red-600/30 transition-all duration-300 hover:from-red-700 hover:to-terra-600/90 hover:shadow-red-600/40 sm:w-auto"
         >
           <Radio className="h-5 w-5" />

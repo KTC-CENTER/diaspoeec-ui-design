@@ -15,8 +15,12 @@ export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const hasHydrated = useAuthStore((s) => s._hasHydrated);
 
   useEffect(() => {
+    // Wait for Zustand to rehydrate from localStorage before checking auth
+    if (!hasHydrated) return;
+
     if (!isAuthenticated) {
       router.replace('/login');
       return;
@@ -24,9 +28,10 @@ export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
     if (user && !allowedRoles.includes(user.role)) {
       router.replace('/accueil');
     }
-  }, [user, isAuthenticated, allowedRoles, router]);
+  }, [user, isAuthenticated, hasHydrated, allowedRoles, router]);
 
-  if (!user || !allowedRoles.includes(user.role)) {
+  // Show loader while hydrating or while auth check is pending
+  if (!hasHydrated || !user || !allowedRoles.includes(user.role)) {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 className="h-8 w-8 animate-spin text-forest-700" />

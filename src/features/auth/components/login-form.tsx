@@ -74,9 +74,9 @@ export function LoginForm() {
               borderColor: errors.email ? '#f87171' : focusedField === 'email' ? '#2D6A4F' : '#D8F3DC',
               ...(focusedField === 'email' ? inputFocusStyle : {}),
             }}
+            {...register('email')}
             onFocus={() => setFocusedField('email')}
             onBlur={() => setFocusedField(null)}
-            {...register('email')}
           />
         </div>
         {errors.email && (
@@ -102,9 +102,9 @@ export function LoginForm() {
               borderColor: errors.password ? '#f87171' : focusedField === 'password' ? '#2D6A4F' : '#D8F3DC',
               ...(focusedField === 'password' ? inputFocusStyle : {}),
             }}
+            {...register('password')}
             onFocus={() => setFocusedField('password')}
             onBlur={() => setFocusedField(null)}
-            {...register('password')}
           />
           <button
             type="button"

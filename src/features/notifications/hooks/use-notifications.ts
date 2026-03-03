@@ -1,16 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { mockNotifications } from '@/lib/mock/notifications.mock';
-import { delay } from '@/lib/utils/format';
+import { getNotifications, markAsRead, markAllAsRead } from '@/lib/api/notifications.api';
 
 export function useNotifications(filter?: 'all' | 'unread') {
   return useQuery({
     queryKey: ['notifications', filter],
     queryFn: async () => {
-      await delay(250);
       if (filter === 'unread') {
-        return mockNotifications.filter((n) => !n.lu);
+        return getNotifications({ lu: false });
       }
-      return mockNotifications;
+      return getNotifications();
     },
   });
 }
@@ -20,8 +18,11 @@ export function useMarkAsRead() {
 
   return useMutation({
     mutationFn: async (notificationId?: string) => {
-      await delay(150);
-      // In production: PATCH /api/notifications/:id or /api/notifications/mark-all-read
+      if (notificationId) {
+        await markAsRead(notificationId);
+      } else {
+        await markAllAsRead();
+      }
       return { notificationId };
     },
     onSuccess: () => {
@@ -32,8 +33,6 @@ export function useMarkAsRead() {
 
 export function useUnreadCount() {
   const { data: notifications } = useNotifications('all');
-
   const count = notifications?.filter((n) => !n.lu).length || 0;
-
   return count;
 }

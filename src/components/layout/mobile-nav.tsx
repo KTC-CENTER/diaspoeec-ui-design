@@ -3,7 +3,7 @@
 import { useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, Bell, LogOut, Home, BookOpen, Calendar, Heart, User, Church, Radio, Settings, PenSquare, CalendarPlus, ClipboardList } from 'lucide-react';
+import { Menu, X, Bell, LogOut, Home, BookOpen, Calendar, Heart, User, Church, Radio, Settings, PenSquare, CalendarPlus, ClipboardList, BookCheck } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useUIStore } from '@/stores/ui.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -37,6 +37,7 @@ function getMobileGestionItems(role?: UserRole): MobileNavItem[] {
   const items: MobileNavItem[] = [];
   if (role === 'pasteur' || role === 'admin') {
     items.push({ icon: PenSquare, label: 'Mes meditations', href: '/gestion/meditations' });
+    items.push({ icon: BookCheck, label: 'Plans Bible', href: '/gestion/bible' });
   }
   if (role === 'pasteur' || role === 'responsable_zone' || role === 'admin') {
     items.push({ icon: CalendarPlus, label: 'Mes evenements', href: '/gestion/evenements' });

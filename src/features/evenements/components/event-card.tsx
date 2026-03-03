@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { MapPin, Clock, Check } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { formatDate } from '@/lib/utils/format';
 import { useToastStore } from '@/stores/toast.store';
+import { useRSVP } from '@/features/evenements/hooks/use-evenements';
 import type { Evenement } from '@/types';
 
 const typeColors: Record<string, {
@@ -78,8 +79,14 @@ interface EventCardProps {
 }
 
 export function EventCard({ evenement, delay = 0 }: EventCardProps) {
-  const [inscrit, setInscrit] = useState(false);
+  const [inscrit, setInscrit] = useState(evenement.userParticipe ?? false);
+
+  // Sync with API data when the event is refetched after RSVP
+  useEffect(() => {
+    setInscrit(evenement.userParticipe ?? false);
+  }, [evenement.userParticipe]);
   const { addToast } = useToastStore();
+  const rsvpMutation = useRSVP();
   const colors = typeColors[evenement.type] || typeColors.culte;
   const dayNum = formatDate(evenement.date, 'dd');
   const monthShort = formatDate(evenement.date, 'MMM').toUpperCase();
@@ -148,24 +155,14 @@ export function EventCard({ evenement, delay = 0 }: EventCardProps) {
 
             {/* Bottom row */}
             <div className="flex items-center justify-between mt-3">
-              <div className="flex items-center">
-                {/* Avatar stack */}
-                <div className="flex [&>*:not(:first-child)]:-ml-2.5">
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gold-400 to-gold-600 border-2 border-white text-[9px] font-bold flex items-center justify-center text-forest-900">
-                    MF
-                  </div>
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-sage-400 to-forest-900 border-2 border-white text-[9px] font-bold flex items-center justify-center text-white">
-                    SB
-                  </div>
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-terra-600 to-gold-600 border-2 border-white text-[9px] font-bold flex items-center justify-center text-white">
-                    PE
-                  </div>
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-forest-700 to-forest-900 border-2 border-white text-[9px] font-bold flex items-center justify-center text-white">
-                    JA
-                  </div>
+              <div className="flex items-center gap-1.5">
+                <div className={cn('w-5 h-5 rounded-full flex items-center justify-center', colors.badge)}>
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM17 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 0 0-1.5-4.33A5 5 0 0 1 19 16v1h-6.07zM6 11a5 5 0 0 1 5 5v1H1v-1a5 5 0 0 1 5-5z"/>
+                  </svg>
                 </div>
-                <span className="ml-2 text-xs text-ink-600 font-medium">
-                  +{evenement.participantsInscrits} inscrits
+                <span className="text-xs text-ink-600 font-medium">
+                  {evenement.participantsInscrits} inscrits
                 </span>
               </div>
 
@@ -180,10 +177,22 @@ export function EventCard({ evenement, delay = 0 }: EventCardProps) {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  setInscrit(!inscrit);
-                  addToast(
-                    inscrit ? 'Inscription annulee' : `Inscription confirmee pour "${evenement.titre}"`,
-                    inscrit ? 'info' : 'success'
+                  const wasInscrit = inscrit;
+                  setInscrit(!wasInscrit);
+                  rsvpMutation.mutate(
+                    { eventId: evenement.id, participe: !wasInscrit, nombrePersonnes: 1 },
+                    {
+                      onSuccess: () => {
+                        addToast(
+                          wasInscrit ? 'Inscription annulee' : `Inscription confirmee pour "${evenement.titre}"`,
+                          wasInscrit ? 'info' : 'success'
+                        );
+                      },
+                      onError: () => {
+                        setInscrit(wasInscrit);
+                        addToast('Erreur lors de l\'inscription', 'error');
+                      },
+                    }
                   );
                 }}
               >

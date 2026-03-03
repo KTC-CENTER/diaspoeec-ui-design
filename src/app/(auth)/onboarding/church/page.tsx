@@ -1,11 +1,15 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { CustomSelect } from '@/components/forms/custom-select';
 import { OnboardingSteps } from '@/features/auth/components/onboarding-steps';
+import { useAuthStore } from '@/stores/auth.store';
+import { updateMember } from '@/lib/api/members.api';
 import {
   onboardingChurchSchema,
   type OnboardingChurchFormData,
@@ -62,6 +66,8 @@ function MinistryChips({
 
 export default function OnboardingChurchPage() {
   const router = useRouter();
+  const { user, updateUser } = useAuthStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
@@ -81,8 +87,18 @@ export default function OnboardingChurchPage() {
 
   const baptise = watch('baptise');
 
-  const onSubmit = (_data: OnboardingChurchFormData) => {
-    router.push('/onboarding/welcome');
+  const onSubmit = async (data: OnboardingChurchFormData) => {
+    if (!user) return;
+    setIsSubmitting(true);
+    try {
+      const updated = await updateMember(user.id, data);
+      updateUser(updated);
+      router.push('/onboarding/welcome');
+    } catch {
+      router.push('/onboarding/welcome');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -101,28 +117,16 @@ export default function OnboardingChurchPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Paroisse d'origine */}
         <div className="space-y-1.5">
-          <label
-            htmlFor="paroisseOrigine"
-            className="block text-sm font-medium text-ink-700"
-          >
+          <label className="block text-sm font-medium text-ink-700">
             Paroisse d&apos;origine
           </label>
-          <select
-            id="paroisseOrigine"
-            className={cn(
-              'w-full rounded-xl border bg-white px-4 py-3 text-sm transition-colors',
-              'focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20',
-              errors.paroisseOrigine ? 'border-red-400' : 'border-ink-200'
-            )}
-            {...register('paroisseOrigine')}
-          >
-            <option value="">S&eacute;lectionnez votre paroisse</option>
-            {PAROISSES.map((paroisse) => (
-              <option key={paroisse.value} value={paroisse.value}>
-                {paroisse.label}
-              </option>
-            ))}
-          </select>
+          <CustomSelect
+            value={watch('paroisseOrigine') || ''}
+            onChange={(value) => setValue('paroisseOrigine', value, { shouldValidate: true })}
+            options={PAROISSES}
+            placeholder="Selectionnez votre paroisse"
+            error={!!errors.paroisseOrigine}
+          />
           {errors.paroisseOrigine && (
             <p className="text-xs text-red-600">
               {errors.paroisseOrigine.message}
@@ -193,12 +197,17 @@ export default function OnboardingChurchPage() {
           </button>
           <button
             type="submit"
+            disabled={isSubmitting}
             className={cn(
               'flex flex-1 items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white transition-all',
-              'bg-gold-600 hover:bg-gold-700 active:scale-[0.98]'
+              'bg-gold-600 hover:bg-gold-700 active:scale-[0.98] disabled:opacity-60'
             )}
           >
-            Terminer
+            {isSubmitting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              'Terminer'
+            )}
           </button>
         </div>
       </form>

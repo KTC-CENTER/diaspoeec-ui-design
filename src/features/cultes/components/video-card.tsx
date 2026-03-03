@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Heart, Share2 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { formatRelativeTime } from '@/lib/utils/format';
 import { useToastStore } from '@/stores/toast.store';
+import { useToggleVideoLike } from '../hooks/use-cultes';
 import type { Video } from '@/types';
 
 interface VideoCardProps {
@@ -22,11 +24,17 @@ function formatDuration(seconds: number): string {
 }
 
 export function VideoCard({ video }: VideoCardProps) {
-  const [liked, setLiked] = useState(false);
+  const router = useRouter();
+  const [liked, setLiked] = useState(video.userLiked ?? false);
+  const [likesCount, setLikesCount] = useState(video.likes);
   const { addToast } = useToastStore();
+  const toggleLike = useToggleVideoLike();
 
   return (
-    <div className="group cursor-pointer overflow-hidden rounded-2xl border border-sage-400/10 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(27,67,50,0.12)]">
+    <div
+      onClick={() => router.push(`/cultes/${video.id}`)}
+      className="group cursor-pointer overflow-hidden rounded-2xl border border-sage-400/10 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(27,67,50,0.12)]"
+    >
       {/* 16:9 Thumbnail */}
       <div
         className={cn(
@@ -84,7 +92,7 @@ export function VideoCard({ video }: VideoCardProps) {
             <span>{video.vues} vues</span>
             <span className="flex items-center gap-1">
               <Heart className="h-3 w-3 text-red-400" />
-              {video.likes}
+              {likesCount}
             </span>
             <span>{formatRelativeTime(video.publishedAt)}</span>
           </div>
@@ -92,17 +100,35 @@ export function VideoCard({ video }: VideoCardProps) {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setLiked((prev) => !prev);
+                const newLiked = !liked;
+                setLiked(newLiked);
+                setLikesCount((prev) => prev + (newLiked ? 1 : -1));
+                toggleLike.mutate(video.id, {
+                  onError: () => {
+                    setLiked(!newLiked);
+                    setLikesCount((prev) => prev + (newLiked ? -1 : 1));
+                  },
+                });
               }}
+              disabled={toggleLike.isPending}
               className="rounded-lg p-1.5 transition-colors hover:bg-sage-100/50"
             >
               <Heart className={cn('h-4 w-4', liked ? 'fill-red-400 text-red-400' : 'text-ink-500')} />
             </button>
             <button
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.stopPropagation();
-                navigator.clipboard.writeText(window.location.href);
-                addToast('Lien copie dans le presse-papier', 'success');
+                const url = `${window.location.origin}/cultes/${video.id}`;
+                if (navigator.share) {
+                  try {
+                    await navigator.share({ title: video.titre, url });
+                  } catch {
+                    // user dismissed share sheet — silently ignore
+                  }
+                } else {
+                  await navigator.clipboard.writeText(url);
+                  addToast('Lien copie dans le presse-papier', 'success');
+                }
               }}
               className="rounded-lg p-1.5 transition-colors hover:bg-sage-100/50"
             >

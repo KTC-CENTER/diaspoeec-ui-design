@@ -6,6 +6,7 @@ import { Heart, MessageCircle, Share2 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { formatRelativeTime } from '@/lib/utils/format';
 import { useToastStore } from '@/stores/toast.store';
+import { useLikeMeditation } from '@/features/meditations/hooks/use-meditations';
 import type { Meditation } from '@/types';
 import { FeedCard } from './feed-card';
 
@@ -32,13 +33,27 @@ const gradientMap: Record<string, string> = {
 };
 
 export function FeedMeditation({ meditation }: FeedMeditationProps) {
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(meditation.userLiked ?? false);
   const [likeCount, setLikeCount] = useState(meditation.likes);
   const { addToast } = useToastStore();
+  const likeMutation = useLikeMeditation();
 
   const handleLike = () => {
-    setLiked((prev) => !prev);
-    setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
+    const wasLiked = liked;
+    setLiked(!wasLiked);
+    setLikeCount((prev) => (wasLiked ? prev - 1 : prev + 1));
+    likeMutation.mutate(
+      { meditationId: meditation.id, liked: !wasLiked },
+      {
+        onSuccess: (result) => {
+          setLikeCount(result.likes);
+        },
+        onError: () => {
+          setLiked(wasLiked);
+          setLikeCount((prev) => (wasLiked ? prev + 1 : prev - 1));
+        },
+      }
+    );
   };
 
   const gradientClass = gradientMap[meditation.categorie] || 'gradient-green';

@@ -163,8 +163,30 @@ html.dark .text-ink-400 {
   color: #7A8B90 !important;
 }
 
+html.dark .bg-sage-200,
+html.dark .bg-sage-200\/50 {
+  background-color: #1E3A2A !important;
+}
+
+html.dark .bg-ink-100 {
+  background-color: #243832 !important;
+}
+
+html.dark .bg-ink-200 {
+  background-color: #2A4238 !important;
+}
+
+html.dark .border-ink-200 {
+  border-color: rgba(149, 213, 178, 0.15) !important;
+}
+
+html.dark .border-sage-200\/30 {
+  border-color: rgba(149, 213, 178, 0.1) !important;
+}
+
 html.dark .border-sage-400\/10,
-html.dark .border-forest-900\/5 {
+html.dark .border-forest-900\/5,
+html.dark .border-forest-900\/6 {
   border-color: rgba(149, 213, 178, 0.12) !important;
 }
 

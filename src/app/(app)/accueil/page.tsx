@@ -153,18 +153,14 @@ export default function AccueilPage() {
                   const lecture = item.data as {
                     reference: string;
                     titre: string;
-                    planNom: string;
-                    jour: number;
-                    totalJours: number;
+                    texte: string | null;
                   };
                   return (
                     <FeedBible
                       key={item.id}
                       reference={lecture.reference}
                       titre={lecture.titre}
-                      planNom={lecture.planNom}
-                      jour={lecture.jour}
-                      totalJours={lecture.totalJours}
+                      texte={lecture.texte}
                     />
                   );
                 }

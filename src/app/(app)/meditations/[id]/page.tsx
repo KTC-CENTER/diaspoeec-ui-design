@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -17,9 +17,15 @@ import { formatDate, formatRelativeTime, getInitials } from '@/lib/utils/format'
 import {
   useMeditation,
   useComments,
+  useLikeMeditation,
+  useBookmarkMeditation,
+  useFollowAuteur,
+  useCreateComment,
 } from '@/features/meditations/hooks/use-meditations';
 import { MeditationContent } from '@/features/meditations/components/meditation-content';
+import { EmojiPicker } from '@/components/shared/emoji-picker';
 import { useToastStore } from '@/stores/toast.store';
+import { useAuthStore } from '@/stores/auth.store';
 import type { Comment } from '@/types';
 
 const categorieLabels: Record<string, string> = {
@@ -83,12 +89,13 @@ function ReplyItem({ reply }: { reply: Comment }) {
   );
 }
 
-function CommentItem({ comment, index = 0 }: { comment: Comment; index?: number }) {
+function CommentItem({ comment, index = 0, meditationId }: { comment: Comment; index?: number; meditationId: string }) {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(comment.likes);
   const [replyOpen, setReplyOpen] = useState(false);
   const [replyText, setReplyText] = useState('');
   const { addToast } = useToastStore();
+  const createReply = useCreateComment();
 
   const handleLike = () => {
     setLiked((prev) => !prev);
@@ -97,9 +104,19 @@ function CommentItem({ comment, index = 0 }: { comment: Comment; index?: number 
 
   const handleReply = () => {
     if (!replyText.trim()) return;
-    addToast(`Reponse envoyee a ${comment.auteurNom}`, 'success');
-    setReplyText('');
-    setReplyOpen(false);
+    createReply.mutate(
+      { targetType: 'meditation', targetId: meditationId, contenu: replyText.trim(), parentId: comment.id },
+      {
+        onSuccess: () => {
+          addToast(`Reponse envoyee a ${comment.auteurNom}`, 'success');
+          setReplyText('');
+          setReplyOpen(false);
+        },
+        onError: () => {
+          addToast('Erreur lors de l\'envoi', 'error');
+        },
+      }
+    );
   };
 
   const avatarColor = commentAvatarColors[index % commentAvatarColors.length];
@@ -154,21 +171,24 @@ function CommentItem({ comment, index = 0 }: { comment: Comment; index?: number 
 
           {/* Reply input */}
           {replyOpen && (
-            <div className="mt-3 flex items-start gap-2">
+            <div className="mt-3">
               <textarea
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleReply(); } }}
                 placeholder={`Repondre a ${comment.auteurNom}...`}
-                className="flex-1 resize-none border border-forest-900/10 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-900/20 h-10 focus:h-20 transition-all"
+                className="w-full resize-none border border-forest-900/10 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-900/20 h-10 focus:h-20 transition-all"
                 rows={1}
               />
-              <button
-                onClick={handleReply}
-                className="mt-1 w-8 h-8 rounded-lg bg-forest-900 text-white flex items-center justify-center hover:bg-forest-700 transition-colors"
-              >
-                <Send className="w-3.5 h-3.5" />
-              </button>
+              <div className="mt-1.5 flex items-center justify-between">
+                <EmojiPicker onSelect={(emoji) => setReplyText((prev) => prev + emoji)} />
+                <button
+                  onClick={handleReply}
+                  className="w-8 h-8 rounded-lg bg-forest-900 text-white flex items-center justify-center hover:bg-forest-700 transition-colors"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           )}
 
@@ -190,12 +210,24 @@ function CommentSection({ meditationId }: { meditationId: string }) {
   const { data: comments, isLoading } = useComments(meditationId);
   const [newComment, setNewComment] = useState('');
   const { addToast } = useToastStore();
+  const user = useAuthStore((s) => s.user);
+  const createComment = useCreateComment();
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!newComment.trim()) return;
-    addToast('Commentaire publie !', 'success');
-    setNewComment('');
+    createComment.mutate(
+      { targetType: 'meditation', targetId: meditationId, contenu: newComment.trim() },
+      {
+        onSuccess: () => {
+          addToast('Commentaire publie !', 'success');
+          setNewComment('');
+        },
+        onError: () => {
+          addToast('Erreur lors de la publication', 'error');
+        },
+      }
+    );
   };
 
   return (
@@ -208,23 +240,26 @@ function CommentSection({ meditationId }: { meditationId: string }) {
       <div className="bg-white rounded-2xl border border-forest-900/6 p-4 mb-5 shadow-sm">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-full gradient-forest flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
-            JP
+            {user ? getInitials(user.nomComplet) : 'U'}
           </div>
-          <div className="flex-1 relative">
+          <div className="flex-1">
             <textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
               placeholder="Ecrire un commentaire..."
-              className="w-full resize-none border border-forest-900/10 rounded-xl p-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-forest-900/20 focus:border-forest-900/30 transition-all h-12 focus:h-24"
+              className="w-full resize-none border border-forest-900/10 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest-900/20 focus:border-forest-900/30 transition-all h-12 focus:h-24"
               rows={1}
             />
-            <button
-              onClick={() => handleSubmit()}
-              className="absolute right-3 bottom-3 w-8 h-8 rounded-lg bg-forest-900 text-white flex items-center justify-center hover:bg-forest-700 transition-colors"
-            >
-              <Send className="w-4 h-4" />
-            </button>
+            <div className="mt-2 flex items-center justify-between">
+              <EmojiPicker onSelect={(emoji) => setNewComment((prev) => prev + emoji)} />
+              <button
+                onClick={() => handleSubmit()}
+                className="w-8 h-8 rounded-lg bg-forest-900 text-white flex items-center justify-center hover:bg-forest-700 transition-colors"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -248,7 +283,7 @@ function CommentSection({ meditationId }: { meditationId: string }) {
       ) : (
         <div className="space-y-4">
           {comments?.map((comment, index) => (
-            <CommentItem key={comment.id} comment={comment} index={index} />
+            <CommentItem key={comment.id} comment={comment} index={index} meditationId={meditationId} />
           ))}
           {comments?.length === 0 && (
             <p className="py-8 text-center text-sm text-ink-400">
@@ -281,19 +316,36 @@ export default function MeditationDetailPage() {
   const [bookmarked, setBookmarked] = useState(false);
   const [following, setFollowing] = useState(false);
   const { addToast } = useToastStore();
+  const likeMutation = useLikeMeditation();
+  const bookmarkMutation = useBookmarkMeditation();
+  const followMutation = useFollowAuteur();
 
-  const displayLikes = meditation
-    ? liked
-      ? meditation.likes + 1
-      : likeCount > 0
-        ? likeCount
-        : meditation.likes
-    : 0;
+  useEffect(() => {
+    if (meditation) {
+      setLiked(meditation.userLiked ?? false);
+      setLikeCount(meditation.likes);
+      setBookmarked(meditation.userBookmarked ?? false);
+      setFollowing(meditation.userFollowingAuteur ?? false);
+    }
+  }, [meditation?.id]);
 
   const handleLike = () => {
     if (!meditation) return;
-    setLiked((prev) => !prev);
-    setLikeCount(liked ? meditation.likes : meditation.likes + 1);
+    const wasLiked = liked;
+    setLiked(!wasLiked);
+    setLikeCount((prev) => (wasLiked ? prev - 1 : prev + 1));
+    likeMutation.mutate(
+      { meditationId: meditation.id, liked: !wasLiked },
+      {
+        onSuccess: (result) => {
+          setLikeCount(result.likes);
+        },
+        onError: () => {
+          setLiked(wasLiked);
+          setLikeCount((prev) => (wasLiked ? prev + 1 : prev - 1));
+        },
+      }
+    );
   };
 
   if (isLoading) {
@@ -365,8 +417,21 @@ export default function MeditationDetailPage() {
         </div>
         <button
           onClick={() => {
-            setFollowing((prev) => !prev);
-            addToast(following ? `Vous ne suivez plus ${meditation.auteurNom}` : `Vous suivez ${meditation.auteurNom}`, 'success');
+            if (!meditation) return;
+            const wasFollowing = following;
+            setFollowing(!wasFollowing);
+            followMutation.mutate(
+              { auteurId: meditation.auteurId },
+              {
+                onSuccess: (result) => {
+                  setFollowing(result.following);
+                  addToast(result.following ? `Vous suivez ${meditation.auteurNom}` : `Vous ne suivez plus ${meditation.auteurNom}`, 'success');
+                },
+                onError: () => {
+                  setFollowing(wasFollowing);
+                },
+              }
+            );
           }}
           className={cn(
             'px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5',
@@ -436,7 +501,7 @@ export default function MeditationDetailPage() {
             )}
           >
             <Heart className={cn('w-5 h-5', liked && 'fill-current')} />
-            <span className="text-xs">{displayLikes}</span>
+            <span className="text-xs">{likeCount}</span>
           </button>
 
           <Link
@@ -460,7 +525,23 @@ export default function MeditationDetailPage() {
           </button>
 
           <button
-            onClick={() => setBookmarked((prev) => !prev)}
+            onClick={() => {
+              if (!meditation) return;
+              const wasBookmarked = bookmarked;
+              setBookmarked(!wasBookmarked);
+              bookmarkMutation.mutate(
+                { meditationId: meditation.id },
+                {
+                  onSuccess: (result) => {
+                    setBookmarked(result.bookmarked);
+                    addToast(result.bookmarked ? 'Meditation sauvegardee' : 'Meditation retiree des favoris', 'success');
+                  },
+                  onError: () => {
+                    setBookmarked(wasBookmarked);
+                  },
+                }
+              );
+            }}
             className={cn(
               'flex flex-col items-center gap-1 transition-colors',
               bookmarked ? 'text-gold-600' : 'text-ink-400 hover:text-gold-600'

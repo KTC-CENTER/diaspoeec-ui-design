@@ -11,91 +11,14 @@ import {
   Megaphone,
   BellRing,
   Flag,
-  TrendingUp,
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
-import { formatRelativeTime } from '@/lib/utils/format';
+import { formatMontant, formatRelativeTime } from '@/lib/utils/format';
 import { DashboardStats } from '@/features/admin/components/dashboard-stats';
 import { BarChart } from '@/features/admin/components/bar-chart';
 import { DiasporaMap } from '@/features/admin/components/diaspora-map';
-
-const inscriptionsData = [
-  { label: 'Sep', value: 85 },
-  { label: 'Oct', value: 92 },
-  { label: 'Nov', value: 110 },
-  { label: 'Dec', value: 145 },
-  { label: 'Jan', value: 118 },
-  { label: 'Fev', value: 124 },
-];
-
-const donsParCampagne = [
-  { label: 'Centre Communautaire', value: 72000 },
-  { label: 'Don general EEC', value: 45000 },
-  { label: 'Etudiants EEC', value: 4500 },
-  { label: 'Aide Cameroun', value: 2300 },
-];
-
-const recentActivity = [
-  {
-    icon: UserPlus,
-    text: (
-      <>
-        <span className="font-medium">Marie Fotso</span> s&apos;est inscrite
-      </>
-    ),
-    time: 'Il y a 15 min',
-    bg: 'bg-sage-200',
-    iconColor: 'text-forest-900',
-  },
-  {
-    icon: Heart,
-    text: (
-      <>
-        Don de <span className="font-semibold text-gold-600">100 &euro;</span>{' '}
-        recu <span className="text-ink-500">(Centre Communautaire)</span>
-      </>
-    ),
-    time: 'Il y a 30 min',
-    bg: 'bg-gold-400/30',
-    iconColor: 'text-gold-600',
-  },
-  {
-    icon: BookOpen,
-    text: (
-      <>
-        Nouvelle meditation publiee par{' '}
-        <span className="font-medium">Pasteur Ndongo</span>
-      </>
-    ),
-    time: 'Il y a 1h',
-    bg: 'bg-sage-200',
-    iconColor: 'text-forest-700',
-  },
-  {
-    icon: Calendar,
-    text: (
-      <>
-        <span className="font-semibold">52 inscriptions</span> au Culte de
-        Paris
-      </>
-    ),
-    time: 'Il y a 2h',
-    bg: 'bg-orange-50',
-    iconColor: 'text-terra-600',
-  },
-  {
-    icon: Flag,
-    text: (
-      <>
-        <span className="font-medium">Samuel Biyong</span> a signale un
-        commentaire
-      </>
-    ),
-    time: 'Il y a 3h',
-    bg: 'bg-red-50',
-    iconColor: 'text-red-400',
-  },
-];
+import { useAdminStats } from '@/features/admin/hooks/use-admin';
 
 const quickActions = [
   {
@@ -124,7 +47,25 @@ const quickActions = [
   },
 ];
 
+const ACTION_ICON: Record<string, typeof Heart> = {
+  inscription: UserPlus,
+  don: Heart,
+  meditation: BookOpen,
+  evenement: Calendar,
+  signalement: Flag,
+};
+
+const ACTION_STYLE: Record<string, { bg: string; iconColor: string }> = {
+  inscription: { bg: 'bg-sage-200', iconColor: 'text-forest-900' },
+  don: { bg: 'bg-gold-400/30', iconColor: 'text-gold-600' },
+  meditation: { bg: 'bg-sage-200', iconColor: 'text-forest-700' },
+  evenement: { bg: 'bg-orange-50', iconColor: 'text-terra-600' },
+  signalement: { bg: 'bg-red-50', iconColor: 'text-red-400' },
+};
+
 export default function AdminDashboardPage() {
+  const { data: stats, isLoading } = useAdminStats();
+
   return (
     <section className="mx-auto max-w-[1400px] p-4 md:p-8">
       {/* Header */}
@@ -147,22 +88,43 @@ export default function AdminDashboardPage() {
 
       {/* Charts */}
       <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <BarChart
-          data={inscriptionsData}
-          title="Evolution des inscriptions"
-          color="forest"
-        />
-        <BarChart
-          data={donsParCampagne}
-          title="Dons par campagne"
-          color="forest"
-          horizontal
-        />
+        {isLoading ? (
+          <>
+            <div className="h-64 rounded-2xl shimmer-bg" />
+            <div className="h-64 rounded-2xl shimmer-bg" />
+          </>
+        ) : (
+          <>
+            <BarChart
+              data={
+                stats?.evolutionMembres?.length
+                  ? stats.evolutionMembres.map((e) => ({ label: e.mois, value: e.nombre }))
+                  : []
+              }
+              title="Evolution des inscriptions"
+              color="forest"
+            />
+            <BarChart
+              data={
+                stats?.donsParCampagne?.length
+                  ? stats.donsParCampagne.map((d) => ({ label: d.campagne, value: d.montant }))
+                  : []
+              }
+              title="Dons par campagne"
+              color="forest"
+              horizontal
+            />
+          </>
+        )}
       </div>
 
       {/* Diaspora Map */}
       <div className="mb-8">
-        <DiasporaMap />
+        {isLoading ? (
+          <div className="h-48 rounded-2xl shimmer-bg" />
+        ) : (
+          <DiasporaMap data={stats?.repartitionPays ?? []} />
+        )}
       </div>
 
       {/* Bottom row: Activity + Quick Actions */}
@@ -175,30 +137,62 @@ export default function AdminDashboardPage() {
           >
             Activite recente
           </h3>
-          <div className="space-y-0">
-            {recentActivity.map((item, i) => (
-              <div
-                key={i}
-                className={cn(
-                  'flex items-start gap-3 py-3',
-                  i < recentActivity.length - 1 && 'border-b border-gray-50'
-                )}
-              >
-                <div
-                  className={cn(
-                    'mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full',
-                    item.bg
-                  )}
-                >
-                  <item.icon className={cn('h-4 w-4', item.iconColor)} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm text-ink-900">{item.text}</p>
-                  <p className="mt-0.5 text-xs text-ink-500">{item.time}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+
+          {isLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="h-12 rounded-xl shimmer-bg" />
+              ))}
+            </div>
+          ) : stats?.actionsRecentes?.length ? (
+            <div className="space-y-0">
+              {stats.actionsRecentes.map((item, i) => {
+                const Icon = ACTION_ICON[item.type] ?? Heart;
+                const style = ACTION_STYLE[item.type] ?? ACTION_STYLE.don;
+                return (
+                  <div
+                    key={i}
+                    className={cn(
+                      'flex items-start gap-3 py-3',
+                      i < stats.actionsRecentes.length - 1 && 'border-b border-gray-50'
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        'mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full',
+                        style.bg
+                      )}
+                    >
+                      <Icon className={cn('h-4 w-4', style.iconColor)} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-ink-900">
+                        {item.type === 'don' && item.montant ? (
+                          <>
+                            Don de{' '}
+                            <span className="font-semibold text-gold-600">
+                              {formatMontant(item.montant, item.devise ?? 'EUR')}
+                            </span>{' '}
+                            recu{' '}
+                            <span className="text-ink-500">
+                              ({item.description.split('(')[1]?.replace(')', '') ?? ''})
+                            </span>
+                          </>
+                        ) : (
+                          item.description
+                        )}
+                      </p>
+                      <p className="mt-0.5 text-xs text-ink-500">
+                        {formatRelativeTime(item.createdAt)}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="py-8 text-center text-sm text-ink-400">Aucune activite recente</p>
+          )}
         </div>
 
         {/* Quick Actions */}
@@ -238,6 +232,26 @@ export default function AdminDashboardPage() {
               );
             })}
           </div>
+
+          {/* Quick stats summary */}
+          {stats && (
+            <div className="mt-6 space-y-2 border-t border-gray-100 pt-4">
+              <div className="flex justify-between text-xs text-ink-500">
+                <span>Campagnes actives</span>
+                <span className="font-semibold text-forest-900">{stats.campagnesActives}</span>
+              </div>
+              <div className="flex justify-between text-xs text-ink-500">
+                <span>Signalements en attente</span>
+                <span className={cn('font-semibold', stats.signalementsEnAttente > 0 ? 'text-red-500' : 'text-forest-900')}>
+                  {stats.signalementsEnAttente}
+                </span>
+              </div>
+              <div className="flex justify-between text-xs text-ink-500">
+                <span>Evenements a venir</span>
+                <span className="font-semibold text-forest-900">{stats.evenementsAVenir}</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </section>

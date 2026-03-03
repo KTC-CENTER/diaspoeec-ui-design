@@ -5,6 +5,7 @@ import { BellRing, Check, Church } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { formatDate } from '@/lib/utils/format';
 import { useToastStore } from '@/stores/toast.store';
+import { useToggleRappel } from '@/features/cultes/hooks/use-cultes';
 import type { ServiceAVenir } from '@/types';
 
 interface ServiceCardProps {
@@ -13,8 +14,9 @@ interface ServiceCardProps {
 }
 
 export function ServiceCard({ service, onToggleRappel }: ServiceCardProps) {
-  const [rappelSet, setRappelSet] = useState(false);
+  const [rappelSet, setRappelSet] = useState(service.rappelActif ?? false);
   const { addToast } = useToastStore();
+  const rappelMutation = useToggleRappel();
   const dateStr = formatDate(service.date + 'T00:00:00Z', 'dd MMMM yyyy');
 
   return (
@@ -37,12 +39,21 @@ export function ServiceCard({ service, onToggleRappel }: ServiceCardProps) {
       <p className="mb-4 text-sm text-ink-500">{service.lieu}</p>
       <button
         onClick={() => {
-          setRappelSet(!rappelSet);
-          if (onToggleRappel) onToggleRappel();
-          addToast(
-            rappelSet ? 'Rappel supprime' : `Rappel defini pour "${service.titre}"`,
-            rappelSet ? 'info' : 'success'
-          );
+          const wasSet = rappelSet;
+          setRappelSet(!wasSet);
+          rappelMutation.mutate(service.id, {
+            onSuccess: () => {
+              if (onToggleRappel) onToggleRappel();
+              addToast(
+                wasSet ? 'Rappel supprime' : `Rappel defini pour "${service.titre}"`,
+                wasSet ? 'info' : 'success'
+              );
+            },
+            onError: () => {
+              setRappelSet(wasSet);
+              addToast('Erreur lors de la modification du rappel', 'error');
+            },
+          });
         }}
         className={cn(
           'flex w-full items-center justify-center gap-2 rounded-xl border py-2 text-sm font-semibold transition-colors',

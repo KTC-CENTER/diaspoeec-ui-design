@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { BookOpen, Globe, Church, Loader2, PenLine } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
-import { formatDate } from '@/lib/utils/format';
+import { formatDate, formatParoisse } from '@/lib/utils/format';
 import { useProfile, useProfileStats } from '@/features/profil/hooks/use-profil';
 import { ProfileHeader } from '@/features/profil/components/profile-header';
 import { ProfileStats } from '@/features/profil/components/profile-stats';
@@ -154,7 +154,7 @@ export default function ProfilPage() {
               <svg className="h-4 w-4 flex-shrink-0 text-ink-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
               <div>
                 <p className="text-xs text-ink-500">Paroisse d&apos;origine</p>
-                <p className="text-sm font-semibold text-ink-900">{user.paroisseOrigine}</p>
+                <p className="text-sm font-semibold text-ink-900">{formatParoisse(user.paroisseOrigine)}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 rounded-xl bg-cream-50/50 p-3">
@@ -215,7 +215,7 @@ export default function ProfilPage() {
                   className="text-2xl font-bold text-forest-900"
                   style={{ fontFamily: 'var(--font-heading)' }}
                 >
-                  {readingStats.meditationsLues ?? 3}
+                  {readingStats.plansCompletes}
                 </p>
                 <p className="mt-0.5 text-xs text-ink-500">Plans completes</p>
               </div>
@@ -224,8 +224,10 @@ export default function ProfilPage() {
                   className="flex items-center justify-center gap-1 text-2xl font-bold text-terra-600"
                   style={{ fontFamily: 'var(--font-heading)' }}
                 >
-                  {readingStats.serieActuelle ?? 7}
-                  <span className="animate-[flicker_0.8s_ease-in-out_infinite] text-base">&#128293;</span>
+                  {readingStats.joursConsecutifs}
+                  {readingStats.joursConsecutifs > 2 && (
+                    <span className="animate-[flicker_0.8s_ease-in-out_infinite] text-base">&#128293;</span>
+                  )}
                 </p>
                 <p className="mt-0.5 text-xs text-ink-500">Jours consecutifs</p>
               </div>
@@ -234,7 +236,7 @@ export default function ProfilPage() {
                   className="text-2xl font-bold text-gold-600"
                   style={{ fontFamily: 'var(--font-heading)' }}
                 >
-                  {readingStats.versetsFavoris ?? 24}
+                  {readingStats.versetsAnnotes}
                 </p>
                 <p className="mt-0.5 text-xs text-ink-500">Versets annotes</p>
               </div>

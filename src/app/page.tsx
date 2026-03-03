@@ -10,6 +10,7 @@ import {
   Sparkles, MapPin, Star, Smartphone, Quote,
   Facebook, Youtube, Instagram, Twitter, Mail, Phone,
 } from 'lucide-react';
+import { CustomSelect } from '@/components/forms/custom-select';
 
 /* ─────────────────────── HELPERS ─────────────────────── */
 
@@ -563,22 +564,16 @@ export default function LandingPage() {
                         className="w-full border-2 border-sage-400 rounded-2xl px-5 py-3.5 text-forest-900 font-semibold placeholder:text-ink-400 focus:border-forest-900 focus:ring-4 focus:ring-forest-900/10 outline-none transition-all"
                       />
                     </div>
-                    <select
+                    <CustomSelect
                       value={currency}
-                      onChange={(e) => setCurrency(e.target.value)}
-                      className="border-2 border-sage-400 rounded-2xl px-4 py-3.5 font-semibold text-forest-900 bg-white focus:border-forest-900 focus:ring-4 focus:ring-forest-900/10 outline-none transition-all cursor-pointer"
-                      style={{
-                        appearance: 'none',
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231B4332' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
-                        backgroundRepeat: 'no-repeat',
-                        backgroundPosition: 'right 12px center',
-                        paddingRight: 40,
-                      }}
-                    >
-                      <option value="EUR">EUR €</option>
-                      <option value="USD">USD $</option>
-                      <option value="XAF">XAF FCFA</option>
-                    </select>
+                      onChange={setCurrency}
+                      options={[
+                        { value: 'EUR', label: 'EUR €' },
+                        { value: 'USD', label: 'USD $' },
+                        { value: 'XAF', label: 'XAF FCFA' },
+                      ]}
+                      className="min-w-[130px]"
+                    />
                   </div>
 
                   <button className="w-full bg-gold-600 text-white py-4 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-3 hover:-translate-y-0.5 transition-all duration-300" style={{ boxShadow: '0 8px 30px rgba(212,160,23,0.25)' }}>

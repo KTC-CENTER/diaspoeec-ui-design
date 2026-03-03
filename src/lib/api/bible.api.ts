@@ -1,18 +1,9 @@
 import type { PlanLecture, LectureJour, NoteBible } from '@/types';
-import {
-  mockPlansLecture,
-  mockLectureJour,
-  mockNotesBible,
-  mockPlansDecouverte,
-} from '@/lib/mock/bible.mock';
-import { delay } from './client';
-// import { apiClient } from './client';
-// import { ENDPOINTS } from './endpoints';
+import { apiClient } from './client';
+import { ENDPOINTS } from './endpoints';
 
 // ============================================================================
 // Bible API
-// Actuellement : donnees mock avec delai simule
-// Production : decommenter les appels apiClient
 // ============================================================================
 
 export interface CreateNotePayload {
@@ -20,113 +11,164 @@ export interface CreateNotePayload {
   contenu: string;
 }
 
-/**
- * Recupere les plans de lecture actifs de l'utilisateur courant.
- */
 export async function getPlansLecture(): Promise<PlanLecture[]> {
-  await delay(300);
-
-  return [...mockPlansLecture];
-
-  // --- Production ---
-  // return apiClient.get<PlanLecture[]>(ENDPOINTS.BIBLE.PLANS);
+  return apiClient.get<PlanLecture[]>(ENDPOINTS.BIBLE.PLANS);
 }
 
-/**
- * Recupere les plans de lecture suggerees (non encore commences).
- */
 export async function getPlansDecouverte(): Promise<PlanLecture[]> {
-  await delay(300);
-
-  return [...mockPlansDecouverte];
-
-  // --- Production ---
-  // return apiClient.get<PlanLecture[]>(ENDPOINTS.BIBLE.PLANS, { params: { type: 'decouverte' } });
+  return apiClient.get<PlanLecture[]>(ENDPOINTS.BIBLE.PLANS_ALL);
 }
 
-/**
- * Recupere la lecture du jour pour le plan actif.
- */
 export async function getLectureJour(): Promise<LectureJour> {
-  await delay(200);
-
-  return { ...mockLectureJour };
-
-  // --- Production ---
-  // return apiClient.get<LectureJour>(ENDPOINTS.BIBLE.LECTURE_JOUR);
+  return apiClient.get<LectureJour>(ENDPOINTS.BIBLE.LECTURE_JOUR);
 }
 
-/**
- * Recupere les notes bibliques de l'utilisateur courant.
- */
 export async function getNotes(): Promise<NoteBible[]> {
-  await delay(300);
-
-  return [...mockNotesBible].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
-
-  // --- Production ---
-  // return apiClient.get<NoteBible[]>(ENDPOINTS.BIBLE.NOTES);
+  return apiClient.get<NoteBible[]>(ENDPOINTS.BIBLE.NOTES);
 }
 
-/**
- * Cree une nouvelle note biblique.
- */
 export async function createNote(data: CreateNotePayload): Promise<NoteBible> {
-  await delay(400);
-
-  const newNote: NoteBible = {
-    id: `note_${Date.now()}`,
-    reference: data.reference,
-    contenu: data.contenu,
-    createdAt: new Date().toISOString(),
-  };
-
-  mockNotesBible.unshift(newNote);
-  return newNote;
-
-  // --- Production ---
-  // return apiClient.post<NoteBible>(ENDPOINTS.BIBLE.NOTES, data);
+  return apiClient.post<NoteBible>(ENDPOINTS.BIBLE.NOTES, data);
 }
 
-/**
- * Marque la lecture du jour comme completee.
- */
 export async function completeLectureJour(planId: string): Promise<PlanLecture> {
-  await delay(300);
-
-  const plan = mockPlansLecture.find((p) => p.id === planId);
-  if (!plan) {
-    throw new Error('Plan de lecture introuvable');
-  }
-
-  if (plan.joursCompletes < plan.dureeJours) {
-    plan.joursCompletes += 1;
-  }
-
-  return { ...plan };
-
-  // --- Production ---
-  // return apiClient.post<PlanLecture>(`${ENDPOINTS.BIBLE.PLANS}/${planId}/complete`);
+  return apiClient.put<PlanLecture>(`${ENDPOINTS.BIBLE.PLANS}/${planId}/complete-jour`);
 }
 
-/**
- * Commence un nouveau plan de lecture.
- */
 export async function startPlan(planId: string): Promise<PlanLecture> {
-  await delay(300);
+  return apiClient.post<PlanLecture>(`${ENDPOINTS.BIBLE.PLANS}/${planId}/start`);
+}
 
-  const plan = mockPlansDecouverte.find((p) => p.id === planId);
-  if (!plan) {
-    throw new Error('Plan de lecture introuvable');
-  }
+export interface VersetResult {
+  reference: string;
+  livre: string;
+  chapitre: number;
+  versets: { numero: number; texte: string }[];
+}
 
-  const activePlan = { ...plan, joursCompletes: 0 };
-  mockPlansLecture.push(activePlan);
+export async function getVerset(ref: string): Promise<VersetResult> {
+  return apiClient.get<VersetResult>(ENDPOINTS.BIBLE.VERSET, { params: { ref } });
+}
 
-  return activePlan;
+export async function getChapter(livre: string, chapitre: number): Promise<VersetResult> {
+  return apiClient.get<VersetResult>(ENDPOINTS.BIBLE.CHAPITRE, {
+    params: { livre, ch: String(chapitre) },
+  });
+}
 
-  // --- Production ---
-  // return apiClient.post<PlanLecture>(`${ENDPOINTS.BIBLE.PLANS}/${planId}/start`);
+// ── Lecture courante d'un plan ─────────────────────────────────────────────
+
+export interface LecturePlanItem {
+  id: string;
+  jourNumero: number;
+  reference: string;
+  titre: string;
+  texte: string | null;
+}
+
+export interface LectureCouranteResult {
+  termine: boolean;
+  jourNumero: number;
+  lecture: LecturePlanItem | null;
+  disponible: boolean;
+  prochaineLecture: string | null; // ISO date string UTC minuit du lendemain
+}
+
+export async function getLectureCourante(planId: string): Promise<LectureCouranteResult> {
+  return apiClient.get<LectureCouranteResult>(ENDPOINTS.BIBLE.LECTURE_COURANTE(planId));
+}
+
+// ── Stats ──────────────────────────────────────────────────────────────────
+
+export interface BibleStats {
+  plansCompletes: number;
+  joursConsecutifs: number;
+  versetsAnnotes: number;
+}
+
+export async function getBibleStats(): Promise<BibleStats> {
+  return apiClient.get<BibleStats>(ENDPOINTS.BIBLE.STATS);
+}
+
+// ── Admin ──────────────────────────────────────────────────────────────────
+
+export interface CreatePlanPayload {
+  titre: string;
+  dureeJours: number;
+  icone?: string;
+}
+
+export interface CreateLectureJourPayload {
+  jourNumero: number;
+  reference: string;
+  titre: string;
+  texte?: string;
+}
+
+export interface PlanDetail {
+  id: string;
+  titre: string;
+  dureeJours: number;
+  icone?: string;
+  lectures: {
+    id: string;
+    jourNumero: number;
+    reference: string;
+    titre: string;
+    texte: string | null;
+  }[];
+}
+
+export interface UpdatePlanPayload {
+  titre?: string;
+  icone?: string;
+}
+
+export interface UpdateLectureJourPayload {
+  reference?: string;
+  titre?: string;
+  texte?: string;
+}
+
+export interface AdminPlanSummary {
+  id: string;
+  titre: string;
+  dureeJours: number;
+  icone?: string;
+  joursCompletes: number;
+  lectureDisponible: boolean;
+  lecturesConfigurees: number;
+  estComplet: boolean;
+}
+
+export async function adminGetAllPlans(): Promise<AdminPlanSummary[]> {
+  return apiClient.get<AdminPlanSummary[]>(ENDPOINTS.BIBLE.ADMIN_PLANS);
+}
+
+export async function adminCreatePlan(data: CreatePlanPayload): Promise<{ id: string }> {
+  return apiClient.post(ENDPOINTS.BIBLE.ADMIN_PLANS, data);
+}
+
+export async function adminUpdatePlan(planId: string, data: UpdatePlanPayload): Promise<PlanDetail> {
+  return apiClient.put<PlanDetail>(ENDPOINTS.BIBLE.ADMIN_PLAN_BY_ID(planId), data);
+}
+
+export async function adminGetPlanDetail(planId: string): Promise<PlanDetail> {
+  return apiClient.get<PlanDetail>(ENDPOINTS.BIBLE.ADMIN_PLAN_BY_ID(planId));
+}
+
+export async function adminDeletePlan(planId: string): Promise<void> {
+  return apiClient.delete(ENDPOINTS.BIBLE.ADMIN_PLAN_BY_ID(planId));
+}
+
+export async function adminAddLecture(planId: string, data: CreateLectureJourPayload): Promise<{ id: string }> {
+  return apiClient.post(ENDPOINTS.BIBLE.ADMIN_PLAN_LECTURES(planId), data);
+}
+
+export async function adminUpdateLecture(lectureId: string, data: UpdateLectureJourPayload): Promise<{ id: string }> {
+  return apiClient.put(ENDPOINTS.BIBLE.ADMIN_LECTURE_BY_ID(lectureId), data);
+}
+
+export async function adminDeleteLecture(lectureId: string): Promise<void> {
+  return apiClient.delete(ENDPOINTS.BIBLE.ADMIN_LECTURE_BY_ID(lectureId));
 }

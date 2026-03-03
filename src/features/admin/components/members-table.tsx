@@ -18,9 +18,10 @@ import {
   Gift,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
-import { formatDate, getInitials } from '@/lib/utils/format';
-import { useAdminMembers } from '@/features/admin/hooks/use-admin';
+import { formatDate, getInitials, formatParoisse } from '@/lib/utils/format';
+import { useAdminMembers, useUpdateMember } from '@/features/admin/hooks/use-admin';
 import { PAYS_LIST, DIASPORA_TYPES } from '@/lib/utils/constants';
+import { CustomSelect } from '@/components/forms/custom-select';
 import { useToastStore } from '@/stores/toast.store';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { exportToCSV, exportToExcel } from '@/lib/utils/export';
@@ -86,6 +87,7 @@ export function MembersTable() {
   const [deactivateMember, setDeactivateMember] = useState<User | null>(null);
 
   const { addToast } = useToastStore();
+  const updateMemberMutation = useUpdateMember();
 
   const { data, isLoading } = useAdminMembers({
     search,
@@ -131,15 +133,18 @@ export function MembersTable() {
 
   const handleSaveRole = () => {
     if (!roleMember) return;
-    setOverrides((prev) => ({
-      ...prev,
-      [roleMember.id]: {
-        ...prev[roleMember.id],
-        role: selectedRole,
-      },
-    }));
-    addToast(`Role de ${roleMember.nomComplet} mis a jour`, 'success');
-    setRoleMember(null);
+    updateMemberMutation.mutate(
+      { id: roleMember.id, data: { role: selectedRole } },
+      {
+        onSuccess: () => {
+          addToast(`Role de ${roleMember.nomComplet} mis a jour`, 'success');
+          setRoleMember(null);
+        },
+        onError: () => {
+          addToast('Erreur lors de la mise a jour du role', 'error');
+        },
+      }
+    );
   };
 
   const handleOpenDeactivate = (member: User) => {
@@ -151,20 +156,21 @@ export function MembersTable() {
     if (!deactivateMember) return;
     const currentStatut = deactivateMember.statut;
     const newStatut = currentStatut === 'actif' ? 'inactif' : 'actif';
-    setOverrides((prev) => ({
-      ...prev,
-      [deactivateMember.id]: {
-        ...prev[deactivateMember.id],
-        statut: newStatut,
-      },
-    }));
-    const action = newStatut === 'inactif' ? 'desactive' : 'reactive';
-    addToast(`${deactivateMember.nomComplet} a ete ${action}`, 'success');
-    setDeactivateMember(null);
+    updateMemberMutation.mutate(
+      { id: deactivateMember.id, data: { statut: newStatut } },
+      {
+        onSuccess: () => {
+          const action = newStatut === 'inactif' ? 'desactive' : 'reactive';
+          addToast(`${deactivateMember.nomComplet} a ete ${action}`, 'success');
+          setDeactivateMember(null);
+        },
+        onError: () => {
+          addToast('Erreur lors de la mise a jour du statut', 'error');
+          setDeactivateMember(null);
+        },
+      }
+    );
   };
-
-  const selectClass =
-    'rounded-xl border border-gray-200 bg-cream-50 px-3 py-2.5 text-sm focus:border-forest-900 focus:outline-none';
 
   return (
     <div className="space-y-4">
@@ -184,62 +190,40 @@ export function MembersTable() {
               className="w-full rounded-xl border border-gray-200 bg-cream-50 py-2.5 pl-10 pr-4 text-sm focus:border-forest-900 focus:outline-none focus:ring-2 focus:ring-sage-400/30"
             />
           </div>
-          <select
+          <CustomSelect
             value={diasporaFilter}
-            onChange={(e) => {
-              setDiasporaFilter(e.target.value);
-              setPage(1);
-            }}
-            className={selectClass}
-          >
-            <option value="all">Toutes les diasporas</option>
-            {DIASPORA_TYPES.map((d) => (
-              <option key={d.value} value={d.value}>
-                {d.label}
-              </option>
-            ))}
-          </select>
-          <select
+            onChange={(value) => { setDiasporaFilter(value); setPage(1); }}
+            options={[{ value: 'all', label: 'Toutes les diasporas' }, ...DIASPORA_TYPES]}
+            className="w-full md:w-auto md:min-w-[180px]"
+          />
+          <CustomSelect
             value={paysFilter}
-            onChange={(e) => {
-              setPaysFilter(e.target.value);
-              setPage(1);
-            }}
-            className={selectClass}
-          >
-            <option value="all">Tous les pays</option>
-            {PAYS_LIST.map((p) => (
-              <option key={p.value} value={p.value}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-          <select
+            onChange={(value) => { setPaysFilter(value); setPage(1); }}
+            options={[{ value: 'all', label: 'Tous les pays' }, ...PAYS_LIST]}
+            className="w-full md:w-auto md:min-w-[160px]"
+          />
+          <CustomSelect
             value={roleFilter}
-            onChange={(e) => {
-              setRoleFilter(e.target.value);
-              setPage(1);
-            }}
-            className={selectClass}
-          >
-            <option value="all">Tous les roles</option>
-            <option value="fidele">Fidele</option>
-            <option value="pasteur">Pasteur</option>
-            <option value="responsable_zone">Responsable zone</option>
-            <option value="admin">Admin</option>
-          </select>
-          <select
+            onChange={(value) => { setRoleFilter(value); setPage(1); }}
+            options={[
+              { value: 'all', label: 'Tous les roles' },
+              { value: 'fidele', label: 'Fidele' },
+              { value: 'pasteur', label: 'Pasteur' },
+              { value: 'responsable_zone', label: 'Responsable zone' },
+              { value: 'admin', label: 'Admin' },
+            ]}
+            className="w-full md:w-auto md:min-w-[160px]"
+          />
+          <CustomSelect
             value={statutFilter}
-            onChange={(e) => {
-              setStatutFilter(e.target.value);
-              setPage(1);
-            }}
-            className={selectClass}
-          >
-            <option value="all">Tous statuts</option>
-            <option value="actif">Actif</option>
-            <option value="inactif">Inactif</option>
-          </select>
+            onChange={(value) => { setStatutFilter(value); setPage(1); }}
+            options={[
+              { value: 'all', label: 'Tous statuts' },
+              { value: 'actif', label: 'Actif' },
+              { value: 'inactif', label: 'Inactif' },
+            ]}
+            className="w-full md:w-auto md:min-w-[140px]"
+          />
         </div>
       </div>
 
@@ -378,7 +362,7 @@ export function MembersTable() {
                             <MoreHorizontal className="h-4 w-4 text-ink-500" />
                           </button>
                           {openDropdown === member.id && (
-                            <div className="absolute right-0 top-full z-20 mt-1 w-44 rounded-xl border border-gray-100 bg-white py-1 shadow-xl">
+                            <div className="absolute right-0 top-full z-20 mt-1 w-44 max-w-[calc(100vw-2rem)] rounded-xl border border-gray-100 bg-white py-1 shadow-xl">
                               <button
                                 onClick={() => handleViewProfile(member)}
                                 className="block w-full px-3 py-2 text-left text-sm transition hover:bg-sage-200"
@@ -450,7 +434,7 @@ export function MembersTable() {
                           <MoreHorizontal className="h-4 w-4 text-ink-500" />
                         </button>
                         {openDropdown === member.id && (
-                          <div className="absolute right-0 top-full z-20 mt-1 w-44 rounded-xl border border-gray-100 bg-white py-1 shadow-xl">
+                          <div className="absolute right-0 top-full z-20 mt-1 w-44 max-w-[calc(100vw-2rem)] rounded-xl border border-gray-100 bg-white py-1 shadow-xl">
                             <button
                               onClick={() => handleViewProfile(member)}
                               className="block w-full px-3 py-2 text-left text-sm transition hover:bg-sage-200"
@@ -643,7 +627,7 @@ export function MembersTable() {
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <Church className="h-4 w-4 text-ink-400" />
-                <span className="text-ink-700">{profileMember.paroisseOrigine}</span>
+                <span className="text-ink-700">{formatParoisse(profileMember.paroisseOrigine)}</span>
               </div>
             </div>
 

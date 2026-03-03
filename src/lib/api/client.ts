@@ -1,10 +1,14 @@
 // ============================================================================
 // API Client - DiaspoEEC
-// Currently returns mock data via delay simulation.
-// Replace with real fetch calls when Spring Boot backend is ready.
+// Connected to NestJS backend on port 8080.
 // ============================================================================
 
+import { ENDPOINTS } from './endpoints';
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+
+const TOKEN_KEY = 'auth_token';
+const REFRESH_TOKEN_KEY = 'auth_refresh_token';
 
 export class ApiError extends Error {
   constructor(
@@ -16,89 +20,164 @@ export class ApiError extends Error {
   }
 }
 
-function getToken(): string | null {
+// ============================================================================
+// Token management
+// ============================================================================
+
+export function getToken(): string | null {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('auth_token');
+  return localStorage.getItem(TOKEN_KEY);
 }
 
-async function handleResponse<T>(res: Response): Promise<T> {
-  if (!res.ok) {
-    const text = await res.text().catch(() => 'Erreur inconnue');
-    throw new ApiError(res.status, text);
-  }
-  return res.json();
+export function getRefreshToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(REFRESH_TOKEN_KEY);
 }
+
+export function setTokens(accessToken: string, refreshToken: string) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(TOKEN_KEY, accessToken);
+  localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+}
+
+export function clearTokens() {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+}
+
+// ============================================================================
+// Response handling
+// ============================================================================
 
 /**
- * Client API centralise pour les appels au backend Spring Boot.
- * Toutes les methodes ajoutent automatiquement le token d'authentification
- * et gerent les erreurs de maniere uniforme.
- *
- * Pour l'instant, les fonctions API individuelles utilisent les mocks.
- * Quand le backend sera pret, decommentez les appels ci-dessous.
+ * Backend wraps responses in { data, meta? } via TransformInterceptor.
+ * This function unwraps the data field.
  */
+async function handleResponse<T>(res: Response): Promise<T> {
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ message: 'Erreur inconnue' }));
+    const message = body?.message || body?.error || 'Erreur inconnue';
+    throw new ApiError(res.status, Array.isArray(message) ? message[0] : message);
+  }
+  const json = await res.json();
+  // Unwrap { data } envelope from backend TransformInterceptor
+  if (json && typeof json === 'object' && 'data' in json) {
+    return json.data as T;
+  }
+  return json as T;
+}
+
+// ============================================================================
+// Token refresh logic
+// ============================================================================
+
+let refreshPromise: Promise<boolean> | null = null;
+
+async function tryRefreshToken(): Promise<boolean> {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return false;
+
+  try {
+    const res = await fetch(`${API_BASE}${ENDPOINTS.AUTH.REFRESH}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (!res.ok) return false;
+
+    const json = await res.json();
+    const data = json?.data ?? json;
+    if (data.accessToken && data.refreshToken) {
+      setTokens(data.accessToken, data.refreshToken);
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+// ============================================================================
+// Core fetch with auto-refresh
+// ============================================================================
+
+async function fetchWithAuth<T>(
+  url: string,
+  options: RequestInit,
+): Promise<T> {
+  const token = getToken();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
+  let res = await fetch(url, { ...options, headers });
+
+  // On 401, try refreshing the token once
+  if (res.status === 401 && getRefreshToken()) {
+    if (!refreshPromise) {
+      refreshPromise = tryRefreshToken().finally(() => {
+        refreshPromise = null;
+      });
+    }
+
+    const refreshed = await refreshPromise;
+    if (refreshed) {
+      const newToken = getToken();
+      const newHeaders: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(newToken ? { Authorization: `Bearer ${newToken}` } : {}),
+      };
+      res = await fetch(url, { ...options, headers: newHeaders });
+    }
+  }
+
+  return handleResponse<T>(res);
+}
+
+// ============================================================================
+// API Client
+// ============================================================================
+
 export const apiClient = {
   async get<T>(endpoint: string, options?: { params?: Record<string, string> }): Promise<T> {
     const url = new URL(`${API_BASE}${endpoint}`);
     if (options?.params) {
       Object.entries(options.params).forEach(([key, value]) => {
-        url.searchParams.set(key, value);
+        if (value !== undefined && value !== '') {
+          url.searchParams.set(key, value);
+        }
       });
     }
-    const token = getToken();
-    const res = await fetch(url.toString(), {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
-    return handleResponse<T>(res);
+    return fetchWithAuth<T>(url.toString(), { method: 'GET' });
   },
 
   async post<T>(endpoint: string, body?: unknown): Promise<T> {
-    const token = getToken();
-    const res = await fetch(`${API_BASE}${endpoint}`, {
+    return fetchWithAuth<T>(`${API_BASE}${endpoint}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
       body: body ? JSON.stringify(body) : undefined,
     });
-    return handleResponse<T>(res);
   },
 
   async put<T>(endpoint: string, body?: unknown): Promise<T> {
-    const token = getToken();
-    const res = await fetch(`${API_BASE}${endpoint}`, {
+    return fetchWithAuth<T>(`${API_BASE}${endpoint}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
       body: body ? JSON.stringify(body) : undefined,
     });
-    return handleResponse<T>(res);
+  },
+
+  async patch<T>(endpoint: string, body?: unknown): Promise<T> {
+    return fetchWithAuth<T>(`${API_BASE}${endpoint}`, {
+      method: 'PATCH',
+      body: body ? JSON.stringify(body) : undefined,
+    });
   },
 
   async delete<T>(endpoint: string): Promise<T> {
-    const token = getToken();
-    const res = await fetch(`${API_BASE}${endpoint}`, {
+    return fetchWithAuth<T>(`${API_BASE}${endpoint}`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
     });
-    return handleResponse<T>(res);
   },
 };
-
-/**
- * Simule un delai reseau pour les appels API mock.
- * A supprimer quand le backend sera connecte.
- */
-export function delay(ms: number = 300): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}

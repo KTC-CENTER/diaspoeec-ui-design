@@ -11,12 +11,15 @@ import {
   Users,
   Calendar,
   X,
+  Video,
 } from 'lucide-react';
-import { mockEvenements } from '@/lib/mock/evenements.mock';
+import { useQuery } from '@tanstack/react-query';
+import { getEvenements } from '@/lib/api/evenements.api';
+import { useCreateEvenement, useUpdateEvenement, useDeleteEvenement } from '@/features/evenements/hooks/use-evenements';
 import { useToastStore } from '@/stores/toast.store';
-import { useAuthStore } from '@/stores/auth.store';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { RoleGuard } from '@/features/gestion/components/role-guard';
+import { CustomSelect } from '@/components/forms/custom-select';
 import type { Evenement, EventType } from '@/types';
 
 const typeLabels: Record<string, string> = {
@@ -39,10 +42,13 @@ const types = ['Tous', 'culte', 'conference', 'retraite', 'formation', 'jeunesse
 const typeOptions: EventType[] = ['culte', 'conference', 'retraite', 'formation', 'jeunesse'];
 
 function GestionEvenementsContent() {
-  const user = useAuthStore((s) => s.user);
+  const { data: evenementsData } = useQuery({ queryKey: ['gestion-evenements'], queryFn: () => getEvenements() });
+  const items = evenementsData ?? [];
+  const createMutation = useCreateEvenement();
+  const updateMutation = useUpdateEvenement();
+  const deleteMutation = useDeleteEvenement();
   const [activeType, setActiveType] = useState('Tous');
   const [search, setSearch] = useState('');
-  const [items, setItems] = useState<Evenement[]>(mockEvenements);
 
   // Modal states
   const [viewItem, setViewItem] = useState<Evenement | null>(null);
@@ -53,15 +59,26 @@ function GestionEvenementsContent() {
   // Edit form state
   const [editTitre, setEditTitre] = useState('');
   const [editType, setEditType] = useState<EventType>('culte');
+  const [editDate, setEditDate] = useState('');
+  const [editTime, setEditTime] = useState('');
   const [editLieu, setEditLieu] = useState('');
+  const [editMaxParticipants, setEditMaxParticipants] = useState('');
   const [editDescription, setEditDescription] = useState('');
 
   // Create form state
   const [createTitre, setCreateTitre] = useState('');
   const [createType, setCreateType] = useState<EventType>('culte');
   const [createDate, setCreateDate] = useState('');
+  const [createTime, setCreateTime] = useState('');
   const [createLieu, setCreateLieu] = useState('');
+  const [createMaxParticipants, setCreateMaxParticipants] = useState('');
   const [createDescription, setCreateDescription] = useState('');
+  const [createEstEnLigne, setCreateEstEnLigne] = useState(false);
+  const [createLienZoom, setCreateLienZoom] = useState('');
+
+  // Edit form extra state (culte)
+  const [editEstEnLigne, setEditEstEnLigne] = useState(false);
+  const [editLienZoom, setEditLienZoom] = useState('');
 
   const { addToast } = useToastStore();
 
@@ -75,62 +92,89 @@ function GestionEvenementsContent() {
   const handleEditOpen = (evt: Evenement) => {
     setEditTitre(evt.titre);
     setEditType(evt.type);
+    if (evt.date) {
+      const d = new Date(evt.date);
+      setEditDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+      setEditTime(`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`);
+    } else {
+      setEditDate('');
+      setEditTime('');
+    }
     setEditLieu(evt.lieu);
+    setEditMaxParticipants(evt.maxParticipants ? String(evt.maxParticipants) : '');
     setEditDescription(evt.description);
+    setEditLienZoom(evt.lienZoom ?? '');
+    setEditEstEnLigne(!!evt.lienZoom);
     setEditItem(evt);
   };
 
   const handleEditSave = () => {
     if (!editItem) return;
-    setItems((prev) =>
-      prev.map((e) =>
-        e.id === editItem.id
-          ? { ...e, titre: editTitre, type: editType, lieu: editLieu, description: editDescription }
-          : e
-      )
+    updateMutation.mutate(
+      { id: editItem.id, data: { titre: editTitre, type: editType, ...(editDate ? { date: `${editDate}T${editTime || '00:00'}:00` } : {}), lieu: editLieu, ...(editMaxParticipants ? { maxParticipants: Number(editMaxParticipants) } : {}), description: editDescription, lienZoom: editEstEnLigne ? editLienZoom : '' } },
+      {
+        onSuccess: () => {
+          setEditItem(null);
+          addToast('Evenement mis a jour', 'success');
+        },
+        onError: () => {
+          addToast('Erreur lors de la mise a jour', 'error');
+        },
+      },
     );
-    setEditItem(null);
-    addToast('Evenement mis a jour', 'success');
   };
 
   const handleDeleteConfirm = () => {
     if (!deleteItem) return;
-    setItems((prev) => prev.filter((e) => e.id !== deleteItem.id));
-    setDeleteItem(null);
-    addToast('Evenement supprime', 'success');
+    deleteMutation.mutate(deleteItem.id, {
+      onSuccess: () => {
+        setDeleteItem(null);
+        addToast('Evenement supprime', 'success');
+      },
+      onError: () => {
+        addToast('Erreur lors de la suppression', 'error');
+      },
+    });
   };
 
   const handleCreateOpen = () => {
     setCreateTitre('');
     setCreateType('culte');
     setCreateDate('');
+    setCreateTime('');
     setCreateLieu('');
+    setCreateMaxParticipants('');
     setCreateDescription('');
+    setCreateEstEnLigne(false);
+    setCreateLienZoom('');
     setShowCreateModal(true);
   };
 
   const handleCreateSubmit = () => {
-    if (!createTitre.trim() || !createLieu.trim()) {
-      addToast('Veuillez remplir tous les champs obligatoires', 'error');
+    if (!createTitre.trim() || !createLieu.trim() || !createDate) {
+      addToast('Veuillez remplir le titre, la date et le lieu', 'error');
       return;
     }
-    const newEvenement: Evenement = {
-      id: `evt_${Date.now()}`,
-      titre: createTitre,
-      type: createType,
-      date: createDate ? new Date(createDate).toISOString() : new Date().toISOString(),
-      lieu: createLieu,
-      description: createDescription,
-      programme: [],
-      participantsInscrits: 0,
-      commentCount: 0,
-      actif: true,
-      createurId: user?.id,
-      createurNom: user?.nomComplet,
-    };
-    setItems((prev) => [newEvenement, ...prev]);
-    setShowCreateModal(false);
-    addToast('Evenement cree', 'success');
+    createMutation.mutate(
+      {
+        titre: createTitre,
+        type: createType,
+        date: `${createDate}T${createTime || '00:00'}:00`,
+        lieu: createLieu,
+        ...(createMaxParticipants ? { maxParticipants: Number(createMaxParticipants) } : {}),
+        description: createDescription,
+        ...(createEstEnLigne && createLienZoom ? { lienZoom: createLienZoom } : {}),
+      },
+      {
+        onSuccess: () => {
+          setShowCreateModal(false);
+          addToast('Evenement cree', 'success');
+        },
+        onError: () => {
+          addToast('Erreur lors de la creation', 'error');
+        },
+      },
+    );
   };
 
   return (
@@ -260,14 +304,22 @@ function GestionEvenementsContent() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="flex items-center gap-1 text-xs text-ink-500">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(evt.date).toLocaleDateString('fr-FR', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                        })}
-                      </span>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="flex items-center gap-1 text-xs text-ink-500">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(evt.date).toLocaleDateString('fr-FR', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                          })}
+                        </span>
+                        <span className="text-xs text-ink-400">
+                          {new Date(evt.date).toLocaleTimeString('fr-FR', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
@@ -330,13 +382,18 @@ function GestionEvenementsContent() {
                 </span>
               </div>
               <div>
-                <p className="text-sm font-medium text-ink-500">Date</p>
+                <p className="text-sm font-medium text-ink-500">Date et heure</p>
                 <p className="text-sm text-ink-900">
                   {new Date(viewItem.date).toLocaleDateString('fr-FR', {
                     weekday: 'long',
                     day: 'numeric',
                     month: 'long',
                     year: 'numeric',
+                  })}
+                  {' a '}
+                  {new Date(viewItem.date).toLocaleTimeString('fr-FR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
                   })}
                 </p>
               </div>
@@ -361,6 +418,20 @@ function GestionEvenementsContent() {
                   {viewItem.maxParticipants ? ` / ${viewItem.maxParticipants} places` : ''}
                 </p>
               </div>
+              {viewItem.lienZoom && (
+                <div>
+                  <p className="text-sm font-medium text-ink-500">Lien en ligne</p>
+                  <a
+                    href={viewItem.lienZoom}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-sm text-forest-700 underline underline-offset-2 hover:text-forest-900 break-all"
+                  >
+                    <Video className="h-3.5 w-3.5 shrink-0" />
+                    {viewItem.lienZoom}
+                  </a>
+                </div>
+              )}
             </div>
 
             <div className="mt-6 flex justify-end">
@@ -406,17 +477,28 @@ function GestionEvenementsContent() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-ink-700 mb-1.5">Type</label>
-                <select
+                <CustomSelect
                   value={editType}
-                  onChange={(e) => setEditType(e.target.value as EventType)}
-                  className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
-                >
-                  {typeOptions.map((t) => (
-                    <option key={t} value={t}>
-                      {typeLabels[t]}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => setEditType(value as EventType)}
+                  options={typeOptions.map((t) => ({ value: t, label: typeLabels[t] }))}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">Date et heure</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="date"
+                    value={editDate}
+                    onChange={(e) => setEditDate(e.target.value)}
+                    className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
+                  />
+                  <input
+                    type="time"
+                    value={editTime}
+                    onChange={(e) => setEditTime(e.target.value)}
+                    className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-ink-700 mb-1.5">Lieu</label>
@@ -424,6 +506,17 @@ function GestionEvenementsContent() {
                   type="text"
                   value={editLieu}
                   onChange={(e) => setEditLieu(e.target.value)}
+                  className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">Nombre de places (optionnel)</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={editMaxParticipants}
+                  onChange={(e) => setEditMaxParticipants(e.target.value)}
+                  placeholder="Illimite si vide"
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
@@ -436,6 +529,36 @@ function GestionEvenementsContent() {
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
+
+              {/* Culte en ligne */}
+              {editType === 'culte' && (
+                <div className="rounded-xl border border-forest-900/10 bg-sage-200/20 p-4 space-y-3">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editEstEnLigne}
+                      onChange={(e) => setEditEstEnLigne(e.target.checked)}
+                      className="h-4 w-4 rounded accent-forest-700"
+                    />
+                    <span className="text-sm font-medium text-ink-700">Culte en ligne (YouTube / Zoom)</span>
+                  </label>
+                  {editEstEnLigne && (
+                    <div>
+                      <label className="block text-sm font-medium text-ink-700 mb-1.5">Lien YouTube ou Zoom</label>
+                      <div className="relative">
+                        <Video className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+                        <input
+                          type="url"
+                          value={editLienZoom}
+                          onChange={(e) => setEditLienZoom(e.target.value)}
+                          placeholder="https://youtube.com/live/... ou https://zoom.us/j/..."
+                          className="w-full rounded-xl border border-forest-900/10 bg-cream-50 py-2.5 pl-10 pr-4 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="mt-6 flex justify-end gap-3">
@@ -447,9 +570,10 @@ function GestionEvenementsContent() {
               </button>
               <button
                 onClick={handleEditSave}
-                className="rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg"
+                disabled={updateMutation.isPending}
+                className="rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg disabled:opacity-50"
               >
-                Enregistrer
+                {updateMutation.isPending ? 'Enregistrement...' : 'Enregistrer'}
               </button>
             </div>
           </div>
@@ -488,26 +612,31 @@ function GestionEvenementsContent() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-ink-700 mb-1.5">Type</label>
-                <select
+                <CustomSelect
                   value={createType}
-                  onChange={(e) => setCreateType(e.target.value as EventType)}
-                  className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
-                >
-                  {typeOptions.map((t) => (
-                    <option key={t} value={t}>
-                      {typeLabels[t]}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => setCreateType(value as EventType)}
+                  options={typeOptions.map((t) => ({ value: t, label: typeLabels[t] }))}
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Date</label>
-                <input
-                  type="datetime-local"
-                  value={createDate}
-                  onChange={(e) => setCreateDate(e.target.value)}
-                  className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
-                />
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">
+                  Date et heure <span className="text-red-500">*</span>
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="date"
+                    value={createDate}
+                    onChange={(e) => setCreateDate(e.target.value)}
+                    required
+                    className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
+                  />
+                  <input
+                    type="time"
+                    value={createTime}
+                    onChange={(e) => setCreateTime(e.target.value)}
+                    className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-ink-700 mb-1.5">Lieu</label>
@@ -516,6 +645,17 @@ function GestionEvenementsContent() {
                   value={createLieu}
                   onChange={(e) => setCreateLieu(e.target.value)}
                   placeholder="Lieu de l'evenement"
+                  className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">Nombre de places (optionnel)</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={createMaxParticipants}
+                  onChange={(e) => setCreateMaxParticipants(e.target.value)}
+                  placeholder="Illimite si vide"
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
@@ -529,6 +669,36 @@ function GestionEvenementsContent() {
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
+
+              {/* Culte en ligne */}
+              {createType === 'culte' && (
+                <div className="rounded-xl border border-forest-900/10 bg-sage-200/20 p-4 space-y-3">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={createEstEnLigne}
+                      onChange={(e) => setCreateEstEnLigne(e.target.checked)}
+                      className="h-4 w-4 rounded accent-forest-700"
+                    />
+                    <span className="text-sm font-medium text-ink-700">Culte en ligne (YouTube / Zoom)</span>
+                  </label>
+                  {createEstEnLigne && (
+                    <div>
+                      <label className="block text-sm font-medium text-ink-700 mb-1.5">Lien YouTube ou Zoom</label>
+                      <div className="relative">
+                        <Video className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+                        <input
+                          type="url"
+                          value={createLienZoom}
+                          onChange={(e) => setCreateLienZoom(e.target.value)}
+                          placeholder="https://youtube.com/live/... ou https://zoom.us/j/..."
+                          className="w-full rounded-xl border border-forest-900/10 bg-cream-50 py-2.5 pl-10 pr-4 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="mt-6 flex justify-end gap-3">
@@ -540,9 +710,10 @@ function GestionEvenementsContent() {
               </button>
               <button
                 onClick={handleCreateSubmit}
-                className="rounded-xl bg-gradient-to-r from-terra-600 to-orange-400 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg"
+                disabled={createMutation.isPending}
+                className="rounded-xl bg-gradient-to-r from-terra-600 to-orange-400 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg disabled:opacity-50"
               >
-                Creer
+                {createMutation.isPending ? 'Creation...' : 'Creer'}
               </button>
             </div>
           </div>

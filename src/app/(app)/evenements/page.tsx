@@ -63,7 +63,7 @@ export default function EvenementsPage() {
       </h2>
 
       {/* Event Cards */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         {isLoading ? (
           // Skeleton
           Array.from({ length: 4 }).map((_, i) => (

@@ -2,7 +2,7 @@ import { BookOpen, Calendar, HeartHandshake, Radio, MessageCircle, Bell, Users, 
 import { cn } from '@/lib/utils/cn';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import type { Notification, TypeNotification } from '@/types';
+import type { Notification, NotificationType } from '@/types';
 import type { LucideIcon } from 'lucide-react';
 
 interface NotificationItemProps {
@@ -17,7 +17,7 @@ interface NotificationMeta {
   iconColor: string;
 }
 
-function getNotificationMeta(type: TypeNotification): NotificationMeta {
+function getNotificationMeta(type: NotificationType): NotificationMeta {
   switch (type) {
     case 'nouvelle_meditation':
     case 'rappel_lecture':
@@ -132,7 +132,7 @@ export function NotificationItem({ notification, onClick }: NotificationItemProp
           )}
         </div>
         <p className="mt-0.5 text-xs leading-relaxed text-ink-500 line-clamp-2">
-          {notification.message}
+          {notification.description}
         </p>
         <p className="mt-1 text-[11px] text-ink-400">
           {formatTime(notification.createdAt)}

@@ -1,7 +1,8 @@
 export interface Video {
   id: string;
   titre: string;
-  type: 'enregistre' | 'live';
+  type: 'enregistre' | 'live' | 'planifie';
+  scheduledAt?: string | null;
   youtubeId: string;
   thumbnailGradient: string;
   dureeSeconds?: number;
@@ -11,6 +12,7 @@ export interface Video {
   badge?: 'POPULAIRE' | 'NOEL' | null;
   auteur: string;
   publishedAt: string;
+  userLiked?: boolean;
 }
 
 export interface ServiceAVenir {

@@ -144,7 +144,7 @@ export function PhoneInput({
 
           {/* Country Dropdown */}
           {isOpen && (
-            <div className="absolute left-0 top-full z-50 mt-1 w-64 overflow-hidden rounded-xl border border-ink-100 bg-white shadow-xl">
+            <div className="absolute left-0 top-full z-50 mt-1 w-64 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-ink-100 bg-white shadow-xl">
               {/* Search */}
               <div className="border-b border-ink-100 p-2">
                 <input

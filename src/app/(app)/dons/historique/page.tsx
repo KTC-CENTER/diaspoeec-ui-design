@@ -7,21 +7,21 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { formatMontant } from '@/lib/utils/format';
-import { useDons, useDonStats } from '@/features/dons/hooks/use-dons';
+import { useDonHistory, useDonStats } from '@/features/dons/hooks/use-dons';
+import { CustomSelect } from '@/components/forms/custom-select';
 import { DonationHistory } from '@/features/dons/components/donation-history';
 import { SubscriptionCard } from '@/features/dons/components/subscription-card';
 import { exportToCSV, exportToExcel } from '@/lib/utils/export';
 import { useToastStore } from '@/stores/toast.store';
 
 export default function HistoriqueDonsPage() {
-  const { data: dons, isLoading: donsLoading } = useDons();
+  const { data: dons, isLoading: donsLoading } = useDonHistory();
   const { data: stats, isLoading: statsLoading } = useDonStats();
   const [yearFilter, setYearFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const { addToast } = useToastStore();
 
-  // Filter dons for current user
-  const userDons = dons?.filter((d) => d.donateurId === 'usr_001') || [];
+  const userDons = dons || [];
 
   // Active subscriptions
   const subscriptions = userDons.filter((d) => d.frequence === 'mensuel');
@@ -90,26 +90,28 @@ export default function HistoriqueDonsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-8 animate-[fade-up_0.5s_ease-out_0.2s_both]">
-        <select
+      <div className="flex flex-col sm:flex-row flex-wrap gap-3 mb-8 animate-[fade-up_0.5s_ease-out_0.2s_both]">
+        <CustomSelect
           value={yearFilter}
-          onChange={(e) => setYearFilter(e.target.value)}
-          className="px-4 py-2.5 rounded-xl border border-ink-200 text-sm bg-white focus:border-forest-900 focus:ring-2 focus:ring-sage-200 outline-none"
-        >
-          <option value="all">Toutes les annees</option>
-          <option value="2026">2026</option>
-          <option value="2025">2025</option>
-          <option value="2024">2024</option>
-        </select>
-        <select
+          onChange={setYearFilter}
+          options={[
+            { value: 'all', label: 'Toutes les annees' },
+            { value: '2026', label: '2026' },
+            { value: '2025', label: '2025' },
+            { value: '2024', label: '2024' },
+          ]}
+          className="w-full sm:w-auto sm:min-w-[180px]"
+        />
+        <CustomSelect
           value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value)}
-          className="px-4 py-2.5 rounded-xl border border-ink-200 text-sm bg-white focus:border-forest-900 focus:ring-2 focus:ring-sage-200 outline-none"
-        >
-          <option value="all">Tous</option>
-          <option value="ponctuel">Ponctuels</option>
-          <option value="mensuel">Recurrents</option>
-        </select>
+          onChange={setTypeFilter}
+          options={[
+            { value: 'all', label: 'Tous' },
+            { value: 'ponctuel', label: 'Ponctuels' },
+            { value: 'mensuel', label: 'Recurrents' },
+          ]}
+          className="w-full sm:w-auto sm:min-w-[160px]"
+        />
       </div>
 
       {/* Active subscriptions */}

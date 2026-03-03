@@ -1,19 +1,28 @@
 'use client';
 
-import { useState } from 'react';
-import { CheckCircle, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { CheckCircle, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useRSVP } from '@/features/evenements/hooks/use-evenements';
+import { CustomSelect } from '@/components/forms/custom-select';
 
 interface RSVPFormProps {
   eventId: string;
+  userParticipe?: boolean;
 }
 
-export function RSVPForm({ eventId }: RSVPFormProps) {
+export function RSVPForm({ eventId, userParticipe }: RSVPFormProps) {
   const [participe, setParticipe] = useState<boolean | null>(null);
   const [nombrePersonnes, setNombrePersonnes] = useState(1);
-  const [confirmed, setConfirmed] = useState(false);
+  const [justConfirmed, setJustConfirmed] = useState(false);
   const rsvpMutation = useRSVP();
+
+  // Reset the "just confirmed" flash when API data refreshes with the new state
+  useEffect(() => {
+    if (justConfirmed && userParticipe !== undefined) {
+      setJustConfirmed(false);
+    }
+  }, [userParticipe]);
 
   const handleConfirm = async () => {
     if (participe === null) return;
@@ -26,25 +35,69 @@ export function RSVPForm({ eventId }: RSVPFormProps) {
       },
       {
         onSuccess: () => {
-          setConfirmed(true);
+          setJustConfirmed(true);
+          setParticipe(null);
         },
       }
     );
   };
 
-  if (confirmed) {
+  const handleCancel = () => {
+    rsvpMutation.mutate(
+      { eventId, participe: false, nombrePersonnes: 0 },
+      {
+        onSuccess: () => {
+          setJustConfirmed(false);
+        },
+      }
+    );
+  };
+
+  // Already registered (from API) and user hasn't clicked cancel in this session
+  if (userParticipe === true && !justConfirmed) {
+    return (
+      <div className="rounded-2xl border border-sage-300 bg-sage-100 p-6">
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-forest-900">
+            <CheckCircle className="h-6 w-6 text-white" />
+          </div>
+          <div className="flex-1">
+            <p className="font-heading text-lg font-semibold text-forest-900">
+              Vous etes inscrit !
+            </p>
+            <p className="mt-1 text-sm text-ink-500">
+              Votre participation a cet evenement est confirmee.
+            </p>
+            <button
+              onClick={handleCancel}
+              disabled={rsvpMutation.isPending}
+              className="mt-3 flex items-center gap-1 text-xs text-terra-600 hover:underline disabled:opacity-50"
+            >
+              {rsvpMutation.isPending ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <X className="h-3 w-3" />
+              )}
+              Annuler mon inscription
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show confirmation flash after successful RSVP (before API refetch)
+  if (justConfirmed) {
     return (
       <div className="rounded-2xl border border-sage-300 bg-sage-100 p-6 text-center">
         <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-forest-900">
           <CheckCircle className="h-6 w-6 text-white" />
         </div>
         <p className="font-heading text-lg font-semibold text-forest-900">
-          {participe ? 'Inscription confirmee !' : 'Reponse enregistree'}
+          Reponse enregistree !
         </p>
         <p className="mt-1 text-sm text-ink-500">
-          {participe
-            ? `Vous avez confirme votre participation pour ${nombrePersonnes} personne${nombrePersonnes > 1 ? 's' : ''}.`
-            : 'Nous esperons vous voir a un prochain evenement.'}
+          Votre participation a bien ete prise en compte.
         </p>
       </div>
     );
@@ -88,21 +141,16 @@ export function RSVPForm({ eventId }: RSVPFormProps) {
 
       {/* Nombre de personnes */}
       {participe === true && (
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
           <label className="text-sm text-ink-600 font-medium">
             Nombre de personnes :
           </label>
-          <select
-            value={nombrePersonnes}
-            onChange={(e) => setNombrePersonnes(Number(e.target.value))}
-            className="px-4 py-2 rounded-xl border border-ink-200 text-sm bg-white focus:border-forest-900 focus:ring-2 focus:ring-sage-200 outline-none"
-          >
-            {[1, 2, 3, 4, 5].map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
+          <CustomSelect
+            value={String(nombrePersonnes)}
+            onChange={(value) => setNombrePersonnes(Number(value))}
+            options={[1, 2, 3, 4, 5].map((n) => ({ value: String(n), label: String(n) }))}
+            className="w-full sm:w-[100px]"
+          />
         </div>
       )}
 

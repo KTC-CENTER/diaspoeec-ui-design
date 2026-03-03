@@ -2,6 +2,7 @@
 
 import { Users, Heart, Calendar, BookOpen, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { formatMontant } from '@/lib/utils/format';
 import { useAdminStats } from '@/features/admin/hooks/use-admin';
 
 export function DashboardStats() {
@@ -22,8 +23,8 @@ export function DashboardStats() {
   const cards = [
     {
       label: 'Fideles inscrits',
-      value: stats.totalFideles.toLocaleString('fr-FR'),
-      sub: `+${stats.nouveauxParMois}`,
+      value: stats.totalMembres.toLocaleString('fr-FR'),
+      sub: `+${stats.nouveauxMembres}`,
       subLabel: 'ce mois',
       icon: Users,
       iconBg: 'bg-sage-200',
@@ -34,9 +35,9 @@ export function DashboardStats() {
     },
     {
       label: 'Dons du mois',
-      value: `${stats.totalDons.toLocaleString('fr-FR')} \u20AC`,
-      sub: `+${stats.croissanceDons}%`,
-      subLabel: 'vs mois dernier',
+      value: formatMontant(stats.donsMoisEnCours, 'EUR'),
+      sub: `${stats.donsMoisCount}`,
+      subLabel: 'transactions ce mois',
       icon: Heart,
       iconBg: 'bg-gold-400/30',
       iconColor: 'text-gold-600',
@@ -47,8 +48,8 @@ export function DashboardStats() {
     {
       label: 'Evenements actifs',
       value: stats.totalEvenements.toString(),
-      sub: stats.evenementsSemaine.toString(),
-      subLabel: 'cette semaine',
+      sub: stats.evenementsAVenir.toString(),
+      subLabel: 'a venir',
       icon: Calendar,
       iconBg: 'bg-orange-50',
       iconColor: 'text-terra-600',
@@ -59,8 +60,8 @@ export function DashboardStats() {
     {
       label: 'Meditations publiees',
       value: stats.totalMeditations.toString(),
-      sub: stats.meditationsSemaine.toString(),
-      subLabel: 'cette semaine',
+      sub: stats.meditationsMoisEnCours.toString(),
+      subLabel: 'ce mois',
       icon: BookOpen,
       iconBg: 'bg-sage-200',
       iconColor: 'text-forest-700',
@@ -86,34 +87,19 @@ export function DashboardStats() {
                 {card.label}
               </p>
               <p
-                className={cn(
-                  'mt-1 text-3xl font-bold',
-                  card.valueColor
-                )}
+                className={cn('mt-1 text-3xl font-bold', card.valueColor)}
                 style={{ fontFamily: 'var(--font-heading)' }}
               >
                 {card.value}
               </p>
             </div>
-            <div
-              className={cn(
-                'flex h-10 w-10 items-center justify-center rounded-xl',
-                card.iconBg
-              )}
-            >
+            <div className={cn('flex h-10 w-10 items-center justify-center rounded-xl', card.iconBg)}>
               <card.icon className={cn('h-5 w-5', card.iconColor)} />
             </div>
           </div>
           <div className="mt-3 flex items-center gap-1 text-xs">
-            <span
-              className={cn(
-                'flex items-center gap-0.5 font-medium',
-                card.subColor
-              )}
-            >
-              {card.subColor === 'text-green-600' && (
-                <TrendingUp className="h-3 w-3" />
-              )}
+            <span className={cn('flex items-center gap-0.5 font-medium', card.subColor)}>
+              {card.subColor === 'text-green-600' && <TrendingUp className="h-3 w-3" />}
               {card.sub}
             </span>
             <span className="text-ink-500">{card.subLabel}</span>

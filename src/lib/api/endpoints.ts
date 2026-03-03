@@ -17,11 +17,13 @@ export const ENDPOINTS = {
   // Membres
   MEMBERS: '/api/v1/members',
   MEMBER_BY_ID: (id: string) => `/api/v1/members/${id}`,
+  MEMBER_FOLLOW: (id: string) => `/api/v1/members/${id}/follow`,
 
   // Meditations
   MEDITATIONS: '/api/v1/meditations',
   MEDITATION_BY_ID: (id: string) => `/api/v1/meditations/${id}`,
   MEDITATION_LIKE: (id: string) => `/api/v1/meditations/${id}/like`,
+  MEDITATION_BOOKMARK: (id: string) => `/api/v1/meditations/${id}/bookmark`,
 
   // Evenements
   EVENEMENTS: '/api/v1/evenements',
@@ -45,13 +47,24 @@ export const ENDPOINTS = {
   // Bible
   BIBLE: {
     PLANS: '/api/v1/bible/plans',
+    PLANS_ALL: '/api/v1/bible/plans/all',
     LECTURE_JOUR: '/api/v1/bible/lecture-jour',
     NOTES: '/api/v1/bible/notes',
+    VERSET: '/api/v1/bible/verset',
+    CHAPITRE: '/api/v1/bible/chapitre',
+    STATS: '/api/v1/bible/stats',
+    LECTURE_COURANTE: (planId: string) => `/api/v1/bible/plans/${planId}/lecture-courante`,
+    ADMIN_PLANS: '/api/v1/bible/admin/plans',
+    ADMIN_PLAN_BY_ID: (id: string) => `/api/v1/bible/admin/plans/${id}`,
+    ADMIN_PLAN_LECTURES: (id: string) => `/api/v1/bible/admin/plans/${id}/lectures`,
+    ADMIN_LECTURE_BY_ID: (id: string) => `/api/v1/bible/admin/lectures/${id}`,
   },
 
   // Cultes
   CULTES: {
     VIDEOS: '/api/v1/cultes/videos',
+    VIDEO_BY_ID: (id: string) => `/api/v1/cultes/videos/${id}`,
+    VIDEO_LIKE: (id: string) => `/api/v1/cultes/videos/${id}/like`,
     SERVICES: '/api/v1/cultes/services',
     RAPPEL: (id: string) => `/api/v1/cultes/services/${id}/rappel`,
   },

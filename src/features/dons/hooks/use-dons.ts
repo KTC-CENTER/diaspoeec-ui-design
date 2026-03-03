@@ -1,16 +1,20 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { mockDons } from '@/lib/mock/dons.mock';
-import { mockCampagnes } from '@/lib/mock/campagnes.mock';
-import { delay } from '@/lib/api/client';
-import type { Don, Campagne } from '@/types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getDons, getDonHistory, getSubscriptions, createDon } from '@/lib/api/dons.api';
+import { apiClient } from '@/lib/api/client';
+import { ENDPOINTS } from '@/lib/api/endpoints';
+import type { Campagne } from '@/types';
 
 export function useDons() {
   return useQuery({
     queryKey: ['dons'],
-    queryFn: async () => {
-      await delay(300);
-      return mockDons;
-    },
+    queryFn: getDons,
+  });
+}
+
+export function useDonHistory() {
+  return useQuery({
+    queryKey: ['don-history'],
+    queryFn: getDonHistory,
   });
 }
 
@@ -18,8 +22,7 @@ export function useCampagnes() {
   return useQuery({
     queryKey: ['campagnes'],
     queryFn: async () => {
-      await delay(300);
-      return mockCampagnes;
+      return apiClient.get<Campagne[]>(ENDPOINTS.CAMPAGNES);
     },
   });
 }
@@ -28,13 +31,13 @@ export function useCampagne(id: string) {
   return useQuery({
     queryKey: ['campagne', id],
     queryFn: async () => {
-      await delay(200);
-      return mockCampagnes.find((c) => c.id === id) ?? null;
+      return apiClient.get<Campagne>(ENDPOINTS.CAMPAGNE_BY_ID(id));
     },
   });
 }
 
 export function useCreateDon() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: {
       campagneId: string;
@@ -45,12 +48,18 @@ export function useCreateDon() {
       message?: string;
       methodePaiement: string;
     }) => {
-      await delay(1500);
+      const don = await createDon(data as Parameters<typeof createDon>[0]);
       return {
         success: true,
-        donId: `don_${Date.now()}`,
+        donId: don.id,
         message: 'Don enregistre avec succes',
       };
+    },
+    onSuccess: () => {
+      // Invalider les caches pour que les campagnes et l'historique soient a jour
+      queryClient.invalidateQueries({ queryKey: ['campagnes'] });
+      queryClient.invalidateQueries({ queryKey: ['don-history'] });
+      queryClient.invalidateQueries({ queryKey: ['don-stats'] });
     },
   });
 }
@@ -59,25 +68,22 @@ export function useDonStats() {
   return useQuery({
     queryKey: ['don-stats'],
     queryFn: async () => {
-      await delay(200);
-      // Compute stats from mock data for current user
-      const userDons = mockDons.filter((d) => d.donateurId === 'usr_001');
+      const [history] = await Promise.all([
+        getDonHistory(),
+        getSubscriptions(),
+      ]);
+
+      const totalAmount = history.reduce((sum, d) => sum + parseFloat(String(d.montant)), 0);
       const currentYear = new Date().getFullYear();
-      const thisYearDons = userDons.filter(
+      const thisYearDons = history.filter(
         (d) => new Date(d.createdAt).getFullYear() === currentYear
       );
-
-      const totalAmount = userDons.reduce((sum, d) => {
-        // Simple EUR conversion for display
-        return sum + d.montant;
-      }, 0);
-
-      const thisYearAmount = thisYearDons.reduce((sum, d) => sum + d.montant, 0);
+      const thisYearAmount = thisYearDons.reduce((sum, d) => sum + parseFloat(String(d.montant)), 0);
 
       return {
         totalDonne: totalAmount,
         totalCetteAnnee: thisYearAmount,
-        nombreDons: userDons.length,
+        nombreDons: history.length,
         devise: 'EUR' as const,
       };
     },

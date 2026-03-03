@@ -1,20 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { mockMeditations } from '@/lib/mock/meditations.mock';
-import { mockComments } from '@/lib/mock/comments.mock';
-import { delay } from '@/lib/utils/format';
-import type { MeditationCategorie } from '@/types';
+import { getMeditations, getMeditationById, likeMeditation, bookmarkMeditation, createMeditation, updateMeditation, deleteMeditation } from '@/lib/api/meditations.api';
+import { toggleFollowMember } from '@/lib/api/members.api';
+import { apiClient } from '@/lib/api/client';
+import { ENDPOINTS } from '@/lib/api/endpoints';
+import type { MeditationCategorie, Comment } from '@/types';
 
 export function useMeditations(categorie?: string) {
   return useQuery({
     queryKey: ['meditations', categorie],
     queryFn: async () => {
-      await delay(300);
       if (!categorie || categorie === 'toutes') {
-        return mockMeditations;
+        return getMeditations();
       }
-      return mockMeditations.filter(
-        (m) => m.categorie === (categorie as MeditationCategorie)
-      );
+      return getMeditations({ categorie: categorie as MeditationCategorie });
     },
   });
 }
@@ -23,8 +21,7 @@ export function useMeditation(id: string) {
   return useQuery({
     queryKey: ['meditation', id],
     queryFn: async () => {
-      await delay(200);
-      const meditation = mockMeditations.find((m) => m.id === id);
+      const meditation = await getMeditationById(id);
       if (!meditation) {
         throw new Error('Meditation introuvable');
       }
@@ -40,26 +37,55 @@ export function useLikeMeditation() {
   return useMutation({
     mutationFn: async ({
       meditationId,
-      liked,
     }: {
       meditationId: string;
       liked: boolean;
     }) => {
-      await delay(150);
-      return { meditationId, liked };
+      const result = await likeMeditation(meditationId);
+      return { meditationId, ...result };
     },
-    onSuccess: ({ meditationId, liked }) => {
+    onSuccess: ({ meditationId, likes }) => {
       queryClient.setQueryData(
         ['meditation', meditationId],
         (old: unknown) => {
           if (!old || typeof old !== 'object') return old;
-          const existing = old as { likes: number };
-          return {
-            ...existing,
-            likes: liked ? existing.likes + 1 : existing.likes - 1,
-          };
+          return { ...old as object, likes };
         }
       );
+    },
+  });
+}
+
+export function useBookmarkMeditation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ meditationId }: { meditationId: string }) => {
+      const result = await bookmarkMeditation(meditationId);
+      return { meditationId, ...result };
+    },
+    onSuccess: ({ meditationId, bookmarked }) => {
+      queryClient.setQueryData(
+        ['meditation', meditationId],
+        (old: unknown) => {
+          if (!old || typeof old !== 'object') return old;
+          return { ...old as object, userBookmarked: bookmarked };
+        }
+      );
+    },
+  });
+}
+
+export function useFollowAuteur() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ auteurId }: { auteurId: string }) => {
+      const result = await toggleFollowMember(auteurId);
+      return { auteurId, ...result };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['meditation'] });
     },
   });
 }
@@ -68,9 +94,58 @@ export function useComments(meditationId: string) {
   return useQuery({
     queryKey: ['comments', meditationId],
     queryFn: async () => {
-      await delay(200);
-      return mockComments[meditationId] || [];
+      return apiClient.get<Comment[]>(ENDPOINTS.COMMENTS_BY_TARGET('meditation', meditationId));
     },
     enabled: !!meditationId,
+  });
+}
+
+export function useCreateMeditation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createMeditation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['meditations'] });
+      queryClient.invalidateQueries({ queryKey: ['gestion-meditations'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-meditations'] });
+    },
+  });
+}
+
+export function useUpdateMeditation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { titre?: string; extrait?: string; contenu?: string; categorie?: MeditationCategorie } }) => updateMeditation(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['meditations'] });
+      queryClient.invalidateQueries({ queryKey: ['gestion-meditations'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-meditations'] });
+    },
+  });
+}
+
+export function useDeleteMeditation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteMeditation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['meditations'] });
+      queryClient.invalidateQueries({ queryKey: ['gestion-meditations'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-meditations'] });
+    },
+  });
+}
+
+export function useCreateComment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { targetType: string; targetId: string; contenu: string; parentId?: string }) => {
+      return apiClient.post<Comment>(ENDPOINTS.COMMENTS, data);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['comments', variables.targetId] });
+      queryClient.invalidateQueries({ queryKey: ['meditation', variables.targetId] });
+      queryClient.invalidateQueries({ queryKey: ['meditations'] });
+    },
   });
 }

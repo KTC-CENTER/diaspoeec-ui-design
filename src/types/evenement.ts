@@ -21,4 +21,5 @@ export interface Evenement {
   actif: boolean;
   createurId?: string;
   createurNom?: string;
+  userParticipe?: boolean;
 }

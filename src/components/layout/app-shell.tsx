@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, BookOpen, Calendar, Heart, Church, BookMarked, Bell, User, PenSquare, CalendarPlus, Users, ClipboardList } from 'lucide-react';
+import { Home, BookOpen, Calendar, Heart, Church, BookMarked, Bell, User, PenSquare, CalendarPlus, Users, ClipboardList, BookCheck, Video } from 'lucide-react';
 import { Sidebar, type NavItem } from './sidebar';
 import { BottomTabs } from './bottom-tabs';
 import { MobileNav } from './mobile-nav';
@@ -24,6 +24,8 @@ function getGestionItems(role?: UserRole): NavItem[] {
   const items: NavItem[] = [];
   if (role === 'pasteur' || role === 'admin') {
     items.push({ icon: PenSquare, label: 'Mes meditations', href: '/gestion/meditations' });
+    items.push({ icon: BookCheck, label: 'Plans Bible', href: '/gestion/bible' });
+    items.push({ icon: Video, label: 'Mes videos', href: '/gestion/cultes' });
   }
   if (role === 'pasteur' || role === 'responsable_zone' || role === 'admin') {
     items.push({ icon: CalendarPlus, label: 'Mes evenements', href: '/gestion/evenements' });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Plus,
   Search,
@@ -12,9 +12,11 @@ import {
   Calendar,
   X,
 } from 'lucide-react';
-import { mockEvenements } from '@/lib/mock/evenements.mock';
+import { useQuery } from '@tanstack/react-query';
+import { getEvenements } from '@/lib/api/evenements.api';
 import { useToastStore } from '@/stores/toast.store';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import { CustomSelect } from '@/components/forms/custom-select';
 import type { Evenement, EventType } from '@/types';
 
 const typeLabels: Record<string, string> = {
@@ -37,9 +39,14 @@ const types = ['Tous', 'culte', 'conference', 'retraite', 'formation', 'jeunesse
 const typeOptions: EventType[] = ['culte', 'conference', 'retraite', 'formation', 'jeunesse'];
 
 export default function AdminEvenementsPage() {
+  const { data: evenementsData } = useQuery({ queryKey: ['admin-evenements'], queryFn: () => getEvenements() });
   const [activeType, setActiveType] = useState('Tous');
   const [search, setSearch] = useState('');
-  const [items, setItems] = useState<Evenement[]>(mockEvenements);
+  const [items, setItems] = useState<Evenement[]>([]);
+
+  useEffect(() => {
+    if (evenementsData) setItems(evenementsData);
+  }, [evenementsData]);
 
   // Modal states
   const [viewItem, setViewItem] = useState<Evenement | null>(null);
@@ -50,13 +57,16 @@ export default function AdminEvenementsPage() {
   // Edit form state
   const [editTitre, setEditTitre] = useState('');
   const [editType, setEditType] = useState<EventType>('culte');
+  const [editDate, setEditDate] = useState('');
   const [editLieu, setEditLieu] = useState('');
+  const [editMaxParticipants, setEditMaxParticipants] = useState('');
   const [editDescription, setEditDescription] = useState('');
 
   // Create form state
   const [createTitre, setCreateTitre] = useState('');
   const [createType, setCreateType] = useState<EventType>('culte');
   const [createLieu, setCreateLieu] = useState('');
+  const [createMaxParticipants, setCreateMaxParticipants] = useState('');
   const [createDescription, setCreateDescription] = useState('');
 
   const { addToast } = useToastStore();
@@ -76,7 +86,9 @@ export default function AdminEvenementsPage() {
   const handleEditOpen = (evt: Evenement) => {
     setEditTitre(evt.titre);
     setEditType(evt.type);
+    setEditDate(evt.date ? new Date(evt.date).toISOString().slice(0, 16) : '');
     setEditLieu(evt.lieu);
+    setEditMaxParticipants(evt.maxParticipants ? String(evt.maxParticipants) : '');
     setEditDescription(evt.description);
     setEditItem(evt);
   };
@@ -86,7 +98,7 @@ export default function AdminEvenementsPage() {
     setItems((prev) =>
       prev.map((e) =>
         e.id === editItem.id
-          ? { ...e, titre: editTitre, type: editType, lieu: editLieu, description: editDescription }
+          ? { ...e, titre: editTitre, type: editType, ...(editDate ? { date: editDate + ':00' } : {}), lieu: editLieu, ...(editMaxParticipants ? { maxParticipants: Number(editMaxParticipants) } : {}), description: editDescription }
           : e
       )
     );
@@ -105,6 +117,7 @@ export default function AdminEvenementsPage() {
     setCreateTitre('');
     setCreateType('culte');
     setCreateLieu('');
+    setCreateMaxParticipants('');
     setCreateDescription('');
     setShowCreateModal(true);
   };
@@ -118,6 +131,7 @@ export default function AdminEvenementsPage() {
       lieu: createLieu,
       description: createDescription,
       programme: [],
+      ...(createMaxParticipants ? { maxParticipants: Number(createMaxParticipants) } : {}),
       participantsInscrits: 0,
       commentCount: 0,
       actif: true,
@@ -242,14 +256,22 @@ export default function AdminEvenementsPage() {
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="flex items-center gap-1 text-xs text-ink-500">
-                      <Calendar className="h-3 w-3" />
-                      {new Date(evt.date).toLocaleDateString('fr-FR', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
-                    </span>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="flex items-center gap-1 text-xs text-ink-500">
+                        <Calendar className="h-3 w-3" />
+                        {new Date(evt.date).toLocaleDateString('fr-FR', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </span>
+                      <span className="text-xs text-ink-400">
+                        {new Date(evt.date).toLocaleTimeString('fr-FR', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
@@ -401,17 +423,20 @@ export default function AdminEvenementsPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-ink-700 mb-1.5">Type</label>
-                <select
+                <CustomSelect
                   value={editType}
-                  onChange={(e) => setEditType(e.target.value as EventType)}
+                  onChange={(value) => setEditType(value as EventType)}
+                  options={typeOptions.map((t) => ({ value: t, label: typeLabels[t] }))}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">Date</label>
+                <input
+                  type="datetime-local"
+                  value={editDate}
+                  onChange={(e) => setEditDate(e.target.value)}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
-                >
-                  {typeOptions.map((t) => (
-                    <option key={t} value={t}>
-                      {typeLabels[t]}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-ink-700 mb-1.5">Lieu</label>
@@ -419,6 +444,17 @@ export default function AdminEvenementsPage() {
                   type="text"
                   value={editLieu}
                   onChange={(e) => setEditLieu(e.target.value)}
+                  className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">Nombre de places (optionnel)</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={editMaxParticipants}
+                  onChange={(e) => setEditMaxParticipants(e.target.value)}
+                  placeholder="Illimite si vide"
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
@@ -483,17 +519,11 @@ export default function AdminEvenementsPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-ink-700 mb-1.5">Type</label>
-                <select
+                <CustomSelect
                   value={createType}
-                  onChange={(e) => setCreateType(e.target.value as EventType)}
-                  className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
-                >
-                  {typeOptions.map((t) => (
-                    <option key={t} value={t}>
-                      {typeLabels[t]}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => setCreateType(value as EventType)}
+                  options={typeOptions.map((t) => ({ value: t, label: typeLabels[t] }))}
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-ink-700 mb-1.5">Lieu</label>
@@ -502,6 +532,17 @@ export default function AdminEvenementsPage() {
                   value={createLieu}
                   onChange={(e) => setCreateLieu(e.target.value)}
                   placeholder="Lieu de l'evenement"
+                  className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">Nombre de places (optionnel)</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={createMaxParticipants}
+                  onChange={(e) => setCreateMaxParticipants(e.target.value)}
+                  placeholder="Illimite si vide"
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>

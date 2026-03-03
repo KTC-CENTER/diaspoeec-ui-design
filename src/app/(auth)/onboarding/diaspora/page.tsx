@@ -1,11 +1,15 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { CustomSelect } from '@/components/forms/custom-select';
 import { OnboardingSteps } from '@/features/auth/components/onboarding-steps';
+import { useAuthStore } from '@/stores/auth.store';
+import { updateMember, type UpdateMemberPayload } from '@/lib/api/members.api';
 import {
   onboardingDiasporaSchema,
   type OnboardingDiasporaFormData,
@@ -17,10 +21,14 @@ import {
 
 export default function OnboardingDiasporaPage() {
   const router = useRouter();
+  const { user, updateUser } = useAuthStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<OnboardingDiasporaFormData>({
     resolver: zodResolver(onboardingDiasporaSchema),
@@ -31,8 +39,18 @@ export default function OnboardingDiasporaPage() {
     },
   });
 
-  const onSubmit = (_data: OnboardingDiasporaFormData) => {
-    router.push('/onboarding/church');
+  const onSubmit = async (data: OnboardingDiasporaFormData) => {
+    if (!user) return;
+    setIsSubmitting(true);
+    try {
+      const updated = await updateMember(user.id, data as UpdateMemberPayload);
+      updateUser(updated);
+      router.push('/onboarding/church');
+    } catch {
+      router.push('/onboarding/church');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -52,28 +70,16 @@ export default function OnboardingDiasporaPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Type de diaspora */}
         <div className="space-y-1.5">
-          <label
-            htmlFor="typeDiaspora"
-            className="block text-sm font-medium text-ink-700"
-          >
+          <label className="block text-sm font-medium text-ink-700">
             Type de diaspora
           </label>
-          <select
-            id="typeDiaspora"
-            className={cn(
-              'w-full rounded-xl border bg-white px-4 py-3 text-sm transition-colors',
-              'focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20',
-              errors.typeDiaspora ? 'border-red-400' : 'border-ink-200'
-            )}
-            {...register('typeDiaspora')}
-          >
-            <option value="">S&eacute;lectionnez un type</option>
-            {DIASPORA_TYPES.map((type) => (
-              <option key={type.value} value={type.value}>
-                {type.label}
-              </option>
-            ))}
-          </select>
+          <CustomSelect
+            value={watch('typeDiaspora') || ''}
+            onChange={(value) => setValue('typeDiaspora', value, { shouldValidate: true })}
+            options={DIASPORA_TYPES}
+            placeholder="Selectionnez un type"
+            error={!!errors.typeDiaspora}
+          />
           {errors.typeDiaspora && (
             <p className="text-xs text-red-600">
               {errors.typeDiaspora.message}
@@ -83,28 +89,16 @@ export default function OnboardingDiasporaPage() {
 
         {/* Pays de residence */}
         <div className="space-y-1.5">
-          <label
-            htmlFor="paysResidence"
-            className="block text-sm font-medium text-ink-700"
-          >
-            Pays de r&eacute;sidence
+          <label className="block text-sm font-medium text-ink-700">
+            Pays de residence
           </label>
-          <select
-            id="paysResidence"
-            className={cn(
-              'w-full rounded-xl border bg-white px-4 py-3 text-sm transition-colors',
-              'focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20',
-              errors.paysResidence ? 'border-red-400' : 'border-ink-200'
-            )}
-            {...register('paysResidence')}
-          >
-            <option value="">S&eacute;lectionnez un pays</option>
-            {PAYS_LIST.map((pays) => (
-              <option key={pays.value} value={pays.value}>
-                {pays.label}
-              </option>
-            ))}
-          </select>
+          <CustomSelect
+            value={watch('paysResidence') || ''}
+            onChange={(value) => setValue('paysResidence', value, { shouldValidate: true })}
+            options={PAYS_LIST}
+            placeholder="Selectionnez un pays"
+            error={!!errors.paysResidence}
+          />
           {errors.paysResidence && (
             <p className="text-xs text-red-600">
               {errors.paysResidence.message}
@@ -151,13 +145,20 @@ export default function OnboardingDiasporaPage() {
           </button>
           <button
             type="submit"
+            disabled={isSubmitting}
             className={cn(
               'flex flex-1 items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white transition-all',
-              'bg-forest-900 hover:bg-forest-700 active:scale-[0.98]'
+              'bg-forest-900 hover:bg-forest-700 active:scale-[0.98] disabled:opacity-60'
             )}
           >
-            Continuer
-            <ArrowRight className="h-4 w-4" />
+            {isSubmitting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                Continuer
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
           </button>
         </div>
       </form>

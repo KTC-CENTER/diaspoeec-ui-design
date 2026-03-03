@@ -353,7 +353,7 @@ export default function AdminParametresPage() {
                           {isSelectOpen && (
                             <>
                               <div className="fixed inset-0 z-10" onClick={() => setOpenSelect(null)} />
-                              <div className="absolute right-0 z-20 mt-1 min-w-[180px] overflow-hidden rounded-xl border border-forest-900/10 bg-white py-1 shadow-lg">
+                              <div className="absolute left-0 sm:left-auto sm:right-0 z-20 mt-1 min-w-[180px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-forest-900/10 bg-white py-1 shadow-lg">
                                 {(selectOptions[item.label] ?? []).map((opt) => (
                                   <button
                                     key={opt}

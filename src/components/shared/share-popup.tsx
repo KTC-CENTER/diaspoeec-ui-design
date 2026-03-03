@@ -109,7 +109,7 @@ export function SharePopup({ url, title, isOpen, onClose }: SharePopupProps) {
     <div
       ref={popupRef}
       className={cn(
-        'absolute z-30 w-72 rounded-2xl bg-white p-4 shadow-xl border border-ink-100',
+        'absolute left-0 sm:left-auto sm:right-0 top-full mt-2 z-30 w-72 max-w-[calc(100vw-2rem)] rounded-2xl bg-white p-4 shadow-xl border border-ink-100',
         'animate-fade-up'
       )}
       role="dialog"

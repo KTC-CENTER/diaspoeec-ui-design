@@ -4,6 +4,7 @@ export interface PlanLecture {
   dureeJours: number;
   joursCompletes: number;
   icone: string;
+  lectureDisponible: boolean;
 }
 
 export interface LectureJour {

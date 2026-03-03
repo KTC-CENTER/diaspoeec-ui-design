@@ -22,7 +22,10 @@ export function formatDate(date: string, formatStr: string = 'dd MMMM yyyy'): st
  * @param devise - Le code devise (EUR, USD, XAF, etc.)
  * @returns Le montant formate avec le symbole de devise
  */
-export function formatMontant(amount: number, devise: string): string {
+export function formatMontant(amount: number | string | null | undefined, devise: string): string {
+  const num = parseFloat(String(amount ?? 0));
+  if (isNaN(num)) return `0 ${devise}`;
+
   const deviseMap: Record<string, { locale: string; currency: string }> = {
     EUR: { locale: 'fr-FR', currency: 'EUR' },
     USD: { locale: 'en-US', currency: 'USD' },
@@ -39,9 +42,9 @@ export function formatMontant(amount: number, devise: string): string {
       currency: config.currency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
-    }).format(amount);
+    }).format(num);
   } catch {
-    return `${amount} ${devise}`;
+    return `${num} ${devise}`;
   }
 }
 
@@ -77,6 +80,37 @@ export function getInitials(name: string): string {
   const last = parts[parts.length - 1].charAt(0).toUpperCase();
 
   return `${first}${last}`;
+}
+
+/**
+ * Convertit un slug de paroisse en label lisible.
+ */
+const PAROISSE_MAP: Record<string, string> = {
+  'bonanjo-douala': 'Paroisse de Bonanjo, Douala',
+  'ndogbati-douala': 'Paroisse de Ndogbati, Douala',
+  'new-bell-douala': 'Paroisse de New-Bell, Douala',
+  'deido-douala': 'Paroisse de Deido, Douala',
+  'akwa-douala': "Paroisse d'Akwa, Douala",
+  'bali-bamenda': 'Paroisse de Bali, Bamenda',
+  'mvolyé-yaounde': 'Paroisse de Mvolyé, Yaoundé',
+  'mokolo-yaounde': 'Paroisse de Mokolo, Yaoundé',
+  'nkongsamba': 'Paroisse de Nkongsamba',
+  'bafoussam': 'Paroisse de Bafoussam',
+  'foumban': 'Paroisse de Foumban',
+  'garoua': 'Paroisse de Garoua',
+  'maroua': 'Paroisse de Maroua',
+  'bertoua': 'Paroisse de Bertoua',
+  'ebolowa': "Paroisse d'Ebolowa",
+  'kribi': 'Paroisse de Kribi',
+  'limbe': 'Paroisse de Limbe',
+  'buea': 'Paroisse de Buea',
+  'siege-eec': 'Siège EEC, Douala',
+  'other': 'Autre paroisse',
+};
+
+export function formatParoisse(slug: string | null | undefined): string {
+  if (!slug) return '';
+  return PAROISSE_MAP[slug] || slug;
 }
 
 /**

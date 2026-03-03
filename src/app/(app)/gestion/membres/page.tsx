@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { Search, Eye, X, MapPin, Mail, Phone, Award } from 'lucide-react';
-import { mockUsers } from '@/lib/mock/users.mock';
+import { useQuery } from '@tanstack/react-query';
+import { getMembers } from '@/lib/api/members.api';
 import { RoleGuard } from '@/features/gestion/components/role-guard';
 import type { User } from '@/types';
 
@@ -17,11 +18,12 @@ const statusColors: Record<string, string> = {
 };
 
 function GestionMembresContent() {
+  const { data: membersData } = useQuery({ queryKey: ['gestion-members'], queryFn: () => getMembers({ role: 'fidele' }) });
   const [search, setSearch] = useState('');
   const [viewItem, setViewItem] = useState<User | null>(null);
 
   // Only show fideles (members of the zone)
-  const members = mockUsers.filter((u) => u.role === 'fidele');
+  const members = membersData ?? [];
 
   const filtered = members.filter((m) => {
     if (!search) return true;

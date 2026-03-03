@@ -12,11 +12,14 @@ import {
   Calendar,
   X,
 } from 'lucide-react';
-import { mockMeditations } from '@/lib/mock/meditations.mock';
+import { useQuery } from '@tanstack/react-query';
+import { getMeditations } from '@/lib/api/meditations.api';
+import { useCreateMeditation, useUpdateMeditation, useDeleteMeditation } from '@/features/meditations/hooks/use-meditations';
 import { useToastStore } from '@/stores/toast.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { RoleGuard } from '@/features/gestion/components/role-guard';
+import { CustomSelect } from '@/components/forms/custom-select';
 import type { Meditation, MeditationCategorie } from '@/types';
 
 const categories = ['Toutes', 'Foi', 'Priere', 'Esperance', 'Famille', 'Grace', 'Perseverance'];
@@ -24,11 +27,18 @@ const categorieOptions: MeditationCategorie[] = ['foi', 'priere', 'esperance', '
 
 function GestionMeditationsContent() {
   const user = useAuthStore((s) => s.user);
+  const { data: meditationsData, isLoading, isError, error } = useQuery({
+    queryKey: ['gestion-meditations', user?.id],
+    queryFn: () => getMeditations({ auteurId: user?.id }),
+    enabled: !!user?.id,
+  });
+  const createMutation = useCreateMeditation();
+  const updateMutation = useUpdateMeditation();
+  const deleteMutation = useDeleteMeditation();
+
   const [activeCategory, setActiveCategory] = useState('Toutes');
   const [search, setSearch] = useState('');
-  const [items, setItems] = useState<Meditation[]>(
-    mockMeditations.filter((m) => m.auteurId === user?.id)
-  );
+  const items = meditationsData ?? [];
 
   // Modal states
   const [viewItem, setViewItem] = useState<Meditation | null>(null);
@@ -40,6 +50,7 @@ function GestionMeditationsContent() {
   const [editTitre, setEditTitre] = useState('');
   const [editCategorie, setEditCategorie] = useState<MeditationCategorie>('foi');
   const [editExtrait, setEditExtrait] = useState('');
+  const [editContenu, setEditContenu] = useState('');
 
   // Create form state
   const [createTitre, setCreateTitre] = useState('');
@@ -61,27 +72,40 @@ function GestionMeditationsContent() {
     setEditTitre(meditation.titre);
     setEditCategorie(meditation.categorie);
     setEditExtrait(meditation.extrait);
+    setEditContenu(meditation.contenu ?? '');
     setEditItem(meditation);
   };
 
   const handleEditSave = () => {
     if (!editItem) return;
-    setItems((prev) =>
-      prev.map((m) =>
-        m.id === editItem.id
-          ? { ...m, titre: editTitre, categorie: editCategorie, extrait: editExtrait }
-          : m
-      )
+    updateMutation.mutate(
+      {
+        id: editItem.id,
+        data: { titre: editTitre, categorie: editCategorie, extrait: editExtrait, contenu: editContenu },
+      },
+      {
+        onSuccess: () => {
+          setEditItem(null);
+          addToast('Meditation mise a jour', 'success');
+        },
+        onError: () => {
+          addToast('Erreur lors de la mise a jour', 'error');
+        },
+      }
     );
-    setEditItem(null);
-    addToast('Meditation mise a jour', 'success');
   };
 
   const handleDeleteConfirm = () => {
     if (!deleteItem) return;
-    setItems((prev) => prev.filter((m) => m.id !== deleteItem.id));
-    setDeleteItem(null);
-    addToast('Meditation supprimee', 'success');
+    deleteMutation.mutate(deleteItem.id, {
+      onSuccess: () => {
+        setDeleteItem(null);
+        addToast('Meditation supprimee', 'success');
+      },
+      onError: () => {
+        addToast('Erreur lors de la suppression', 'error');
+      },
+    });
   };
 
   const handleCreateOpen = () => {
@@ -97,24 +121,23 @@ function GestionMeditationsContent() {
       addToast('Veuillez remplir tous les champs', 'error');
       return;
     }
-    const newMeditation: Meditation = {
-      id: `med_${Date.now()}`,
-      titre: createTitre,
-      extrait: createExtrait,
-      contenu: createContenu || `<p>${createExtrait}</p>`,
-      categorie: createCategorie,
-      auteurId: user?.id || '',
-      auteurNom: user?.nomComplet || '',
-      auteurRole: user?.role === 'pasteur' ? 'Pasteur' : 'Administrateur',
-      thumbnailGradient: 'from-terra-600 to-terra-400',
-      tempsLecture: Math.max(3, Math.ceil(createContenu.split(' ').length / 200)),
-      likes: 0,
-      commentCount: 0,
-      publishedAt: new Date().toISOString(),
-    };
-    setItems((prev) => [newMeditation, ...prev]);
-    setShowCreateModal(false);
-    addToast('Meditation publiee', 'success');
+    createMutation.mutate(
+      {
+        titre: createTitre,
+        extrait: createExtrait,
+        contenu: createContenu || `<p>${createExtrait}</p>`,
+        categorie: createCategorie,
+      },
+      {
+        onSuccess: () => {
+          setShowCreateModal(false);
+          addToast('Meditation publiee', 'success');
+        },
+        onError: () => {
+          addToast('Erreur lors de la creation', 'error');
+        },
+      }
+    );
   };
 
   return (
@@ -178,7 +201,17 @@ function GestionMeditationsContent() {
       </div>
 
       {/* Table */}
-      {filtered.length === 0 ? (
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-200 py-16">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-forest-900/20 border-t-forest-900" />
+          <p className="mt-4 text-sm text-ink-400">Chargement des meditations...</p>
+        </div>
+      ) : isError ? (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-red-200 bg-red-50/50 py-16">
+          <p className="text-ink-500 mb-2">Erreur lors du chargement</p>
+          <p className="text-sm text-ink-400">Verifiez que le serveur est en ligne</p>
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-200 py-16">
           <p className="text-ink-400 mb-4">Aucune meditation trouvee</p>
           <button
@@ -370,24 +403,30 @@ function GestionMeditationsContent() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-ink-700 mb-1.5">Categorie</label>
-                <select
+                <CustomSelect
                   value={editCategorie}
-                  onChange={(e) => setEditCategorie(e.target.value as MeditationCategorie)}
-                  className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
-                >
-                  {categorieOptions.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => setEditCategorie(value as MeditationCategorie)}
+                  options={categorieOptions.map((cat) => ({
+                    value: cat,
+                    label: cat.charAt(0).toUpperCase() + cat.slice(1),
+                  }))}
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-ink-700 mb-1.5">Extrait</label>
                 <textarea
                   value={editExtrait}
                   onChange={(e) => setEditExtrait(e.target.value)}
-                  rows={4}
+                  rows={3}
+                  className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">Contenu</label>
+                <textarea
+                  value={editContenu}
+                  onChange={(e) => setEditContenu(e.target.value)}
+                  rows={8}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
@@ -402,9 +441,10 @@ function GestionMeditationsContent() {
               </button>
               <button
                 onClick={handleEditSave}
-                className="rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg"
+                disabled={updateMutation.isPending}
+                className="rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg disabled:opacity-50"
               >
-                Enregistrer
+                {updateMutation.isPending ? 'Enregistrement...' : 'Enregistrer'}
               </button>
             </div>
           </div>
@@ -443,17 +483,14 @@ function GestionMeditationsContent() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-ink-700 mb-1.5">Categorie</label>
-                <select
+                <CustomSelect
                   value={createCategorie}
-                  onChange={(e) => setCreateCategorie(e.target.value as MeditationCategorie)}
-                  className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
-                >
-                  {categorieOptions.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => setCreateCategorie(value as MeditationCategorie)}
+                  options={categorieOptions.map((cat) => ({
+                    value: cat,
+                    label: cat.charAt(0).toUpperCase() + cat.slice(1),
+                  }))}
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-ink-700 mb-1.5">Extrait</label>
@@ -486,9 +523,10 @@ function GestionMeditationsContent() {
               </button>
               <button
                 onClick={handleCreateSubmit}
-                className="rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg"
+                disabled={createMutation.isPending}
+                className="rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg disabled:opacity-50"
               >
-                Publier
+                {createMutation.isPending ? 'Publication...' : 'Publier'}
               </button>
             </div>
           </div>

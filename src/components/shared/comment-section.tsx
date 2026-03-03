@@ -136,7 +136,7 @@ export function CommentSection({ comments, onSubmit, currentUserName = 'Moi' }: 
           <div key={comment.id}>
             <SingleComment comment={comment} />
             {/* Nested Replies (1 level) */}
-            {comment.reponses?.map((reply) => (
+            {comment.replies?.map((reply: Comment) => (
               <SingleComment key={reply.id} comment={reply} isReply />
             ))}
           </div>
