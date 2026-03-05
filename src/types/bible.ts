@@ -8,9 +8,12 @@ export interface PlanLecture {
 }
 
 export interface LectureJour {
+  id: string | null;
   reference: string;
   titre: string;
   texte: string;
+  likeCount: number;
+  userLiked: boolean;
 }
 
 export interface NoteBible {

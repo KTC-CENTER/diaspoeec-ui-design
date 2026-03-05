@@ -95,3 +95,11 @@ export function useCreateEventComment() {
     },
   });
 }
+
+export function useLikeComment() {
+  return useMutation({
+    mutationFn: async (commentId: string) => {
+      return apiClient.post<{ liked: boolean; likes: number }>(ENDPOINTS.COMMENT_LIKE(commentId));
+    },
+  });
+}

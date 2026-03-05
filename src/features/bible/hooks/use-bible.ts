@@ -3,6 +3,7 @@ import {
   getPlansLecture,
   getPlansDecouverte,
   getLectureJour,
+  toggleLectureLike,
   getNotes,
   startPlan,
   completeLectureJour,
@@ -38,6 +39,17 @@ export function useLectureJour() {
   return useQuery({
     queryKey: ['lecture-jour'],
     queryFn: getLectureJour,
+  });
+}
+
+export function useLectureLike() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (lectureId: string) => toggleLectureLike(lectureId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lecture-jour'] });
+      queryClient.invalidateQueries({ queryKey: ['favoris'] });
+    },
   });
 }
 

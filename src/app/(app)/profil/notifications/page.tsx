@@ -1,12 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
-  Mail,
   Bell,
-  Smartphone,
   BookHeart,
   CalendarDays,
   BookOpen,
@@ -14,13 +12,18 @@ import {
   HeartHandshake,
   Radio,
   MessageCircle,
-  BarChart3,
-  Send,
+  Heart,
+  MapPin,
   ListChecks,
   Check,
   Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import {
+  useNotificationPreferences,
+  useUpdateNotificationPreferences,
+} from '@/features/notifications/hooks/use-notifications';
+import type { NotificationPreferences } from '@/lib/api/notifications.api';
 
 interface ToggleProps {
   enabled: boolean;
@@ -46,89 +49,100 @@ function Toggle({ enabled, onChange }: ToggleProps) {
   );
 }
 
+type PrefsKey = keyof Omit<NotificationPreferences, 'pushEnabled'>;
+
+const typeItems: { key: PrefsKey; label: string; icon: typeof BookHeart; iconColor: string }[] = [
+  {
+    key: 'nouvelleMeditation',
+    label: 'Nouvelles meditations',
+    icon: BookHeart,
+    iconColor: 'text-forest-900',
+  },
+  {
+    key: 'rappelEvenement',
+    label: "Rappels d'evenements",
+    icon: CalendarDays,
+    iconColor: 'text-gold-600',
+  },
+  {
+    key: 'rappelLecture',
+    label: 'Rappels de lecture biblique',
+    icon: BookOpen,
+    iconColor: 'text-forest-900',
+  },
+  {
+    key: 'anniversaire',
+    label: 'Anniversaires',
+    icon: Cake,
+    iconColor: 'text-gold-600',
+  },
+  {
+    key: 'confirmationDon',
+    label: 'Dons et campagnes',
+    icon: HeartHandshake,
+    iconColor: 'text-terra-600',
+  },
+  {
+    key: 'culteEnDirect',
+    label: 'Cultes en direct',
+    icon: Radio,
+    iconColor: 'text-red-500',
+  },
+  {
+    key: 'reponseCommentaire',
+    label: 'Commentaires et reponses',
+    icon: MessageCircle,
+    iconColor: 'text-forest-700',
+  },
+  {
+    key: 'likesEnabled',
+    label: 'Likes sur vos contenus',
+    icon: Heart,
+    iconColor: 'text-red-400',
+  },
+  {
+    key: 'nouvelEvenementZone',
+    label: 'Nouveaux evenements',
+    icon: MapPin,
+    iconColor: 'text-gold-600',
+  },
+];
+
 export default function NotificationPrefsPage() {
-  const [saving, setSaving] = useState(false);
+  const { data: prefs, isLoading } = useNotificationPreferences();
+  const updateMutation = useUpdateNotificationPreferences();
+
+  const [local, setLocal] = useState<NotificationPreferences | null>(null);
   const [saved, setSaved] = useState(false);
 
-  // Channel prefs
-  const [emailEnabled, setEmailEnabled] = useState(true);
-  const [pushEnabled, setPushEnabled] = useState(true);
-  const [smsEnabled, setSmsEnabled] = useState(false);
+  useEffect(() => {
+    if (prefs && !local) {
+      setLocal(prefs);
+    }
+  }, [prefs, local]);
 
-  // Type prefs
-  const [types, setTypes] = useState({
-    nouvelleMeditation: true,
-    rappelEvenement: true,
-    rappelLecture: true,
-    anniversaire: true,
-    confirmationDon: false,
-    culteEnDirect: true,
-    reponseCommentaire: true,
-    resumeHebdo: true,
-  });
-
-  const toggleType = (key: keyof typeof types) => {
-    setTypes((prev) => ({ ...prev, [key]: !prev[key] }));
+  const handleToggle = (key: keyof NotificationPreferences) => {
+    if (!local) return;
+    setLocal({ ...local, [key]: !local[key] });
   };
 
-  const handleSave = async () => {
-    setSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  const handleSave = () => {
+    if (!local) return;
+    updateMutation.mutate(local, {
+      onSuccess: () => {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+      },
+    });
   };
 
-  const typeItems: { key: keyof typeof types; label: string; icon: typeof BookHeart; iconColor: string }[] = [
-    {
-      key: 'nouvelleMeditation',
-      label: 'Nouvelles meditations',
-      icon: BookHeart,
-      iconColor: 'text-forest-900',
-    },
-    {
-      key: 'rappelEvenement',
-      label: "Rappels d'evenements",
-      icon: CalendarDays,
-      iconColor: 'text-gold-600',
-    },
-    {
-      key: 'rappelLecture',
-      label: 'Rappels de lecture biblique',
-      icon: BookOpen,
-      iconColor: 'text-forest-900',
-    },
-    {
-      key: 'anniversaire',
-      label: 'Anniversaires',
-      icon: Cake,
-      iconColor: 'text-gold-600',
-    },
-    {
-      key: 'confirmationDon',
-      label: 'Dons et campagnes',
-      icon: HeartHandshake,
-      iconColor: 'text-terra-600',
-    },
-    {
-      key: 'culteEnDirect',
-      label: 'Cultes en direct',
-      icon: Radio,
-      iconColor: 'text-red-500',
-    },
-    {
-      key: 'reponseCommentaire',
-      label: 'Commentaires et reponses',
-      icon: MessageCircle,
-      iconColor: 'text-forest-700',
-    },
-    {
-      key: 'resumeHebdo',
-      label: 'Resume hebdomadaire',
-      icon: BarChart3,
-      iconColor: 'text-gold-600',
-    },
-  ];
+  if (isLoading || !local) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin text-forest-700" />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -150,55 +164,26 @@ export default function NotificationPrefsPage() {
         <p className="text-ink-500">Choisissez comment vous souhaitez etre notifie</p>
       </div>
 
-      {/* Notification Channels */}
+      {/* Push Channel */}
       <div className="mb-6 rounded-2xl border border-sage-400/10 bg-white p-5 shadow-sm md:p-6">
         <h2
           className="mb-5 flex items-center gap-2 text-lg font-bold text-forest-900"
           style={{ fontFamily: 'var(--font-heading)' }}
         >
-          <Send className="h-5 w-5 text-gold-600" />
-          Canaux de notification
+          <Bell className="h-5 w-5 text-gold-600" />
+          Notifications push
         </h2>
-        <div className="space-y-4">
-          {/* Email */}
-          <div className="flex items-center justify-between rounded-xl bg-cream-50/50 p-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-forest-900/10">
-                <Mail className="h-4 w-4 text-forest-900" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-ink-900">Emails</p>
-                <p className="text-xs text-ink-500">Recevez les notifications par email</p>
-              </div>
+        <div className="flex items-center justify-between rounded-xl bg-cream-50/50 p-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-forest-900/10">
+              <Bell className="h-4 w-4 text-forest-900" />
             </div>
-            <Toggle enabled={emailEnabled} onChange={setEmailEnabled} />
-          </div>
-          {/* Push */}
-          <div className="flex items-center justify-between rounded-xl bg-cream-50/50 p-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-forest-900/10">
-                <Bell className="h-4 w-4 text-forest-900" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-ink-900">Notifications push</p>
-                <p className="text-xs text-ink-500">Notifications sur votre appareil</p>
-              </div>
+            <div>
+              <p className="text-sm font-semibold text-ink-900">Notifications push</p>
+              <p className="text-xs text-ink-500">Recevez des alertes sur votre appareil</p>
             </div>
-            <Toggle enabled={pushEnabled} onChange={setPushEnabled} />
           </div>
-          {/* SMS */}
-          <div className="flex items-center justify-between rounded-xl bg-cream-50/50 p-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-forest-900/10">
-                <Smartphone className="h-4 w-4 text-forest-900" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-ink-900">SMS</p>
-                <p className="text-xs text-ink-500">Notifications par message texte</p>
-              </div>
-            </div>
-            <Toggle enabled={smsEnabled} onChange={setSmsEnabled} />
-          </div>
+          <Toggle enabled={local.pushEnabled} onChange={() => handleToggle('pushEnabled')} />
         </div>
       </div>
 
@@ -224,8 +209,8 @@ export default function NotificationPrefsPage() {
                   <span className="text-sm font-medium text-ink-900">{item.label}</span>
                 </div>
                 <Toggle
-                  enabled={types[item.key]}
-                  onChange={() => toggleType(item.key)}
+                  enabled={local[item.key]}
+                  onChange={() => handleToggle(item.key)}
                 />
               </div>
             );
@@ -236,13 +221,13 @@ export default function NotificationPrefsPage() {
       {/* Save button */}
       <button
         onClick={handleSave}
-        disabled={saving}
+        disabled={updateMutation.isPending}
         className={cn(
           'flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-10 py-3.5 font-semibold text-white shadow-lg shadow-forest-900/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-forest-900/30 md:w-auto',
           'disabled:opacity-60'
         )}
       >
-        {saving ? (
+        {updateMutation.isPending ? (
           <>
             <Loader2 className="h-5 w-5 animate-spin" />
             Enregistrement...

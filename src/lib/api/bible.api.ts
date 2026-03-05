@@ -23,6 +23,10 @@ export async function getLectureJour(): Promise<LectureJour> {
   return apiClient.get<LectureJour>(ENDPOINTS.BIBLE.LECTURE_JOUR);
 }
 
+export async function toggleLectureLike(id: string): Promise<{ liked: boolean; likeCount: number }> {
+  return apiClient.post<{ liked: boolean; likeCount: number }>(ENDPOINTS.BIBLE.LECTURE_JOUR_LIKE(id), {});
+}
+
 export async function getNotes(): Promise<NoteBible[]> {
   return apiClient.get<NoteBible[]>(ENDPOINTS.BIBLE.NOTES);
 }

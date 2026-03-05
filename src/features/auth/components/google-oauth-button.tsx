@@ -4,7 +4,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 
 export function GoogleOAuthButton() {
   const handleGoogleLogin = () => {
-    window.location.href = `${API_URL}/api/v1/auth/google`;
+    const origin = encodeURIComponent(window.location.origin);
+    window.location.href = `${API_URL}/api/v1/auth/google?origin=${origin}`;
   };
 
   return (

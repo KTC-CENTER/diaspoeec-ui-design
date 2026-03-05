@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Globe,
   Bell,
@@ -15,11 +15,14 @@ import {
   RotateCcw,
   Pencil,
   X,
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useToastStore } from '@/stores/toast.store';
 import { useUIStore } from '@/stores/ui.store';
+import { useSettings, useUpdateSettings } from '@/features/admin/hooks/use-admin';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import type { AppSettingsData } from '@/lib/api/admin.api';
 
 /* ── Options for select items ── */
 const selectOptions: Record<string, string[]> = {
@@ -35,10 +38,27 @@ const selectOptions: Record<string, string[]> = {
   'Devise par defaut': ['EUR', 'USD', 'GBP', 'XAF', 'CHF'],
 };
 
+/* ── Mapping between UI keys and API field names ── */
+const settingsKeyMap: Record<string, keyof AppSettingsData> = {
+  'General-Nom de la communaute': 'nomCommunaute',
+  'General-Langue par defaut': 'langueDefaut',
+  'General-Fuseau horaire': 'fuseauHoraire',
+  'General-Mode maintenance': 'modeMaintenance',
+  'Notifications-Notifications push': 'notificationsPush',
+  'Notifications-Email de bienvenue': 'emailBienvenue',
+  'Notifications-Rappels evenements': 'rappelsEvenements',
+  'Notifications-Resume hebdomadaire': 'resumeHebdomadaire',
+  'Securite-Double authentification': 'doubleAuthentification',
+  'Securite-Duree de session': 'dureeSession',
+  'Securite-Inscription ouverte': 'inscriptionsOuvertes',
+  'Dons & Paiements-Devise par defaut': 'deviseDefaut',
+  'Dons & Paiements-Recus automatiques': 'recusAutomatiques',
+};
+
 /* ── Section definitions ── */
 interface SettingItem {
   label: string;
-  value: string | boolean;
+  apiKey: keyof AppSettingsData;
   type: 'text' | 'select' | 'toggle' | 'status';
   description?: string;
 }
@@ -58,10 +78,10 @@ const settingSections: SettingSection[] = [
     iconBg: 'bg-sage-200',
     iconColor: 'text-forest-900',
     items: [
-      { label: 'Nom de la communaute', value: 'DiaspoEEC', type: 'text' },
-      { label: 'Langue par defaut', value: 'Francais', type: 'select' },
-      { label: 'Fuseau horaire', value: 'Europe/Paris (UTC+1)', type: 'select' },
-      { label: 'Mode maintenance', value: false, type: 'toggle', description: 'Desactive l\'acces public au site' },
+      { label: 'Nom de la communaute', apiKey: 'nomCommunaute', type: 'text' },
+      { label: 'Langue par defaut', apiKey: 'langueDefaut', type: 'select' },
+      { label: 'Fuseau horaire', apiKey: 'fuseauHoraire', type: 'select' },
+      { label: 'Mode maintenance', apiKey: 'modeMaintenance', type: 'toggle', description: 'Desactive l\'acces public au site' },
     ],
   },
   {
@@ -70,10 +90,10 @@ const settingSections: SettingSection[] = [
     iconBg: 'bg-gold-200/50',
     iconColor: 'text-gold-600',
     items: [
-      { label: 'Notifications push', value: true, type: 'toggle' },
-      { label: 'Email de bienvenue', value: true, type: 'toggle' },
-      { label: 'Rappels evenements', value: true, type: 'toggle' },
-      { label: 'Resume hebdomadaire', value: false, type: 'toggle' },
+      { label: 'Notifications push', apiKey: 'notificationsPush', type: 'toggle' },
+      { label: 'Email de bienvenue', apiKey: 'emailBienvenue', type: 'toggle' },
+      { label: 'Rappels evenements', apiKey: 'rappelsEvenements', type: 'toggle' },
+      { label: 'Resume hebdomadaire', apiKey: 'resumeHebdomadaire', type: 'toggle' },
     ],
   },
   {
@@ -82,10 +102,9 @@ const settingSections: SettingSection[] = [
     iconBg: 'bg-red-50',
     iconColor: 'text-red-500',
     items: [
-      { label: 'Authentification Keycloak', value: 'Connecte', type: 'status' },
-      { label: 'Double authentification', value: true, type: 'toggle' },
-      { label: 'Duree de session', value: '24 heures', type: 'select' },
-      { label: 'Inscription ouverte', value: true, type: 'toggle' },
+      { label: 'Double authentification', apiKey: 'doubleAuthentification', type: 'toggle' },
+      { label: 'Duree de session', apiKey: 'dureeSession', type: 'select' },
+      { label: 'Inscription ouverte', apiKey: 'inscriptionsOuvertes', type: 'toggle' },
     ],
   },
   {
@@ -94,37 +113,17 @@ const settingSections: SettingSection[] = [
     iconBg: 'bg-terra-500/10',
     iconColor: 'text-terra-600',
     items: [
-      { label: 'Stripe API', value: 'Connecte', type: 'status' },
-      { label: 'PayPal', value: 'Connecte', type: 'status' },
-      { label: 'Devise par defaut', value: 'EUR', type: 'select' },
-      { label: 'Recus automatiques', value: true, type: 'toggle' },
+      { label: 'Devise par defaut', apiKey: 'deviseDefaut', type: 'select' },
+      { label: 'Recus automatiques', apiKey: 'recusAutomatiques', type: 'toggle' },
     ],
   },
 ];
 
-function buildInitialToggles(): Record<string, boolean> {
-  const map: Record<string, boolean> = {};
-  settingSections.forEach((s) =>
-    s.items.forEach((i) => {
-      if (i.type === 'toggle') map[`${s.title}-${i.label}`] = i.value as boolean;
-    })
-  );
-  return map;
-}
-
-function buildInitialTexts(): Record<string, string> {
-  const map: Record<string, string> = {};
-  settingSections.forEach((s) =>
-    s.items.forEach((i) => {
-      if (i.type === 'text' || i.type === 'select') map[`${s.title}-${i.label}`] = i.value as string;
-    })
-  );
-  return map;
-}
-
 export default function AdminParametresPage() {
-  const [toggles, setToggles] = useState<Record<string, boolean>>(buildInitialToggles);
-  const [texts, setTexts] = useState<Record<string, string>>(buildInitialTexts);
+  const { data: settings, isLoading } = useSettings();
+  const updateSettingsMutation = useUpdateSettings();
+
+  const [localSettings, setLocalSettings] = useState<Partial<AppSettingsData>>({});
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [openSelect, setOpenSelect] = useState<string | null>(null);
@@ -134,37 +133,52 @@ export default function AdminParametresPage() {
   const { theme, setTheme } = useUIStore();
   const isDark = theme === 'dark';
 
+  // Sync local state from API data
+  useEffect(() => {
+    if (settings) {
+      setLocalSettings(settings);
+    }
+  }, [settings]);
+
   /* ── Handlers ── */
-  const handleToggle = (key: string) => {
-    setToggles((p) => ({ ...p, [key]: !p[key] }));
+  const getVal = (apiKey: keyof AppSettingsData) => {
+    return localSettings[apiKey] ?? (settings ? settings[apiKey] : undefined);
   };
 
-  const startEditing = (key: string) => {
-    setEditingKey(key);
-    setEditValue(texts[key] ?? '');
+  const handleToggle = (apiKey: keyof AppSettingsData) => {
+    setLocalSettings((prev) => ({ ...prev, [apiKey]: !prev[apiKey] }));
+  };
+
+  const startEditing = (apiKey: keyof AppSettingsData) => {
+    setEditingKey(apiKey);
+    setEditValue((getVal(apiKey) as string) ?? '');
   };
 
   const confirmEdit = () => {
     if (editingKey && editValue.trim()) {
-      setTexts((p) => ({ ...p, [editingKey]: editValue.trim() }));
-      addToast('Valeur modifiee', 'success');
+      setLocalSettings((prev) => ({ ...prev, [editingKey]: editValue.trim() }));
     }
     setEditingKey(null);
   };
 
   const cancelEdit = () => setEditingKey(null);
 
-  const handleSelectOption = (key: string, option: string) => {
-    setTexts((p) => ({ ...p, [key]: option }));
+  const handleSelectOption = (apiKey: keyof AppSettingsData, option: string) => {
+    setLocalSettings((prev) => ({ ...prev, [apiKey]: option }));
     setOpenSelect(null);
-    addToast('Valeur modifiee', 'success');
   };
 
-  const handleSave = () => addToast('Parametres enregistres avec succes', 'success');
+  const handleSave = async () => {
+    try {
+      await updateSettingsMutation.mutateAsync(localSettings);
+      addToast('Parametres enregistres avec succes', 'success');
+    } catch {
+      addToast('Erreur lors de l\'enregistrement', 'error');
+    }
+  };
 
   const handleReset = () => {
-    setToggles(buildInitialToggles());
-    setTexts(buildInitialTexts());
+    if (settings) setLocalSettings(settings);
     addToast('Parametres reinitialises', 'success');
   };
 
@@ -174,6 +188,16 @@ export default function AdminParametresPage() {
     setShowResetConfirm(false);
     addToast('Base de donnees reinitialisee', 'warning');
   };
+
+  if (isLoading) {
+    return (
+      <section className="mx-auto max-w-[1000px] p-4 md:p-8">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-forest-700" />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mx-auto max-w-[1000px] p-4 md:p-8">
@@ -198,9 +222,14 @@ export default function AdminParametresPage() {
           </button>
           <button
             onClick={handleSave}
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
+            disabled={updateSettingsMutation.isPending}
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60"
           >
-            <Save className="h-4 w-4" />
+            {updateSettingsMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
             Enregistrer
           </button>
         </div>
@@ -230,7 +259,7 @@ export default function AdminParametresPage() {
           <button
             onClick={() => setTheme(isDark ? 'light' : 'dark')}
             className={cn(
-              'relative h-6 w-[44px] rounded-xl transition-colors duration-300',
+              'relative h-6 w-[44px] flex-shrink-0 rounded-xl transition-colors duration-300',
               isDark ? 'bg-forest-700' : 'bg-ink-200'
             )}
           >
@@ -263,9 +292,9 @@ export default function AdminParametresPage() {
               {/* Items */}
               <div className="divide-y divide-gray-50">
                 {section.items.map((item) => {
-                  const key = `${section.title}-${item.label}`;
-                  const isEditing = editingKey === key;
-                  const isSelectOpen = openSelect === key;
+                  const isEditing = editingKey === item.apiKey;
+                  const isSelectOpen = openSelect === item.apiKey;
+                  const currentValue = getVal(item.apiKey);
 
                   return (
                     <div
@@ -280,16 +309,16 @@ export default function AdminParametresPage() {
                       {/* Toggle */}
                       {item.type === 'toggle' && (
                         <button
-                          onClick={() => handleToggle(key)}
+                          onClick={() => handleToggle(item.apiKey)}
                           className={cn(
-                            'relative h-6 w-[44px] flex-shrink-0 rounded-xl transition-colors',
-                            toggles[key] ? 'bg-forest-700' : 'bg-ink-200'
+                            'relative h-6 w-[44px] flex-shrink-0 rounded-xl transition-colors duration-300',
+                            currentValue ? 'bg-forest-700' : 'bg-ink-200'
                           )}
                         >
                           <span
                             className={cn(
-                              'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition-transform',
-                              toggles[key] ? 'translate-x-[22px]' : 'translate-x-0.5'
+                              'absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition-transform duration-300',
+                              currentValue && 'translate-x-[20px]'
                             )}
                           />
                         </button>
@@ -325,10 +354,10 @@ export default function AdminParametresPage() {
                             </div>
                           ) : (
                             <button
-                              onClick={() => startEditing(key)}
+                              onClick={() => startEditing(item.apiKey)}
                               className="group flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm text-ink-600 transition hover:bg-sage-100/50 hover:text-forest-900"
                             >
-                              <span>{texts[key]}</span>
+                              <span>{currentValue as string}</span>
                               <Pencil className="h-3 w-3 opacity-0 transition group-hover:opacity-100" />
                             </button>
                           )}
@@ -339,10 +368,10 @@ export default function AdminParametresPage() {
                       {item.type === 'select' && (
                         <div className="relative">
                           <button
-                            onClick={() => setOpenSelect(isSelectOpen ? null : key)}
+                            onClick={() => setOpenSelect(isSelectOpen ? null : item.apiKey)}
                             className="flex items-center gap-1.5 rounded-lg border border-transparent px-2.5 py-1 text-sm text-ink-600 transition hover:border-forest-900/20 hover:bg-sage-100/50 hover:text-forest-900"
                           >
-                            <span>{texts[key]}</span>
+                            <span>{currentValue as string}</span>
                             <ChevronDown
                               className={cn(
                                 'h-3.5 w-3.5 text-ink-400 transition-transform',
@@ -357,28 +386,20 @@ export default function AdminParametresPage() {
                                 {(selectOptions[item.label] ?? []).map((opt) => (
                                   <button
                                     key={opt}
-                                    onClick={() => handleSelectOption(key, opt)}
+                                    onClick={() => handleSelectOption(item.apiKey, opt)}
                                     className={cn(
                                       'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-cream-50',
-                                      texts[key] === opt ? 'font-medium text-forest-900' : 'text-ink-600'
+                                      currentValue === opt ? 'font-medium text-forest-900' : 'text-ink-600'
                                     )}
                                   >
-                                    {texts[key] === opt && <Check className="h-3.5 w-3.5 text-forest-700" />}
-                                    <span className={texts[key] === opt ? '' : 'pl-[22px]'}>{opt}</span>
+                                    {currentValue === opt && <Check className="h-3.5 w-3.5 text-forest-700" />}
+                                    <span className={currentValue === opt ? '' : 'pl-[22px]'}>{opt}</span>
                                   </button>
                                 ))}
                               </div>
                             </>
                           )}
                         </div>
-                      )}
-
-                      {/* Status */}
-                      {item.type === 'status' && (
-                        <span className="flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
-                          <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                          {item.value as string}
-                        </span>
                       )}
                     </div>
                   );

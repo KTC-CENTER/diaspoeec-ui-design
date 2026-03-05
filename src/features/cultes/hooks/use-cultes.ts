@@ -43,6 +43,7 @@ export function useToggleVideoLike() {
     mutationFn: (id: string) => toggleVideoLike(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['videos'] });
+      queryClient.invalidateQueries({ queryKey: ['favoris'] });
     },
   });
 }

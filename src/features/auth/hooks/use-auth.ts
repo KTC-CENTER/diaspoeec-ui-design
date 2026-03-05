@@ -46,6 +46,7 @@ export const DEMO_ACCOUNTS = {
 interface AuthResponse {
   accessToken: string;
   refreshToken: string;
+  sessionId?: string;
   user: User;
 }
 
@@ -79,7 +80,7 @@ export function useLogin() {
   return useMutation({
     mutationFn: apiLogin,
     onSuccess: (response) => {
-      login(response.user, response.accessToken, response.refreshToken);
+      login(response.user, response.accessToken, response.refreshToken, response.sessionId);
       if (response.user.role === 'admin') {
         router.push('/admin');
       } else {
@@ -100,7 +101,7 @@ export function useRegister() {
   return useMutation({
     mutationFn: apiRegister,
     onSuccess: (response) => {
-      login(response.user, response.accessToken, response.refreshToken);
+      login(response.user, response.accessToken, response.refreshToken, response.sessionId);
       router.push('/onboarding/identity');
     },
   });
@@ -115,6 +116,8 @@ export function useLogout() {
   const { logout } = useAuthStore();
 
   const handleLogout = () => {
+    // Notify backend to delete the session (fire-and-forget)
+    apiClient.post(ENDPOINTS.AUTH.LOGOUT).catch(() => {});
     clearTokens();
     logout();
     router.push('/login');

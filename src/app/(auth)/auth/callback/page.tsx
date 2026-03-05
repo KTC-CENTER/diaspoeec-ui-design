@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth.store';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuthStore();
@@ -15,6 +15,7 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const accessToken = searchParams.get('accessToken');
     const refreshToken = searchParams.get('refreshToken');
+    const sessionId = searchParams.get('sessionId');
     const redirectTo = searchParams.get('redirectTo') ?? '/accueil';
 
     if (!accessToken || !refreshToken) {
@@ -33,7 +34,7 @@ export default function AuthCallbackPage() {
       .then((data) => {
         // L'apiClient unwrap { data } — ici on fetch directement
         const user = data.data ?? data;
-        login(user, accessToken, decodeURIComponent(refreshToken));
+        login(user, accessToken, decodeURIComponent(refreshToken), sessionId ?? undefined);
         router.replace(redirectTo);
       })
       .catch(() => {
@@ -60,5 +61,20 @@ export default function AuthCallbackPage() {
       <div className="h-8 w-8 animate-spin rounded-full border-2 border-forest-900/20 border-t-forest-900" />
       <p className="text-sm text-ink-500">Connexion en cours...</p>
     </div>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen flex-col items-center justify-center gap-4">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-forest-900/20 border-t-forest-900" />
+          <p className="text-sm text-ink-500">Connexion en cours...</p>
+        </div>
+      }
+    >
+      <AuthCallbackContent />
+    </Suspense>
   );
 }

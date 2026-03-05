@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[2365],{92365:(e,t,a)=>{a.d(t,{StatusBar:()=>i,Style:()=>u});var u,n,s=a(32587);!function(e){e.Dark="DARK",e.Light="LIGHT",e.Default="DEFAULT"}(u||(u={})),function(e){e.None="NONE",e.Slide="SLIDE",e.Fade="FADE"}(n||(n={}));let i=(0,s.registerPlugin)("StatusBar")}}]);

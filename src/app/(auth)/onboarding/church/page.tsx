@@ -14,7 +14,8 @@ import {
   onboardingChurchSchema,
   type OnboardingChurchFormData,
 } from '@/features/auth/schemas/auth.schema';
-import { PAROISSES, MINISTERES_OPTIONS } from '@/lib/constants/onboarding';
+import { MINISTERES_OPTIONS } from '@/lib/constants/onboarding';
+import { useParoisses } from '@/hooks/use-paroisses';
 
 // ============================================================================
 // Ministry Chips Component
@@ -67,6 +68,7 @@ function MinistryChips({
 export default function OnboardingChurchPage() {
   const router = useRouter();
   const { user, updateUser } = useAuthStore();
+  const { data: paroissesData } = useParoisses();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -123,7 +125,7 @@ export default function OnboardingChurchPage() {
           <CustomSelect
             value={watch('paroisseOrigine') || ''}
             onChange={(value) => setValue('paroisseOrigine', value, { shouldValidate: true })}
-            options={PAROISSES}
+            options={(paroissesData ?? []).map((p) => ({ value: p.slug, label: p.label }))}
             placeholder="Selectionnez votre paroisse"
             error={!!errors.paroisseOrigine}
           />

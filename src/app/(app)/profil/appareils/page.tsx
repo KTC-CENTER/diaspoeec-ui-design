@@ -1,46 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, Smartphone, Monitor, Tablet, LogOut, Check } from 'lucide-react';
+import { ArrowLeft, Smartphone, Monitor, Tablet, LogOut, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useToastStore } from '@/stores/toast.store';
+import { useSessions, useRevokeSession, useRevokeAllSessions } from '@/features/profil/hooks/use-sessions';
+import { formatRelativeTime } from '@/lib/utils/format';
 
-const devices = [
-  {
-    id: '1',
-    name: 'Chrome - Linux',
-    type: 'desktop' as const,
-    lastActive: 'Actif maintenant',
-    location: 'Paris, France',
-    current: true,
-  },
-  {
-    id: '2',
-    name: 'Safari - iPhone 15',
-    type: 'mobile' as const,
-    lastActive: 'Il y a 2 heures',
-    location: 'Paris, France',
-    current: false,
-  },
-  {
-    id: '3',
-    name: 'Chrome - Windows',
-    type: 'desktop' as const,
-    lastActive: 'Il y a 3 jours',
-    location: 'Lyon, France',
-    current: false,
-  },
-  {
-    id: '4',
-    name: 'App Android - Samsung Galaxy',
-    type: 'tablet' as const,
-    lastActive: 'Il y a 1 semaine',
-    location: 'Douala, Cameroun',
-    current: false,
-  },
-];
-
-const iconMap = {
+const iconMap: Record<string, typeof Monitor> = {
   desktop: Monitor,
   mobile: Smartphone,
   tablet: Tablet,
@@ -48,10 +15,25 @@ const iconMap = {
 
 export default function AppareilsPage() {
   const { addToast } = useToastStore();
+  const { data: sessions, isLoading } = useSessions();
+  const revokeMutation = useRevokeSession();
+  const revokeAllMutation = useRevokeAllSessions();
 
-  const handleDisconnect = (deviceName: string) => {
-    addToast(`Appareil "${deviceName}" deconnecte`, 'success');
+  const handleDisconnect = (sessionId: string, deviceName: string) => {
+    revokeMutation.mutate(sessionId, {
+      onSuccess: () => addToast(`Appareil "${deviceName}" deconnecte`, 'success'),
+      onError: () => addToast('Erreur lors de la deconnexion', 'error'),
+    });
   };
+
+  const handleDisconnectAll = () => {
+    revokeAllMutation.mutate(undefined, {
+      onSuccess: () => addToast('Tous les autres appareils ont ete deconnectes', 'success'),
+      onError: () => addToast('Erreur lors de la deconnexion', 'error'),
+    });
+  };
+
+  const otherSessions = sessions?.filter((s) => !s.current) ?? [];
 
   return (
     <div>
@@ -78,63 +60,86 @@ export default function AppareilsPage() {
           style={{ fontFamily: 'var(--font-heading)' }}
         >
           <Smartphone className="h-5 w-5 text-gold-600" />
-          {devices.length} appareil{devices.length > 1 ? 's' : ''} connecte{devices.length > 1 ? 's' : ''}
+          {isLoading ? (
+            'Chargement...'
+          ) : (
+            <>
+              {sessions?.length ?? 0} appareil{(sessions?.length ?? 0) > 1 ? 's' : ''} connecte
+              {(sessions?.length ?? 0) > 1 ? 's' : ''}
+            </>
+          )}
         </h2>
-        <div className="space-y-3">
-          {devices.map((device) => {
-            const Icon = iconMap[device.type];
-            return (
-              <div
-                key={device.id}
-                className={cn(
-                  'flex items-center gap-4 rounded-xl p-4 transition-colors',
-                  device.current ? 'border-2 border-forest-700/20 bg-forest-900/5' : 'bg-cream-50/50'
-                )}
-              >
+
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-6 w-6 animate-spin text-forest-700" />
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {sessions?.map((session) => {
+              const Icon = iconMap[session.deviceType] || Monitor;
+              return (
                 <div
+                  key={session.id}
                   className={cn(
-                    'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg',
-                    device.current ? 'bg-forest-700 text-white' : 'bg-ink-100 text-ink-500'
+                    'flex items-center gap-4 rounded-xl p-4 transition-colors',
+                    session.current ? 'border-2 border-forest-700/20 bg-forest-900/5' : 'bg-cream-50/50'
                   )}
                 >
-                  <Icon className="h-5 w-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold text-ink-900">{device.name}</p>
-                    {device.current && (
-                      <span className="flex items-center gap-1 rounded-full bg-forest-900/10 px-2 py-0.5 text-[10px] font-bold text-forest-900">
-                        <Check className="h-3 w-3" />
-                        Cet appareil
-                      </span>
+                  <div
+                    className={cn(
+                      'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg',
+                      session.current ? 'bg-forest-700 text-white' : 'bg-ink-100 text-ink-500'
                     )}
-                  </div>
-                  <p className="text-xs text-ink-500">
-                    {device.lastActive} &middot; {device.location}
-                  </p>
-                </div>
-                {!device.current && (
-                  <button
-                    onClick={() => handleDisconnect(device.name)}
-                    className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium text-red-500 transition-colors hover:bg-red-50"
                   >
-                    <LogOut className="h-3.5 w-3.5" />
-                    Deconnecter
-                  </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-ink-900">{session.deviceName}</p>
+                      {session.current && (
+                        <span className="flex items-center gap-1 rounded-full bg-forest-900/10 px-2 py-0.5 text-[10px] font-bold text-forest-900">
+                          <Check className="h-3 w-3" />
+                          Cet appareil
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-ink-500">
+                      {session.current ? 'Actif maintenant' : formatRelativeTime(session.lastActiveAt)}
+                      {session.ipAddress && <> &middot; {session.ipAddress}</>}
+                    </p>
+                  </div>
+                  {!session.current && (
+                    <button
+                      onClick={() => handleDisconnect(session.id, session.deviceName)}
+                      disabled={revokeMutation.isPending}
+                      className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium text-red-500 transition-colors hover:bg-red-50 disabled:opacity-50"
+                    >
+                      <LogOut className="h-3.5 w-3.5" />
+                      Deconnecter
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      <button
-        onClick={() => addToast('Tous les autres appareils ont ete deconnectes', 'success')}
-        className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-red-500 px-6 py-3 text-sm font-semibold text-red-500 transition-all hover:bg-red-50 md:w-auto"
-      >
-        <LogOut className="h-4 w-4" />
-        Deconnecter tous les autres appareils
-      </button>
+      {otherSessions.length > 0 && (
+        <button
+          onClick={handleDisconnectAll}
+          disabled={revokeAllMutation.isPending}
+          className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-red-500 px-6 py-3 text-sm font-semibold text-red-500 transition-all hover:bg-red-50 disabled:opacity-50 md:w-auto"
+        >
+          {revokeAllMutation.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <LogOut className="h-4 w-4" />
+          )}
+          Deconnecter tous les autres appareils
+        </button>
+      )}
     </div>
   );
 }

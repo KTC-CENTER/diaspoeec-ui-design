@@ -64,16 +64,16 @@ export function FeedEvent({ evenement }: FeedEventProps) {
             </div>
 
             {/* Attendees & Action */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center min-w-0">
                 {/* Avatar Stack */}
-                <div className="flex -space-x-2">
-                  {avatarInitials.slice(0, Math.min(4, evenement.participantsInscrits)).map(
+                <div className="flex -space-x-2 flex-shrink-0">
+                  {avatarInitials.slice(0, Math.min(3, evenement.participantsInscrits)).map(
                     (initials, i) => (
                       <div
                         key={i}
                         className={cn(
-                          'w-7 h-7 rounded-full text-white flex items-center justify-center text-[10px] font-bold border-2 border-white',
+                          'w-6 h-6 rounded-full text-white flex items-center justify-center text-[9px] font-bold border-2 border-white',
                           avatarColors[i]
                         )}
                       >
@@ -82,14 +82,14 @@ export function FeedEvent({ evenement }: FeedEventProps) {
                     )
                   )}
                 </div>
-                <span className="ml-2 text-xs text-ink-400">
-                  +{evenement.participantsInscrits} inscrits
+                <span className="ml-2 text-xs text-ink-400 truncate">
+                  +{evenement.participantsInscrits}
                 </span>
               </div>
 
               <Link
                 href={`/evenements/${evenement.id}`}
-                className="px-4 py-2 bg-forest-900 text-white text-sm font-semibold rounded-xl hover:bg-forest-700 transition-colors shadow-sm"
+                className="flex-shrink-0 whitespace-nowrap px-3 py-1.5 bg-forest-900 text-white text-sm font-semibold rounded-xl hover:bg-forest-700 transition-colors shadow-sm"
               >
                 S&apos;inscrire
               </Link>

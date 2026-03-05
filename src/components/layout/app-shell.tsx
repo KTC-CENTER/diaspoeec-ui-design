@@ -1,11 +1,14 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, BookOpen, Calendar, Heart, Church, BookMarked, Bell, User, PenSquare, CalendarPlus, Users, ClipboardList, BookCheck, Video } from 'lucide-react';
+import { Home, BookOpen, Calendar, Heart, Church, BookMarked, Bell, User, PenSquare, CalendarPlus, Users, ClipboardList, BookCheck, Video, Star } from 'lucide-react';
 import { Sidebar, type NavItem } from './sidebar';
 import { BottomTabs } from './bottom-tabs';
 import { MobileNav } from './mobile-nav';
+import { PullToRefresh } from '@/components/shared/pull-to-refresh';
 import { useAuthStore } from '@/stores/auth.store';
+import { useUnreadCount } from '@/features/notifications/hooks/use-notifications';
+import { usePushNotifications } from '@/features/notifications/hooks/use-push-notifications';
 import type { UserRole } from '@/types';
 
 const baseNavItems: NavItem[] = [
@@ -15,6 +18,7 @@ const baseNavItems: NavItem[] = [
   { icon: Heart, label: 'Dons', href: '/dons' },
   { icon: Church, label: 'Cultes', href: '/cultes' },
   { icon: BookMarked, label: 'Bible', href: '/bible' },
+  { icon: Star, label: 'Mes Favoris', href: '/favoris' },
   { icon: Bell, label: 'Notifications', href: '/notifications' },
   { icon: User, label: 'Profil', href: '/profil' },
 ];
@@ -76,8 +80,8 @@ export function AppShell({ children }: AppShellProps) {
     parish: user?.paroisseOrigine ?? '',
   };
 
-  // Count unread notifications (placeholder, can wire to a store/query)
-  const notificationCount = 0;
+  const notificationCount = useUnreadCount();
+  usePushNotifications(user?.id);
 
   // Add badge to notifications nav item
   const itemsWithBadges = navItems.map((item) => {
@@ -106,10 +110,12 @@ export function AppShell({ children }: AppShellProps) {
       <MobileNav notificationCount={notificationCount} />
 
       {/* Main Content */}
-      <main className="min-h-screen pt-14 pb-20 md:pl-[280px] md:pt-0 md:pb-0">
-        <div className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-8">
-          {children}
-        </div>
+      <main className="min-h-screen pt-[calc(3.5rem+var(--safe-area-top,env(safe-area-inset-top,0px)))] pb-20 md:pl-[280px] md:pt-0 md:pb-0">
+        <PullToRefresh>
+          <div className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-8">
+            {children}
+          </div>
+        </PullToRefresh>
       </main>
 
       {/* Mobile Bottom Tabs */}

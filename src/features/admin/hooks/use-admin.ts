@@ -1,5 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getDashboardStats, getMembersAdmin, getDonsAdmin, getModeration } from '@/lib/api/admin.api';
+import {
+  getDashboardStats, getMembersAdmin, getDonsAdmin, getModeration,
+  moderateItem, getSettings, updateSettings, getParoissesAdmin,
+  createParoisse, updateParoisse, deleteParoisse, reactivateUser,
+} from '@/lib/api/admin.api';
+import type { ModerationAction, AppSettingsData } from '@/lib/api/admin.api';
 import { updateMember } from '@/lib/api/members.api';
 import type { UpdateMemberPayload } from '@/lib/api/members.api';
 import { createCampagne, updateCampagne } from '@/lib/api/campagnes.api';
@@ -108,6 +113,89 @@ export function useModeration() {
         total: signalements.length,
         pendingCount: pending.length,
       };
+    },
+  });
+}
+
+export function useModerationAction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, action }: { id: string; action: ModerationAction }) =>
+      moderateItem(id, action),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['moderation'] });
+    },
+  });
+}
+
+export function useReactivateUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => reactivateUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-members'] });
+    },
+  });
+}
+
+// ── Settings ──
+
+export function useSettings() {
+  return useQuery({
+    queryKey: ['admin-settings'],
+    queryFn: getSettings,
+  });
+}
+
+export function useUpdateSettings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<AppSettingsData>) => updateSettings(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
+    },
+  });
+}
+
+// ── Paroisses ──
+
+export function useParoissesAdmin() {
+  return useQuery({
+    queryKey: ['admin-paroisses'],
+    queryFn: getParoissesAdmin,
+  });
+}
+
+export function useCreateParoisse() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { slug: string; label: string; ville?: string }) => createParoisse(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-paroisses'] });
+      queryClient.invalidateQueries({ queryKey: ['paroisses'] });
+    },
+  });
+}
+
+export function useUpdateParoisse() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<{ slug: string; label: string; ville: string; actif: boolean }> }) =>
+      updateParoisse(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-paroisses'] });
+      queryClient.invalidateQueries({ queryKey: ['paroisses'] });
+    },
+  });
+}
+
+export function useDeleteParoisse() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteParoisse(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-paroisses'] });
+      queryClient.invalidateQueries({ queryKey: ['paroisses'] });
     },
   });
 }

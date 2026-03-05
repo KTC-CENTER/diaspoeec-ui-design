@@ -1,15 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getNotifications, markAsRead, markAllAsRead } from '@/lib/api/notifications.api';
+import {
+  getNotifications,
+  markAsRead,
+  markAllAsRead,
+  getUnreadCount,
+  getNotificationPreferences,
+  updateNotificationPreferences,
+} from '@/lib/api/notifications.api';
+import type { NotificationPreferences } from '@/lib/api/notifications.api';
 
 export function useNotifications(filter?: 'all' | 'unread') {
   return useQuery({
     queryKey: ['notifications', filter],
-    queryFn: async () => {
-      if (filter === 'unread') {
-        return getNotifications({ lu: false });
-      }
-      return getNotifications();
-    },
+    queryFn: () => getNotifications(filter),
   });
 }
 
@@ -27,12 +30,35 @@ export function useMarkAsRead() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['unread-count'] });
     },
   });
 }
 
 export function useUnreadCount() {
-  const { data: notifications } = useNotifications('all');
-  const count = notifications?.filter((n) => !n.lu).length || 0;
+  const { data: count = 0 } = useQuery({
+    queryKey: ['unread-count'],
+    queryFn: getUnreadCount,
+    refetchInterval: 30_000,
+  });
   return count;
+}
+
+export function useNotificationPreferences() {
+  return useQuery({
+    queryKey: ['notification-preferences'],
+    queryFn: getNotificationPreferences,
+  });
+}
+
+export function useUpdateNotificationPreferences() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: Partial<NotificationPreferences>) =>
+      updateNotificationPreferences(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notification-preferences'] });
+    },
+  });
 }

@@ -8,6 +8,7 @@ import {
   Users,
   HeartHandshake,
   ShieldCheck,
+  Church,
   BookOpen,
   Calendar,
   Youtube,
@@ -20,18 +21,20 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useAuthStore } from '@/stores/auth.store';
+import { useModeration } from '@/features/admin/hooks/use-admin';
 
 const adminNavItems = [
   { icon: LayoutDashboard, label: 'Tableau de bord', href: '/admin' },
   { icon: Users, label: 'Fideles', href: '/admin/fideles' },
   { icon: HeartHandshake, label: 'Dons & Campagnes', href: '/admin/dons' },
-  { icon: ShieldCheck, label: 'Moderation', href: '/admin/moderation', badge: 7 },
+  { icon: ShieldCheck, label: 'Moderation', href: '/admin/moderation' },
 ];
 
 const contentNavItems = [
   { icon: BookOpen, label: 'Meditations', href: '/admin/meditations' },
   { icon: Calendar, label: 'Evenements', href: '/admin/evenements' },
   { icon: Youtube, label: 'YouTube', href: '/admin/youtube' },
+  { icon: Church, label: 'Paroisses', href: '/admin/paroisses' },
   { icon: Settings, label: 'Parametres', href: '/admin/parametres' },
 ];
 
@@ -60,6 +63,8 @@ export function AdminShell({ children }: AdminShellProps) {
   const logout = useAuthStore((s) => s.logout);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const { data: moderationData } = useModeration();
+  const moderationBadge = moderationData?.pendingCount ?? 0;
   const activeHref = getActiveHref(pathname);
 
   const userInitials = user?.nomComplet
@@ -85,7 +90,7 @@ export function AdminShell({ children }: AdminShellProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 left-0 z-50 flex h-full w-[280px] flex-col bg-forest-900 text-white transition-transform duration-300',
+          'fixed top-0 left-0 z-50 flex h-full w-[280px] flex-col pt-[var(--safe-area-top,env(safe-area-inset-top,0px))] bg-forest-900 text-white transition-transform duration-300',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         )}
       >
@@ -128,9 +133,9 @@ export function AdminShell({ children }: AdminShellProps) {
               >
                 <Icon className="h-[18px] w-[18px] opacity-80" />
                 <span>{item.label}</span>
-                {item.badge !== undefined && item.badge > 0 && (
+                {item.href === '/admin/moderation' && moderationBadge > 0 && (
                   <span className="ml-auto rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                    {item.badge}
+                    {moderationBadge}
                   </span>
                 )}
               </Link>
@@ -203,7 +208,7 @@ export function AdminShell({ children }: AdminShellProps) {
       {/* Main Content */}
       <main className="min-h-screen md:ml-[280px]">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 border-b border-forest-900/5 bg-cream-50/90 backdrop-blur-md">
+        <header className="sticky top-0 z-30 border-b border-forest-900/5 bg-cream-50/90 pt-[var(--safe-area-top,env(safe-area-inset-top,0px))] backdrop-blur-md">
           <div className="flex items-center justify-between px-4 py-3 md:px-8">
             {/* Mobile hamburger */}
             <button

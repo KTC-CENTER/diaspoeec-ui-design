@@ -154,6 +154,10 @@ html.dark .text-forest-900 {
   color: #E8F3EE !important;
 }
 
+html.dark .text-ink-700 {
+  color: #B0C4C8 !important;
+}
+
 html.dark .text-ink-600,
 html.dark .text-ink-500 {
   color: #9AABB0 !important;
@@ -161,6 +165,10 @@ html.dark .text-ink-500 {
 
 html.dark .text-ink-400 {
   color: #7A8B90 !important;
+}
+
+html.dark .border-ink-200 {
+  border-color: rgba(149, 213, 178, 0.15) !important;
 }
 
 html.dark .bg-sage-200,
@@ -547,6 +555,15 @@ h6 {
 .bible-quote {
   border-left: 4px solid #D4A017;
   background: linear-gradient(135deg, #FEFAE0 0%, #FFFBF0 100%);
+}
+
+html.dark .bible-quote {
+  background: linear-gradient(135deg, #2A2410 0%, #1E2A1A 100%);
+  border-left-color: #B8930F;
+}
+
+html.dark .bible-quote p {
+  color: #E8E8EE !important;
 }
 
 /* ============================================

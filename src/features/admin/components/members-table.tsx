@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { formatDate, getInitials, formatParoisse } from '@/lib/utils/format';
-import { useAdminMembers, useUpdateMember } from '@/features/admin/hooks/use-admin';
+import { useAdminMembers, useUpdateMember, useReactivateUser } from '@/features/admin/hooks/use-admin';
 import { PAYS_LIST, DIASPORA_TYPES } from '@/lib/utils/constants';
 import { CustomSelect } from '@/components/forms/custom-select';
 import { useToastStore } from '@/stores/toast.store';
@@ -88,6 +88,7 @@ export function MembersTable() {
 
   const { addToast } = useToastStore();
   const updateMemberMutation = useUpdateMember();
+  const reactivateMutation = useReactivateUser();
 
   const { data, isLoading } = useAdminMembers({
     search,
@@ -221,6 +222,7 @@ export function MembersTable() {
               { value: 'all', label: 'Tous statuts' },
               { value: 'actif', label: 'Actif' },
               { value: 'inactif', label: 'Inactif' },
+              { value: 'suspendu', label: 'Suspendu' },
             ]}
             className="w-full md:w-auto md:min-w-[140px]"
           />
@@ -342,6 +344,11 @@ export function MembersTable() {
                             <span className="h-2 w-2 rounded-full bg-green-500" />
                             Actif
                           </span>
+                        ) : member.statut === 'suspendu' ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-red-600">
+                            <span className="h-2 w-2 rounded-full bg-red-500" />
+                            Suspendu
+                          </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 text-xs font-medium text-yellow-600">
                             <span className="h-2 w-2 rounded-full bg-yellow-500" />
@@ -375,12 +382,27 @@ export function MembersTable() {
                               >
                                 Modifier role
                               </button>
-                              <button
-                                onClick={() => handleOpenDeactivate(member)}
-                                className="block w-full px-3 py-2 text-left text-sm text-red-500 transition hover:bg-red-50"
-                              >
-                                {member.statut === 'actif' ? 'Desactiver' : 'Reactiver'}
-                              </button>
+                              {member.statut === 'suspendu' ? (
+                                <button
+                                  onClick={() => {
+                                    setOpenDropdown(null);
+                                    reactivateMutation.mutate(member.id, {
+                                      onSuccess: () => addToast(`${member.nomComplet} a ete reactive`, 'success'),
+                                      onError: () => addToast('Erreur lors de la reactivation', 'error'),
+                                    });
+                                  }}
+                                  className="block w-full px-3 py-2 text-left text-sm text-green-600 transition hover:bg-green-50"
+                                >
+                                  Reactiver (suspendu)
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleOpenDeactivate(member)}
+                                  className="block w-full px-3 py-2 text-left text-sm text-red-500 transition hover:bg-red-50"
+                                >
+                                  {member.statut === 'actif' ? 'Desactiver' : 'Reactiver'}
+                                </button>
+                              )}
                             </div>
                           )}
                         </div>
@@ -589,6 +611,11 @@ export function MembersTable() {
                     <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-600">
                       <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
                       Actif
+                    </span>
+                  ) : profileMember.statut === 'suspendu' ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600">
+                      <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                      Suspendu
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 rounded-full bg-yellow-50 px-2 py-0.5 text-xs font-medium text-yellow-600">

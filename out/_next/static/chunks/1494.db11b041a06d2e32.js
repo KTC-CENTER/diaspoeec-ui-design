@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[1494],{81494:(s,i,e)=>{e.d(i,{PushNotifications:()=>t});let t=(0,e(32587).registerPlugin)("PushNotifications",{})}}]);

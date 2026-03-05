@@ -1,7 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
+import { useAuthStore } from '@/stores/auth.store';
 import { motion, useInView } from 'framer-motion';
 import {
   Users, Heart, Menu, X, LogIn, ChevronDown, BookOpen,
@@ -15,10 +18,7 @@ import { CustomSelect } from '@/components/forms/custom-select';
 /* ─────────────────────── HELPERS ─────────────────────── */
 
 const LeafCrossLogo = ({ size = 24 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <path d="M12 2C12 2 4 7 4 13C4 17.4183 7.58172 21 12 21C16.4183 21 20 17.4183 20 13C20 7 12 2 12 2Z" fill="#95D5B2" opacity="0.6" />
-    <path d="M12 6V18M8 12H16" stroke="#FFFBF0" strokeWidth="2" strokeLinecap="round" />
-  </svg>
+  <Image src="/icons/icon-96.png" alt="DiaspoEEC" width={size} height={size} className="rounded-lg" />
 );
 
 const GoldUnderlineSvg = () => (
@@ -202,6 +202,9 @@ const testimonials = [
 /* ─────────────────────── MAIN COMPONENT ─────────────────────── */
 
 export default function LandingPage() {
+  const router = useRouter();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const hasHydrated = useAuthStore((s) => s._hasHydrated);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [donationType, setDonationType] = useState<'ponctuel' | 'mensuel'>('ponctuel');
@@ -214,6 +217,13 @@ export default function LandingPage() {
   const amounts = [10, 25, 50, 100];
   const rates: Record<string, number> = { EUR: 1, USD: 1.1, XAF: 656 };
   const symbols: Record<string, string> = { EUR: '€', USD: '$', XAF: 'FCFA' };
+
+  // Redirect to /accueil if already authenticated (especially on Capacitor app launch)
+  useEffect(() => {
+    if (hasHydrated && isAuthenticated) {
+      router.replace('/accueil');
+    }
+  }, [hasHydrated, isAuthenticated, router]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
@@ -238,7 +248,7 @@ export default function LandingPage() {
 
       {/* ═══════════ NAVIGATION ═══════════ */}
       <nav
-        className="fixed top-0 left-0 right-0 z-50 transition-all duration-500"
+        className="fixed top-0 left-0 right-0 z-50 pt-[var(--safe-area-top,env(safe-area-inset-top,0px))] transition-all duration-500"
         style={scrolled ? {
           background: 'rgba(255, 251, 240, 0.95)',
           backdropFilter: 'blur(20px)',
@@ -248,8 +258,8 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             <Link href="#" className="flex items-center gap-3 group">
-              <div className="w-11 h-11 bg-forest-900 rounded-2xl flex items-center justify-center shadow-lg transition-transform duration-300 group-hover:rotate-[15deg] group-hover:scale-110" style={{ boxShadow: '0 4px 14px rgba(27,67,50,0.2)' }}>
-                <LeafCrossLogo />
+              <div className="w-11 h-11 flex items-center justify-center transition-transform duration-300 group-hover:rotate-[15deg] group-hover:scale-110">
+                <LeafCrossLogo size={44} />
               </div>
               <span className="font-[var(--font-heading)] text-2xl font-bold text-forest-900 group-hover:text-forest-700 transition-colors">
                 Diaspo<span className="text-gold-600">EEC</span>
@@ -282,7 +292,7 @@ export default function LandingPage() {
           <div className="fixed inset-0 z-40 bg-black/30" style={{ backdropFilter: 'blur(4px)' }} onClick={() => setMobileMenuOpen(false)} />
         )}
         <div
-          className={`fixed top-0 right-0 w-80 max-w-[85vw] h-full bg-cream-50 shadow-2xl z-50 p-8 transition-transform duration-400 ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
+          className={`fixed top-0 right-0 w-80 max-w-[85vw] h-full bg-cream-50 shadow-2xl z-50 p-8 pt-[calc(2rem+var(--safe-area-top,env(safe-area-inset-top,0px)))] transition-transform duration-400 ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
           style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
         >
           <div className="flex justify-end mb-10">
@@ -706,8 +716,11 @@ export default function LandingPage() {
                 </div>
               </a>
               <a href="#" className="inline-flex items-center gap-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-2xl px-6 py-4 transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M3.18 23.77c-.25-.07-.47-.2-.65-.38a1.13 1.13 0 01-.33-.57c-.04-.2-.04-.55-.04-3.5V3.55c0-3.17 0-3.44.05-3.6.06-.21.18-.42.35-.57.14-.13.32-.23.52-.3L3.18 0l8.53 5.35c4.7 2.94 8.56 5.37 8.58 5.4.03.04-1.06.73-2.42 1.56l-2.46 1.5-6.12 3.84L3.18 23.77zm10.24-8.34l2.19-1.36-2.19-1.37-5.32-3.34-2.38-1.49v12.12l2.38-1.49 5.32-3.07zm3.48-2.18l2.15-1.32-2.15-1.35-1.51-.95-2.2 1.37 2.2 1.37 1.51.88z" />
+                <svg className="w-8 h-8" viewBox="0 0 40 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M.55 1.126A2.38 2.38 0 0 0 0 2.672v38.656c0 .58.2 1.1.55 1.546L.726 43.05 20.326 23.45v-.45-.45L.726.95.55 1.126Z" fill="#5778C5"/>
+                  <path d="M26.627 29.75 20.326 23.45v-.45-.45l6.3-6.3.143.082 7.462 4.237c2.132 1.21 2.132 3.192 0 4.403l-7.462 4.237-.142.54Z" fill="#F6B60B"/>
+                  <path d="M26.77 29.21 20.326 22.55.55 42.874c.703.744 1.864.834 3.17.092L26.77 29.21Z" fill="#EB3131"/>
+                  <path d="M26.77 14.79 3.72 1.034C2.414.292 1.253.382.55 1.126L20.326 21.45 26.77 14.79Z" fill="#3BAD49"/>
                 </svg>
                 <div className="text-left">
                   <div className="text-xs text-white/70">Disponible sur</div>
@@ -736,8 +749,8 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
             <div className="lg:col-span-1">
               <Link href="#" className="flex items-center gap-3 mb-6">
-                <div className="w-11 h-11 bg-forest-900 rounded-2xl flex items-center justify-center">
-                  <LeafCrossLogo />
+                <div className="w-11 h-11 flex items-center justify-center">
+                  <LeafCrossLogo size={44} />
                 </div>
                 <span className="font-[var(--font-heading)] text-2xl font-bold text-white">
                   Diaspo<span className="text-gold-600">EEC</span>

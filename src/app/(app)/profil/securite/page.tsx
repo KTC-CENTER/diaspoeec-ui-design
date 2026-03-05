@@ -6,20 +6,24 @@ import { ArrowLeft, Shield, Eye, EyeOff, Lock, KeyRound, Loader2, Check } from '
 import { cn } from '@/lib/utils/cn';
 import { useToastStore } from '@/stores/toast.store';
 import { useAuthStore } from '@/stores/auth.store';
+import { useChangePassword } from '@/features/profil/hooks/use-change-password';
+import { ApiError } from '@/lib/api/client';
 
 export default function SecuritePage() {
   const user = useAuthStore((s) => s.user);
   const { addToast } = useToastStore();
+  const changePasswordMutation = useChangePassword();
 
   const [currentPwd, setCurrentPwd] = useState('');
   const [newPwd, setNewPwd] = useState('');
   const [confirmPwd, setConfirmPwd] = useState('');
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [twoFA, setTwoFA] = useState(false);
 
-  const handleChangePassword = async () => {
+  const isGoogleOnly = !!user?.googleId;
+
+  const handleChangePassword = () => {
     if (!currentPwd) {
       addToast('Veuillez saisir votre mot de passe actuel', 'error');
       return;
@@ -32,14 +36,24 @@ export default function SecuritePage() {
       addToast('Les mots de passe ne correspondent pas', 'error');
       return;
     }
-    setSaving(true);
-    await new Promise((r) => setTimeout(r, 1000));
-    setSaving(false);
-    setCurrentPwd('');
-    setNewPwd('');
-    setConfirmPwd('');
-    addToast('Mot de passe modifie avec succes', 'success');
+    changePasswordMutation.mutate(
+      { currentPassword: currentPwd, newPassword: newPwd },
+      {
+        onSuccess: () => {
+          setCurrentPwd('');
+          setNewPwd('');
+          setConfirmPwd('');
+          addToast('Mot de passe modifie avec succes', 'success');
+        },
+        onError: (error) => {
+          const message = error instanceof ApiError ? error.message : 'Erreur lors du changement de mot de passe';
+          addToast(message, 'error');
+        },
+      },
+    );
   };
+
+  const authProvider = user?.googleId ? 'Google' : 'Email + mot de passe';
 
   return (
     <div>
@@ -85,11 +99,13 @@ export default function SecuritePage() {
           <div className="flex items-center justify-between rounded-xl bg-cream-50/50 p-3">
             <div>
               <p className="text-xs text-ink-500">Authentification</p>
-              <p className="text-sm font-medium text-ink-900">Keycloak SSO</p>
+              <p className="text-sm font-medium text-ink-900">{authProvider}</p>
             </div>
-            <span className="rounded-full bg-sage-100/50 px-2 py-0.5 text-[10px] font-medium text-ink-500">
-              Fournisseur externe
-            </span>
+            {user?.googleId && (
+              <span className="rounded-full bg-sage-100/50 px-2 py-0.5 text-[10px] font-medium text-ink-500">
+                Fournisseur externe
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -103,67 +119,73 @@ export default function SecuritePage() {
           <Lock className="h-5 w-5 text-gold-600" />
           Changer le mot de passe
         </h2>
-        <div className="space-y-4">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-ink-700">Mot de passe actuel</label>
-            <div className="relative">
-              <input
-                type={showCurrent ? 'text' : 'password'}
-                value={currentPwd}
-                onChange={(e) => setCurrentPwd(e.target.value)}
-                className="w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 pr-11 text-sm text-ink-900 outline-none transition-all focus:border-forest-500 focus:ring-2 focus:ring-forest-500/10"
-                placeholder="Votre mot de passe actuel"
-              />
-              <button
-                type="button"
-                onClick={() => setShowCurrent(!showCurrent)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600"
-              >
-                {showCurrent ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
+        {isGoogleOnly ? (
+          <p className="text-sm text-ink-500">
+            Votre compte est connecte via Google. Le changement de mot de passe n&apos;est pas disponible.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-ink-700">Mot de passe actuel</label>
+              <div className="relative">
+                <input
+                  type={showCurrent ? 'text' : 'password'}
+                  value={currentPwd}
+                  onChange={(e) => setCurrentPwd(e.target.value)}
+                  className="w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 pr-11 text-sm text-ink-900 outline-none transition-all focus:border-forest-500 focus:ring-2 focus:ring-forest-500/10"
+                  placeholder="Votre mot de passe actuel"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrent(!showCurrent)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600"
+                >
+                  {showCurrent ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-ink-700">Nouveau mot de passe</label>
-            <div className="relative">
-              <input
-                type={showNew ? 'text' : 'password'}
-                value={newPwd}
-                onChange={(e) => setNewPwd(e.target.value)}
-                className="w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 pr-11 text-sm text-ink-900 outline-none transition-all focus:border-forest-500 focus:ring-2 focus:ring-forest-500/10"
-                placeholder="Minimum 8 caracteres"
-              />
-              <button
-                type="button"
-                onClick={() => setShowNew(!showNew)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600"
-              >
-                {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-ink-700">Nouveau mot de passe</label>
+              <div className="relative">
+                <input
+                  type={showNew ? 'text' : 'password'}
+                  value={newPwd}
+                  onChange={(e) => setNewPwd(e.target.value)}
+                  className="w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 pr-11 text-sm text-ink-900 outline-none transition-all focus:border-forest-500 focus:ring-2 focus:ring-forest-500/10"
+                  placeholder="Minimum 8 caracteres"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNew(!showNew)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600"
+                >
+                  {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-ink-700">Confirmer le mot de passe</label>
+              <input
+                type="password"
+                value={confirmPwd}
+                onChange={(e) => setConfirmPwd(e.target.value)}
+                className="w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-900 outline-none transition-all focus:border-forest-500 focus:ring-2 focus:ring-forest-500/10"
+                placeholder="Retapez le nouveau mot de passe"
+              />
+            </div>
+            <button
+              onClick={handleChangePassword}
+              disabled={changePasswordMutation.isPending}
+              className={cn(
+                'flex items-center gap-2 rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-6 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:scale-[1.02]',
+                'disabled:opacity-60'
+              )}
+            >
+              {changePasswordMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
+              {changePasswordMutation.isPending ? 'Modification...' : 'Modifier le mot de passe'}
+            </button>
           </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-ink-700">Confirmer le mot de passe</label>
-            <input
-              type="password"
-              value={confirmPwd}
-              onChange={(e) => setConfirmPwd(e.target.value)}
-              className="w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-900 outline-none transition-all focus:border-forest-500 focus:ring-2 focus:ring-forest-500/10"
-              placeholder="Retapez le nouveau mot de passe"
-            />
-          </div>
-          <button
-            onClick={handleChangePassword}
-            disabled={saving}
-            className={cn(
-              'flex items-center gap-2 rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-6 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:scale-[1.02]',
-              'disabled:opacity-60'
-            )}
-          >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
-            {saving ? 'Modification...' : 'Modifier le mot de passe'}
-          </button>
-        </div>
+        )}
       </div>
 
       {/* 2FA */}

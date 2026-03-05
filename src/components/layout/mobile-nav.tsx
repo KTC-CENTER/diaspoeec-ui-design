@@ -2,8 +2,9 @@
 
 import { useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, Bell, LogOut, Home, BookOpen, Calendar, Heart, User, Church, Radio, Settings, PenSquare, CalendarPlus, ClipboardList, BookCheck } from 'lucide-react';
+import { Menu, X, Bell, LogOut, Home, BookOpen, Calendar, Heart, User, Church, Radio, PenSquare, CalendarPlus, ClipboardList, BookCheck } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useUIStore } from '@/stores/ui.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -29,7 +30,6 @@ const baseMobileNavItems: MobileNavItem[] = [
   { icon: Radio, label: 'Bible', href: '/bible' },
   { icon: Bell, label: 'Notifications', href: '/notifications' },
   { icon: User, label: 'Profil', href: '/profil' },
-  { icon: Settings, label: 'Parametres', href: '/profil/notifications' },
 ];
 
 function getMobileGestionItems(role?: UserRole): MobileNavItem[] {
@@ -108,7 +108,7 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
   return (
     <>
       {/* Top Bar */}
-      <header className="fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-between border-b border-ink-100 bg-white px-4 md:hidden">
+      <header className="fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-between border-b border-ink-100 bg-white px-4 pt-[var(--safe-area-top,env(safe-area-inset-top,0px))] md:hidden">
         {/* Hamburger */}
         <button
           onClick={() => setMobileMenuOpen(true)}
@@ -119,12 +119,15 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
         </button>
 
         {/* Logo */}
-        <span
-          className="font-heading text-lg font-semibold text-forest-900 tracking-tight"
-          style={{ fontFamily: 'var(--font-heading)' }}
-        >
-          DiaspoEEC
-        </span>
+        <div className="flex items-center gap-2">
+          <Image src="/icons/icon-96.png" alt="DiaspoEEC" width={28} height={28} className="h-7 w-7" />
+          <span
+            className="font-heading text-lg font-semibold text-forest-900 tracking-tight"
+            style={{ fontFamily: 'var(--font-heading)' }}
+          >
+            DiaspoEEC
+          </span>
+        </div>
 
         {/* Notification Bell */}
         <Link
@@ -153,7 +156,7 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
       {/* Slide-in Drawer */}
       <div
         className={cn(
-          'fixed inset-y-0 left-0 z-[70] w-[280px] transform bg-cream-100 shadow-xl transition-transform duration-300 ease-out md:hidden',
+          'fixed inset-y-0 left-0 z-[70] flex w-[280px] flex-col transform pt-[var(--safe-area-top,env(safe-area-inset-top,0px))] bg-cream-100 shadow-xl transition-transform duration-300 ease-out md:hidden',
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         )}
         role="dialog"
@@ -163,12 +166,15 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
       >
         {/* Drawer Header */}
         <div className="flex items-center justify-between px-5 py-4">
-          <span
-            className="font-heading text-xl font-semibold text-forest-900 tracking-tight"
-            style={{ fontFamily: 'var(--font-heading)' }}
-          >
-            DiaspoEEC
-          </span>
+          <div className="flex items-center gap-2.5">
+            <Image src="/icons/icon-96.png" alt="DiaspoEEC" width={32} height={32} className="h-8 w-8" />
+            <span
+              className="font-heading text-xl font-semibold text-forest-900 tracking-tight"
+              style={{ fontFamily: 'var(--font-heading)' }}
+            >
+              DiaspoEEC
+            </span>
+          </div>
           <button
             onClick={handleClose}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 hover:bg-ink-100 transition-colors"

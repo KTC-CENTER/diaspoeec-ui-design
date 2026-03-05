@@ -1,29 +1,18 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 
 const decoPatternSvg = `url("data:image/svg+xml,%3Csvg width='120' height='120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M60 0L120 60L60 120L0 60Z' fill='none' stroke='%23F4D35E' stroke-width='1.5'/%3E%3Ccircle cx='60' cy='60' r='20' fill='none' stroke='%23FEFAE0' stroke-width='1'/%3E%3Ccircle cx='60' cy='60' r='35' fill='none' stroke='%23F4D35E' stroke-width='.6'/%3E%3Cpath d='M60 25v70M25 60h70' stroke='%23FEFAE0' stroke-width='.5'/%3E%3Cpath d='M35 35l50 50M85 35L35 85' stroke='%23F4D35E' stroke-width='.4'/%3E%3C/svg%3E")`;
 
 const africanPatternSvg = `url("data:image/svg+xml,%3Csvg width='80' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0zM40 40h40v40H40z' fill='none' stroke='%231B4332' stroke-width='.8'/%3E%3Cpath d='M20 0v40M60 40v40M0 20h40M40 60h40' stroke='%231B4332' stroke-width='.5'/%3E%3Ccircle cx='20' cy='20' r='6' fill='none' stroke='%23D4A017' stroke-width='.6'/%3E%3Ccircle cx='60' cy='60' r='6' fill='none' stroke='%23D4A017' stroke-width='.6'/%3E%3Cpath d='M10 10l20 20M50 50l20 20' stroke='%231B4332' stroke-width='.3'/%3E%3Cpath d='M30 10L10 30M70 50L50 70' stroke='%231B4332' stroke-width='.3'/%3E%3C/svg%3E")`;
 
-const CrossLeafLogo = ({ size = 48 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 48 48">
-    <circle cx="24" cy="24" r="23" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
-    <path d="M24 10v28M16 24h16" stroke="#F4D35E" strokeWidth="2.5" strokeLinecap="round" />
-    <path d="M30 14c4 3 5 8 3 12" stroke="#95D5B2" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-    <path d="M33 16c-1-1-3 0-3 2s2 3 3 2 1-3-1-4z" fill="#95D5B2" opacity="0.7" />
-    <circle cx="24" cy="24" r="4" fill="none" stroke="#F4D35E" strokeWidth="1" opacity="0.5" />
-  </svg>
+const CrossLeafLogo = () => (
+  <Image src="/icons/icon-96.png" alt="DiaspoEEC" width={48} height={48} className="drop-shadow-lg" />
 );
 
 const MobileLogo = () => (
-  <svg width="56" height="56" viewBox="0 0 56 56">
-    <circle cx="28" cy="28" r="27" fill="#1B4332" />
-    <path d="M28 12v32M18 28h20" stroke="#F4D35E" strokeWidth="2.5" strokeLinecap="round" />
-    <path d="M34 16c5 4 6 10 3 15" stroke="#95D5B2" strokeWidth="1.8" strokeLinecap="round" fill="none" />
-    <path d="M37 18c-1-1-3.5 0-3.5 2.5s2.5 3.5 3.5 2.5 1.2-3.5-1-5z" fill="#95D5B2" opacity="0.8" />
-    <circle cx="28" cy="28" r="5" fill="none" stroke="#F4D35E" strokeWidth="1" opacity="0.4" />
-  </svg>
+  <Image src="/icons/icon-96.png" alt="DiaspoEEC" width={56} height={56} className="drop-shadow-lg" />
 );
 
 export default function AuthLayout({

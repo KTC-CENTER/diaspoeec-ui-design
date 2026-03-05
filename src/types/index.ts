@@ -56,3 +56,7 @@ export type {
   FeedItemType,
   FeedItem,
 } from './feed';
+
+export type {
+  FavoriteItem,
+} from './favorite';

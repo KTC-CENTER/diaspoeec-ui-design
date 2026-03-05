@@ -63,7 +63,7 @@ export default function EvenementsPage() {
       </h2>
 
       {/* Event Cards */}
-      <div className="space-y-6">
+      <div className="flex flex-col gap-5">
         {isLoading ? (
           // Skeleton
           Array.from({ length: 4 }).map((_, i) => (

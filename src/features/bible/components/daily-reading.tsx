@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { BookOpen, Heart, PenLine, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useToastStore } from '@/stores/toast.store';
-import { useChapter, useCreateNote } from '@/features/bible/hooks/use-bible';
+import { useChapter, useCreateNote, useLectureLike } from '@/features/bible/hooks/use-bible';
 import { parseReference } from '@/lib/utils/parse-bible-reference';
 import type { LectureJour } from '@/types';
 
@@ -13,13 +13,14 @@ interface DailyReadingProps {
 }
 
 export function DailyReading({ lecture }: DailyReadingProps) {
-  const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(24);
+  const [liked, setLiked] = useState(lecture.userLiked ?? false);
+  const [likeCount, setLikeCount] = useState(lecture.likeCount ?? 0);
   const [showFull, setShowFull] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteText, setNoteText] = useState('');
   const { addToast } = useToastStore();
   const createNote = useCreateNote();
+  const lectureLike = useLectureLike();
 
   // Extraire le livre et chapitre depuis la référence pour charger le chapitre complet
   const parsed = parseReference(lecture.reference);
@@ -29,8 +30,20 @@ export function DailyReading({ lecture }: DailyReadingProps) {
   );
 
   const handleLike = () => {
-    setLiked((prev) => !prev);
-    setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
+    if (!lecture.id) return;
+    const wasLiked = liked;
+    setLiked(!wasLiked);
+    setLikeCount((prev) => (wasLiked ? prev - 1 : prev + 1));
+    lectureLike.mutate(lecture.id, {
+      onSuccess: (result) => {
+        setLiked(result.liked);
+        setLikeCount(result.likeCount);
+      },
+      onError: () => {
+        setLiked(wasLiked);
+        setLikeCount((prev) => (wasLiked ? prev + 1 : prev - 1));
+      },
+    });
   };
 
   const handleSaveNote = () => {

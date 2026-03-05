@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { BookOpen, Globe, Church, Loader2, PenLine } from 'lucide-react';
+import Link from 'next/link';
+import { BookOpen, Globe, Church, Loader2, PenLine, Star, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { formatDate, formatParoisse } from '@/lib/utils/format';
 import { useProfile, useProfileStats } from '@/features/profil/hooks/use-profil';
@@ -190,6 +191,30 @@ export default function ProfilPage() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Mes Favoris shortcut */}
+      <div className="mt-5">
+        <Link
+          href="/favoris"
+          className="flex items-center justify-between rounded-2xl border border-sage-400/10 bg-white p-5 shadow-sm transition-colors hover:bg-cream-50/50 md:p-6"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl gradient-forest">
+              <Star className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h2
+                className="text-lg font-bold text-forest-900"
+                style={{ fontFamily: 'var(--font-heading)' }}
+              >
+                Mes Favoris
+              </h2>
+              <p className="text-sm text-ink-500">Contenus likes</p>
+            </div>
+          </div>
+          <ChevronRight className="h-5 w-5 text-ink-400" />
+        </Link>
       </div>
 
       {/* Reading Stats */}

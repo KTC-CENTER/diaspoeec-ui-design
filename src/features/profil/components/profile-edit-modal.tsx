@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils/cn';
 import { InputField } from '@/components/forms/input-field';
 import { SelectField } from '@/components/forms/select-field';
 import { PAYS_LIST, DIASPORA_TYPES, MINISTERES_OPTIONS } from '@/lib/utils/constants';
-import { PAROISSES } from '@/lib/constants/onboarding';
+import { useParoisses } from '@/hooks/use-paroisses';
 import { useUpdateProfile } from '@/features/profil/hooks/use-profil';
 import { useToastStore } from '@/stores/toast.store';
 import type { User as UserType, Ministere } from '@/types';
@@ -28,6 +28,7 @@ interface ProfileEditModalProps {
 
 export function ProfileEditModal({ open, user, initialTab = 'personnel', onClose }: ProfileEditModalProps) {
   const { mutate: updateProfile, isPending } = useUpdateProfile();
+  const { data: paroissesData } = useParoisses();
   const { addToast } = useToastStore();
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
 
@@ -104,7 +105,7 @@ export function ProfileEditModal({ open, user, initialTab = 'personnel', onClose
   if (!open) return null;
 
   const paysOptions = PAYS_LIST.map((p) => ({ value: p.value, label: `${p.flag} ${p.label}` }));
-  const paroisseOptions = PAROISSES.map((p) => ({ value: p.value, label: p.label }));
+  const paroisseOptions = (paroissesData ?? []).map((p) => ({ value: p.slug, label: p.label }));
   const diasporaOptions = DIASPORA_TYPES.map((d) => ({ value: d.value, label: d.label }));
   const sexeOptions = [
     { value: 'homme', label: 'Homme' },

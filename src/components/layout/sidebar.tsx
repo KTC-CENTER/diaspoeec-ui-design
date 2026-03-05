@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -22,32 +23,6 @@ interface SidebarProps {
   onLogout?: () => void;
 }
 
-function EECLogo({ dark }: { dark?: boolean }) {
-  return (
-    <svg
-      width="40"
-      height="40"
-      viewBox="0 0 40 40"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      <circle cx="20" cy="20" r="20" fill={dark ? '#2D6A4F' : '#1B4332'} />
-      <circle cx="20" cy="20" r="17" fill="none" stroke={dark ? '#95D5B2' : '#D8F3DC'} strokeWidth="1" />
-      {/* Cross */}
-      <line x1="20" y1="8" x2="20" y2="28" stroke="#FEFAE0" strokeWidth="2.5" strokeLinecap="round" />
-      <line x1="13" y1="15" x2="27" y2="15" stroke="#FEFAE0" strokeWidth="2.5" strokeLinecap="round" />
-      {/* Leaf */}
-      <path
-        d="M26 24 C28 20 30 16 28 12 C24 14 22 18 24 22 Z"
-        fill="#95D5B2"
-        stroke="#95D5B2"
-        strokeWidth="0.5"
-      />
-      <line x1="26" y1="18" x2="27" y2="23" stroke="#1B4332" strokeWidth="0.8" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 function getInitials(name: string): string {
   return name
@@ -81,7 +56,7 @@ export function Sidebar({ items, activeHref, user, dark = false, logoText = 'Dia
     >
       {/* Logo Block */}
       <div className="flex items-center gap-3 px-6 py-6">
-        <EECLogo dark={dark} />
+        <Image src="/icons/icon-96.png" alt="DiaspoEEC" width={40} height={40} className="h-10 w-10" />
         <span
           className={cn(
             'font-heading text-xl font-semibold tracking-tight',

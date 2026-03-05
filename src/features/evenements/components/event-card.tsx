@@ -100,7 +100,7 @@ export function EventCard({ evenement, delay = 0 }: EventCardProps) {
     <Link href={`/evenements/${evenement.id}`}>
       <div
         className={cn(
-          'bg-white rounded-2xl shadow-sm p-5 cursor-pointer',
+          'bg-white rounded-2xl shadow-md p-5 cursor-pointer',
           'border',
           colors.border,
           'transition-all duration-300',
@@ -168,7 +168,7 @@ export function EventCard({ evenement, delay = 0 }: EventCardProps) {
 
               <button
                 className={cn(
-                  'px-4 py-2 border-2 text-sm font-semibold rounded-xl transition-all',
+                  'flex-shrink-0 whitespace-nowrap px-4 py-2 border-2 text-sm font-semibold rounded-xl transition-all',
                   'hover:scale-[1.02] active:scale-[0.98]',
                   inscrit
                     ? 'border-forest-700 bg-forest-900 text-white'

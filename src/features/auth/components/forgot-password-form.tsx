@@ -6,6 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, CheckCircle2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils/cn';
+import { apiClient, ApiError } from '@/lib/api/client';
+import { ENDPOINTS } from '@/lib/api/endpoints';
 import {
   forgotPasswordSchema,
   type ForgotPasswordFormData,
@@ -14,6 +16,7 @@ import {
 export function ForgotPasswordForm() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState('');
 
   const {
     register,
@@ -26,12 +29,17 @@ export function ForgotPasswordForm() {
     },
   });
 
-  const onSubmit = async (_data: ForgotPasswordFormData) => {
+  const onSubmit = async (data: ForgotPasswordFormData) => {
     setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    setApiError('');
+    try {
+      await apiClient.post(ENDPOINTS.AUTH.FORGOT_PASSWORD, { email: data.email });
+      setIsSuccess(true);
+    } catch (error) {
+      const message = error instanceof ApiError ? error.message : 'Une erreur est survenue';
+      setApiError(message);
+    }
     setIsLoading(false);
-    setIsSuccess(true);
   };
 
   if (isSuccess) {
@@ -70,6 +78,12 @@ export function ForgotPasswordForm() {
         Entrez votre adresse email et nous vous enverrons un lien pour
         r&eacute;initialiser votre mot de passe.
       </p>
+
+      {apiError && (
+        <div className="rounded-xl bg-red-50 p-3 text-sm text-red-600">
+          {apiError}
+        </div>
+      )}
 
       {/* Email */}
       <div className="space-y-1.5">

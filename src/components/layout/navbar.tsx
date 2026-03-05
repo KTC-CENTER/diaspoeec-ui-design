@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
@@ -17,30 +18,6 @@ const navLinks: NavLink[] = [
   { label: 'Contact', href: '#contact' },
 ];
 
-function EECLogoSmall() {
-  return (
-    <svg
-      width="32"
-      height="32"
-      viewBox="0 0 40 40"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      <circle cx="20" cy="20" r="20" fill="#1B4332" />
-      <circle cx="20" cy="20" r="17" fill="none" stroke="#D8F3DC" strokeWidth="1" />
-      <line x1="20" y1="8" x2="20" y2="28" stroke="#FEFAE0" strokeWidth="2.5" strokeLinecap="round" />
-      <line x1="13" y1="15" x2="27" y2="15" stroke="#FEFAE0" strokeWidth="2.5" strokeLinecap="round" />
-      <path
-        d="M26 24 C28 20 30 16 28 12 C24 14 22 18 24 22 Z"
-        fill="#95D5B2"
-        stroke="#95D5B2"
-        strokeWidth="0.5"
-      />
-      <line x1="26" y1="18" x2="27" y2="23" stroke="#1B4332" strokeWidth="0.8" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -82,7 +59,7 @@ export function Navbar() {
     <>
       <header
         className={cn(
-          'fixed inset-x-0 top-0 z-50 transition-all duration-300',
+          'fixed inset-x-0 top-0 z-50 pt-[var(--safe-area-top,env(safe-area-inset-top,0px))] transition-all duration-300',
           scrolled
             ? 'bg-white/95 shadow-md backdrop-blur-md'
             : 'bg-transparent'
@@ -91,7 +68,7 @@ export function Navbar() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:h-20 md:px-8">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5">
-            <EECLogoSmall />
+            <Image src="/icons/icon-96.png" alt="DiaspoEEC" width={32} height={32} className="h-8 w-8" />
             <span
               className={cn(
                 'font-heading text-xl font-semibold tracking-tight transition-colors',

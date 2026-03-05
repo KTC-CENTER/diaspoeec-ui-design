@@ -1,5 +1,3 @@
-'use client';
-
 import { AppShell } from '@/components/layout/app-shell';
 import { ToastContainer } from '@/components/shared/toast';
 

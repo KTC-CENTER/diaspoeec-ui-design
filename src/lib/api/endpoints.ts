@@ -9,9 +9,13 @@ export const ENDPOINTS = {
     LOGIN: '/api/v1/auth/login',
     REGISTER: '/api/v1/auth/register',
     REFRESH: '/api/v1/auth/refresh',
+    CHANGE_PASSWORD: '/api/v1/auth/change-password',
     FORGOT_PASSWORD: '/api/v1/auth/forgot-password',
     RESET_PASSWORD: '/api/v1/auth/reset-password',
     ME: '/api/v1/auth/me',
+    LOGOUT: '/api/v1/auth/logout',
+    SESSIONS: '/api/v1/auth/sessions',
+    SESSION_BY_ID: (id: string) => `/api/v1/auth/sessions/${id}`,
   },
 
   // Membres
@@ -43,12 +47,16 @@ export const ENDPOINTS = {
   NOTIFICATIONS: '/api/v1/notifications',
   NOTIFICATION_READ: (id: string) => `/api/v1/notifications/${id}/read`,
   NOTIFICATIONS_READ_ALL: '/api/v1/notifications/read-all',
+  NOTIFICATIONS_UNREAD_COUNT: '/api/v1/notifications/unread-count',
+  NOTIFICATIONS_PREFERENCES: '/api/v1/notifications/preferences',
+  NOTIFICATIONS_DEVICE_TOKEN: '/api/v1/notifications/device-token',
 
   // Bible
   BIBLE: {
     PLANS: '/api/v1/bible/plans',
     PLANS_ALL: '/api/v1/bible/plans/all',
     LECTURE_JOUR: '/api/v1/bible/lecture-jour',
+    LECTURE_JOUR_LIKE: (id: string) => `/api/v1/bible/lecture-jour/${id}/like`,
     NOTES: '/api/v1/bible/notes',
     VERSET: '/api/v1/bible/verset',
     CHAPITRE: '/api/v1/bible/chapitre',
@@ -73,16 +81,29 @@ export const ENDPOINTS = {
   COMMENTS: '/api/v1/comments',
   COMMENTS_BY_TARGET: (targetType: string, targetId: string) =>
     `/api/v1/comments/${targetType}/${targetId}`,
+  COMMENT_LIKE: (id: string) => `/api/v1/comments/${id}/like`,
+  COMMENT_REPORT: (id: string) => `/api/v1/comments/${id}/report`,
 
   // Likes
   LIKES: '/api/v1/likes',
+  FAVORITES: '/api/v1/likes/favorites',
+
+  // Paroisses (public)
+  PAROISSES: '/api/v1/paroisses',
+
+  // Settings (public)
+  SETTINGS_PUBLIC: '/api/v1/settings/public',
 
   // Admin
   ADMIN: {
     DASHBOARD: '/api/v1/admin/dashboard',
     MEMBERS: '/api/v1/admin/members',
+    MEMBER_REACTIVATE: (id: string) => `/api/v1/admin/members/${id}/reactivate`,
     DONS: '/api/v1/admin/dons',
     MODERATION: '/api/v1/admin/moderation',
     MODERATE_ITEM: (id: string) => `/api/v1/admin/moderation/${id}`,
+    SETTINGS: '/api/v1/admin/settings',
+    PAROISSES: '/api/v1/admin/paroisses',
+    PAROISSE_BY_ID: (id: string) => `/api/v1/admin/paroisses/${id}`,
   },
 } as const;

@@ -52,6 +52,7 @@ export function useLikeMeditation() {
           return { ...old as object, likes };
         }
       );
+      queryClient.invalidateQueries({ queryKey: ['favoris'] });
     },
   });
 }
@@ -146,6 +147,14 @@ export function useCreateComment() {
       queryClient.invalidateQueries({ queryKey: ['comments', variables.targetId] });
       queryClient.invalidateQueries({ queryKey: ['meditation', variables.targetId] });
       queryClient.invalidateQueries({ queryKey: ['meditations'] });
+    },
+  });
+}
+
+export function useLikeComment() {
+  return useMutation({
+    mutationFn: async (commentId: string) => {
+      return apiClient.post<{ liked: boolean; likes: number }>(ENDPOINTS.COMMENT_LIKE(commentId));
     },
   });
 }

@@ -16,7 +16,7 @@ export function ToastContainer() {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed right-4 top-4 z-[100] flex flex-col gap-2">
+    <div className="fixed right-4 top-[calc(1rem+var(--safe-area-top,env(safe-area-inset-top,0px)))] z-[100] flex flex-col gap-2">
       {toasts.map((toast) => {
         const config = toastConfig[toast.type];
         const Icon = config.icon;

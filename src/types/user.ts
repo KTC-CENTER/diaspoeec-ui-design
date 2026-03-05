@@ -8,6 +8,7 @@ export interface User {
   nomComplet: string;
   email: string;
   emailVerified: boolean;
+  googleId?: string | null;
   avatarUrl?: string;
   dateNaissance: string;
   sexe: Sexe;

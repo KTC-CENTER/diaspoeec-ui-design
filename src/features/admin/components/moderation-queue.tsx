@@ -11,8 +11,9 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { formatRelativeTime } from '@/lib/utils/format';
-import { useModeration } from '@/features/admin/hooks/use-admin';
-import type { SignalementModeration } from '@/types';
+import { useModeration, useModerationAction } from '@/features/admin/hooks/use-admin';
+import { useToastStore } from '@/stores/toast.store';
+import type { ModerationAction } from '@/lib/api/admin.api';
 
 const severityConfig: Record<
   string,
@@ -20,7 +21,6 @@ const severityConfig: Record<
     borderColor: string;
     badgeBg: string;
     badgeText: string;
-    label: string;
     contentBg: string;
     contentBorder: string;
   }
@@ -29,7 +29,6 @@ const severityConfig: Record<
     borderColor: 'border-l-red-400',
     badgeBg: 'bg-red-50',
     badgeText: 'text-red-600',
-    label: 'Commentaire signale',
     contentBg: 'bg-red-50/50',
     contentBorder: 'border-red-100',
   },
@@ -37,7 +36,6 @@ const severityConfig: Record<
     borderColor: 'border-l-orange-400',
     badgeBg: 'bg-orange-50',
     badgeText: 'text-orange-600',
-    label: 'Commentaire signale',
     contentBg: 'bg-orange-50/50',
     contentBorder: 'border-orange-100',
   },
@@ -45,7 +43,6 @@ const severityConfig: Record<
     borderColor: 'border-l-yellow-400',
     badgeBg: 'bg-yellow-50',
     badgeText: 'text-yellow-700',
-    label: 'Temoignage signale',
     contentBg: 'bg-yellow-50/50',
     contentBorder: 'border-yellow-100',
   },
@@ -53,14 +50,25 @@ const severityConfig: Record<
 
 export function ModerationQueue() {
   const { data, isLoading } = useModeration();
-  const [handledIds, setHandledIds] = useState<Set<string>>(new Set());
+  const moderationAction = useModerationAction();
+  const { addToast } = useToastStore();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const handleAction = async (id: string, action: string) => {
+  const handleAction = async (id: string, action: ModerationAction) => {
     setActionLoading(`${id}-${action}`);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setHandledIds((prev) => new Set([...prev, id]));
-    setActionLoading(null);
+    try {
+      await moderationAction.mutateAsync({ id, action });
+      const labels: Record<ModerationAction, string> = {
+        approuve: 'Contenu approuve',
+        supprime: 'Contenu supprime',
+        utilisateur_suspendu: 'Utilisateur suspendu',
+      };
+      addToast(labels[action], 'success');
+    } catch {
+      addToast('Erreur lors de la moderation', 'error');
+    } finally {
+      setActionLoading(null);
+    }
   };
 
   if (isLoading) {
@@ -75,13 +83,18 @@ export function ModerationQueue() {
 
   if (!data) return null;
 
-  const pendingItems = data.pending.filter((s) => !handledIds.has(s.id));
+  // Compute stats from real data
+  const suppressions = data.history.filter((s) => s.statut === 'supprime').length;
+  const approbations = data.history.filter((s) => s.statut === 'approuve').length;
+  const suspensions = data.history.filter((s) => s.statut === 'utilisateur_suspendu').length;
+  const totalTraites = suppressions + approbations + suspensions;
+  const totalForPercent = totalTraites || 1;
 
   return (
     <div className="space-y-8">
       {/* Moderation Queue */}
       <div className="space-y-4">
-        {pendingItems.length === 0 ? (
+        {data.pending.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-forest-900/10 bg-cream-50 py-12 text-center">
             <Check className="mx-auto mb-3 h-10 w-10 text-forest-500" />
             <p
@@ -95,7 +108,7 @@ export function ModerationQueue() {
             </p>
           </div>
         ) : (
-          pendingItems.map((item) => {
+          data.pending.map((item) => {
             const severity =
               severityConfig[item.severite] || severityConfig.basse;
 
@@ -167,33 +180,33 @@ export function ModerationQueue() {
                     </p>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => handleAction(item.id, 'approve')}
-                        disabled={actionLoading === `${item.id}-approve`}
+                        onClick={() => handleAction(item.id, 'approuve')}
+                        disabled={actionLoading === `${item.id}-approuve`}
                         className="rounded-lg bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700 transition hover:bg-green-100 disabled:opacity-60"
                       >
-                        {actionLoading === `${item.id}-approve` ? (
+                        {actionLoading === `${item.id}-approuve` ? (
                           <Loader2 className="inline h-3.5 w-3.5 animate-spin" />
                         ) : (
                           'Approuver'
                         )}
                       </button>
                       <button
-                        onClick={() => handleAction(item.id, 'delete')}
-                        disabled={actionLoading === `${item.id}-delete`}
+                        onClick={() => handleAction(item.id, 'supprime')}
+                        disabled={actionLoading === `${item.id}-supprime`}
                         className="rounded-lg bg-red-50 px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-100 disabled:opacity-60"
                       >
-                        {actionLoading === `${item.id}-delete` ? (
+                        {actionLoading === `${item.id}-supprime` ? (
                           <Loader2 className="inline h-3.5 w-3.5 animate-spin" />
                         ) : (
                           'Supprimer'
                         )}
                       </button>
                       <button
-                        onClick={() => handleAction(item.id, 'suspend')}
-                        disabled={actionLoading === `${item.id}-suspend`}
+                        onClick={() => handleAction(item.id, 'utilisateur_suspendu')}
+                        disabled={actionLoading === `${item.id}-utilisateur_suspendu`}
                         className="rounded-lg bg-orange-50 px-3 py-1.5 text-sm font-medium text-orange-600 transition hover:bg-orange-100 disabled:opacity-60"
                       >
-                        {actionLoading === `${item.id}-suspend` ? (
+                        {actionLoading === `${item.id}-utilisateur_suspendu` ? (
                           <Loader2 className="inline h-3.5 w-3.5 animate-spin" />
                         ) : (
                           "Suspendre l'utilisateur"
@@ -257,15 +270,8 @@ export function ModerationQueue() {
                     <div className="flex-1">
                       <p className="text-sm text-ink-900">
                         <span className="font-medium">{label}</span>
-                        {item.statut === 'supprime' && (
-                          <span className="text-ink-500"> - Spam</span>
-                        )}
-                        {item.statut === 'utilisateur_suspendu' && (
-                          <span className="text-ink-500"> (3 jours)</span>
-                        )}
                       </p>
                       <p className="mt-0.5 text-xs text-ink-500">
-                        Par <strong>Admin</strong> -{' '}
                         {formatRelativeTime(item.createdAt)}
                       </p>
                     </div>
@@ -288,16 +294,13 @@ export function ModerationQueue() {
           >
             Statistiques de moderation
           </h3>
-          <p className="mb-1 text-xs uppercase tracking-wide text-ink-500">
-            Ce mois
-          </p>
           <div className="mb-6 grid grid-cols-2 gap-4">
             <div className="rounded-xl bg-cream-100 p-4 text-center">
               <p
                 className="text-2xl font-bold text-forest-900"
                 style={{ fontFamily: 'var(--font-heading)' }}
               >
-                23
+                {totalTraites}
               </p>
               <p className="mt-1 text-xs text-ink-500">
                 Signalements traites
@@ -308,10 +311,10 @@ export function ModerationQueue() {
                 className="text-2xl font-bold text-terra-600"
                 style={{ fontFamily: 'var(--font-heading)' }}
               >
-                4h
+                {data.pendingCount}
               </p>
               <p className="mt-1 text-xs text-ink-500">
-                Temps moyen de traitement
+                En attente
               </p>
             </div>
           </div>
@@ -322,36 +325,36 @@ export function ModerationQueue() {
             <div>
               <div className="mb-1 flex justify-between text-sm">
                 <span className="text-ink-500">Suppressions</span>
-                <span className="font-semibold text-red-500">15</span>
+                <span className="font-semibold text-red-500">{suppressions}</span>
               </div>
               <div className="h-2.5 w-full rounded-full bg-red-50">
                 <div
                   className="h-2.5 rounded-full bg-red-400"
-                  style={{ width: '65%' }}
+                  style={{ width: `${Math.round((suppressions / totalForPercent) * 100)}%` }}
                 />
               </div>
             </div>
             <div>
               <div className="mb-1 flex justify-between text-sm">
                 <span className="text-ink-500">Approbations</span>
-                <span className="font-semibold text-green-600">5</span>
+                <span className="font-semibold text-green-600">{approbations}</span>
               </div>
               <div className="h-2.5 w-full rounded-full bg-green-50">
                 <div
                   className="h-2.5 rounded-full bg-green-400"
-                  style={{ width: '22%' }}
+                  style={{ width: `${Math.round((approbations / totalForPercent) * 100)}%` }}
                 />
               </div>
             </div>
             <div>
               <div className="mb-1 flex justify-between text-sm">
                 <span className="text-ink-500">Suspensions</span>
-                <span className="font-semibold text-orange-500">3</span>
+                <span className="font-semibold text-orange-500">{suspensions}</span>
               </div>
               <div className="h-2.5 w-full rounded-full bg-orange-50">
                 <div
                   className="h-2.5 rounded-full bg-orange-400"
-                  style={{ width: '13%' }}
+                  style={{ width: `${Math.round((suspensions / totalForPercent) * 100)}%` }}
                 />
               </div>
             </div>
