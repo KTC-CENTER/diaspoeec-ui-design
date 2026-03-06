@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Play, ArrowRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { Video } from '@/types';
 import { FeedCard } from './feed-card';
 
@@ -10,6 +11,7 @@ interface FeedLiveProps {
 }
 
 export function FeedLive({ video }: FeedLiveProps) {
+  const t = useTranslations('cultes');
   return (
     <FeedCard>
       {/* Video Thumbnail */}
@@ -43,7 +45,7 @@ export function FeedLive({ video }: FeedLiveProps) {
           href="/cultes"
           className="flex items-center justify-center gap-2 text-forest-900 font-semibold text-sm hover:text-forest-700 transition-colors"
         >
-          Rejoindre le culte en direct
+          {t('joinLive')}
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { useTranslations } from 'next-intl';
 import type { LucideIcon } from 'lucide-react';
 
 export interface NavItem {
@@ -36,6 +37,7 @@ function getInitials(name: string): string {
 
 export function Sidebar({ items, activeHref, user, dark = false, logoText = 'DiaspoEEC', onLogout }: SidebarProps) {
   const router = useRouter();
+  const tc = useTranslations('common');
 
   const handleLogout = () => {
     if (onLogout) {
@@ -169,7 +171,7 @@ export function Sidebar({ items, activeHref, user, dark = false, logoText = 'Dia
                 ? 'text-white/50 hover:bg-white/10 hover:text-white'
                 : 'text-ink-400 hover:bg-ink-100 hover:text-ink-700'
             )}
-            aria-label="Se deconnecter"
+            aria-label={tc('logout')}
           >
             <LogOut className="h-4 w-4" />
           </button>

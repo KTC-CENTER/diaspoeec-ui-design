@@ -19,6 +19,7 @@ import {
   X,
   User,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { useAuthStore } from '@/stores/auth.store';
 import { useModeration } from '@/features/admin/hooks/use-admin';
@@ -59,6 +60,7 @@ interface AdminShellProps {
 export function AdminShell({ children }: AdminShellProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const tc = useTranslations('common');
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -197,7 +199,7 @@ export function AdminShell({ children }: AdminShellProps) {
                 router.push('/login');
               }}
               className="rounded-lg p-1.5 transition hover:bg-white/10"
-              title="Se deconnecter"
+              title={tc('logout')}
             >
               <LogOut className="h-4 w-4 opacity-60" />
             </button>

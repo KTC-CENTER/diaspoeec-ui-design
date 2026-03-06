@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { X, Plus, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import type { Campagne } from '@/types';
@@ -22,14 +23,16 @@ export interface CampagneFormData {
   statut: 'active' | 'terminee' | 'pausee';
 }
 
-const STATUT_OPTIONS = [
-  { value: 'active', label: 'Active' },
-  { value: 'pausee', label: 'En pause' },
-  { value: 'terminee', label: 'Terminee' },
-];
-
 export function CampagneFormModal({ campagne, onClose, onSubmit, isLoading }: CampagneFormModalProps) {
+  const t = useTranslations('admin');
+  const tc = useTranslations('common');
   const isEdit = !!campagne;
+
+  const STATUT_OPTIONS = [
+    { value: 'active', label: tc('active') },
+    { value: 'pausee', label: tc('suspended') },
+    { value: 'terminee', label: tc('inactive') },
+  ];
 
   const [titre, setTitre] = useState('');
   const [description, setDescription] = useState('');
@@ -54,12 +57,12 @@ export function CampagneFormModal({ campagne, onClose, onSubmit, isLoading }: Ca
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
-    if (!titre.trim()) newErrors.titre = 'Le titre est obligatoire';
-    if (!description.trim()) newErrors.description = 'La description est obligatoire';
-    if (objectifMontant && Number(objectifMontant) <= 0) newErrors.objectifMontant = 'Montant invalide (doit etre superieur a 0)';
-    if (!dateDebut) newErrors.dateDebut = 'La date de debut est obligatoire';
+    if (!titre.trim()) newErrors.titre = tc('title');
+    if (!description.trim()) newErrors.description = tc('description');
+    if (objectifMontant && Number(objectifMontant) <= 0) newErrors.objectifMontant = t('campaignInvalidAmount');
+    if (!dateDebut) newErrors.dateDebut = tc('startDate');
     const fondsValides = affectationFonds.filter((f) => f.trim());
-    if (fondsValides.length === 0) newErrors.affectationFonds = 'Au moins une affectation est requise';
+    if (fondsValides.length === 0) newErrors.affectationFonds = t('campaignAllocation');
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -99,23 +102,23 @@ export function CampagneFormModal({ campagne, onClose, onSubmit, isLoading }: Ca
           className="mb-1 text-xl font-semibold text-ink-900"
           style={{ fontFamily: 'var(--font-heading)' }}
         >
-          {isEdit ? 'Modifier la campagne' : 'Nouvelle campagne'}
+          {isEdit ? t('editCampaign') : t('newCampaign')}
         </h2>
         <p className="mb-6 text-sm text-ink-500">
-          {isEdit ? `Modifier : ${campagne?.titre}` : 'Creer une nouvelle campagne de collecte'}
+          {isEdit ? `${t('editCampaign')} : ${campagne?.titre}` : t('newCampaignDesc')}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Titre */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-ink-700">
-              Titre <span className="text-red-500">*</span>
+              {tc('title')} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={titre}
               onChange={(e) => setTitre(e.target.value)}
-              placeholder="Ex: Construction Centre Communautaire"
+              placeholder={t('campaignTitlePlaceholder')}
               className={cn(
                 'w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500/20',
                 errors.titre ? 'border-red-400' : 'border-ink-200 focus:border-forest-500'
@@ -127,13 +130,13 @@ export function CampagneFormModal({ campagne, onClose, onSubmit, isLoading }: Ca
           {/* Description */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-ink-700">
-              Description <span className="text-red-500">*</span>
+              {tc('description')} <span className="text-red-500">*</span>
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              placeholder="Decrivez l'objectif de cette campagne..."
+              placeholder={t('campaignDescPlaceholder')}
               className={cn(
                 'w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500/20 resize-none',
                 errors.description ? 'border-red-400' : 'border-ink-200 focus:border-forest-500'
@@ -145,7 +148,7 @@ export function CampagneFormModal({ campagne, onClose, onSubmit, isLoading }: Ca
           {/* Objectif montant */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-ink-700">
-              Objectif (EUR) <span className="text-ink-400">(optionnel)</span>
+              {t('campaignObjective')} <span className="text-ink-400">({t('optional')})</span>
             </label>
             <input
               type="number"
@@ -164,7 +167,7 @@ export function CampagneFormModal({ campagne, onClose, onSubmit, isLoading }: Ca
           {/* Affectation des fonds */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-ink-700">
-              Affectation des fonds <span className="text-red-500">*</span>
+              {t('campaignAllocation')} <span className="text-red-500">*</span>
             </label>
             <div className="space-y-2">
               {affectationFonds.map((fonds, i) => (
@@ -173,7 +176,7 @@ export function CampagneFormModal({ campagne, onClose, onSubmit, isLoading }: Ca
                     type="text"
                     value={fonds}
                     onChange={(e) => updateAffectation(i, e.target.value)}
-                    placeholder={`Ex: Construction batiment, Aide etudiants...`}
+                    placeholder={t('campaignAllocationPlaceholder')}
                     className="flex-1 rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20"
                   />
                   {affectationFonds.length > 1 && (
@@ -194,7 +197,7 @@ export function CampagneFormModal({ campagne, onClose, onSubmit, isLoading }: Ca
               className="mt-2 flex items-center gap-1 text-xs font-medium text-forest-900 transition hover:text-forest-700"
             >
               <Plus className="h-3.5 w-3.5" />
-              Ajouter une affectation
+              {t('campaignAddAllocation')}
             </button>
             {errors.affectationFonds && <p className="mt-1 text-xs text-red-500">{errors.affectationFonds}</p>}
           </div>
@@ -203,7 +206,7 @@ export function CampagneFormModal({ campagne, onClose, onSubmit, isLoading }: Ca
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1.5 block text-sm font-medium text-ink-700">
-                Date de debut <span className="text-red-500">*</span>
+                {tc('startDate')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="date"
@@ -218,7 +221,7 @@ export function CampagneFormModal({ campagne, onClose, onSubmit, isLoading }: Ca
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-ink-700">
-                Date de fin <span className="text-ink-400">(optionnel)</span>
+                {tc('endDate')} <span className="text-ink-400">({t('optional')})</span>
               </label>
               <input
                 type="date"
@@ -233,7 +236,7 @@ export function CampagneFormModal({ campagne, onClose, onSubmit, isLoading }: Ca
           {/* Statut (uniquement en edit) */}
           {isEdit && (
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-ink-700">Statut</label>
+              <label className="mb-1.5 block text-sm font-medium text-ink-700">{tc('status')}</label>
               <div className="flex gap-3">
                 {STATUT_OPTIONS.map((opt) => (
                   <button
@@ -261,14 +264,14 @@ export function CampagneFormModal({ campagne, onClose, onSubmit, isLoading }: Ca
               onClick={onClose}
               className="rounded-xl border border-ink-200 px-5 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
             >
-              Annuler
+              {tc('cancel')}
             </button>
             <button
               type="submit"
               disabled={isLoading}
               className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg disabled:opacity-60"
             >
-              {isLoading ? 'Enregistrement...' : isEdit ? 'Enregistrer' : 'Creer la campagne'}
+              {isLoading ? tc('saving') : isEdit ? tc('save') : t('createCampaign')}
             </button>
           </div>
         </form>

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Heart, MessageCircle, Clock } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { formatDate } from '@/lib/utils/format';
 import type { Meditation } from '@/types';
@@ -10,13 +11,13 @@ interface MeditationCardProps {
   meditation: Meditation;
 }
 
-const categorieLabels: Record<string, string> = {
-  foi: 'Foi',
-  priere: 'Priere',
-  famille: 'Famille',
-  esperance: 'Esperance',
-  grace: 'Grace',
-  perseverance: 'Perseverance',
+const categorieKeys: Record<string, string> = {
+  foi: 'faith',
+  priere: 'prayer',
+  famille: 'family',
+  esperance: 'hope',
+  grace: 'grace',
+  perseverance: 'perseverance',
 };
 
 const gradientMap: Record<string, string> = {
@@ -29,6 +30,7 @@ const gradientMap: Record<string, string> = {
 };
 
 export function MeditationCard({ meditation }: MeditationCardProps) {
+  const t = useTranslations('meditations');
   const gradientClass = gradientMap[meditation.categorie] || 'gradient-green';
   const dateStr = formatDate(meditation.publishedAt, 'dd MMM');
 
@@ -46,7 +48,7 @@ export function MeditationCard({ meditation }: MeditationCardProps) {
       >
         <div className="absolute top-3 left-3">
           <span className="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-sm text-white text-[11px] font-medium">
-            {categorieLabels[meditation.categorie] || meditation.categorie}
+            {categorieKeys[meditation.categorie] ? t(categorieKeys[meditation.categorie]) : meditation.categorie}
           </span>
         </div>
       </div>

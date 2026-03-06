@@ -3,6 +3,7 @@
 import { forwardRef, useState, type InputHTMLAttributes } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { useTranslations } from 'next-intl';
 
 interface InputFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   label: string;
@@ -12,6 +13,7 @@ interface InputFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 't
 
 export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
   ({ label, error, type = 'text', className, id, ...props }, ref) => {
+    const tc = useTranslations('common');
     const [showPassword, setShowPassword] = useState(false);
     const isPasswordType = type === 'password';
     const inputId = id ?? `input-${label.toLowerCase().replace(/\s+/g, '-')}`;
@@ -54,7 +56,7 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-md text-ink-400 hover:text-ink-600 transition-colors"
               tabIndex={-1}
-              aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+              aria-label={showPassword ? tc('hidePassword') : tc('showPassword')}
             >
               {showPassword ? (
                 <EyeOff className="h-4 w-4" />

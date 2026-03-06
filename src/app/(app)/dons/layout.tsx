@@ -3,15 +3,17 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Heart, History } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
-
-const tabs = [
-  { href: '/dons/nouveau', label: 'Faire un don', icon: Heart },
-  { href: '/dons/historique', label: 'Mes dons', icon: History },
-];
 
 export default function DonsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const t = useTranslations('dons');
+
+  const tabs = [
+    { href: '/dons/nouveau', label: t('makeDonationTab'), icon: Heart },
+    { href: '/dons/historique', label: t('myDonationsTab'), icon: History },
+  ];
 
   // Don't show tabs on campaign detail pages
   const isCampaignDetail = pathname.startsWith('/dons/campagnes/');

@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, CheckCircle2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { apiClient, ApiError } from '@/lib/api/client';
 import { ENDPOINTS } from '@/lib/api/endpoints';
@@ -17,6 +18,8 @@ export function ForgotPasswordForm() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState('');
+  const t = useTranslations('auth');
+  const tc = useTranslations('common');
 
   const {
     register,
@@ -36,7 +39,7 @@ export function ForgotPasswordForm() {
       await apiClient.post(ENDPOINTS.AUTH.FORGOT_PASSWORD, { email: data.email });
       setIsSuccess(true);
     } catch (error) {
-      const message = error instanceof ApiError ? error.message : 'Une erreur est survenue';
+      const message = error instanceof ApiError ? error.message : tc('errorOccurred');
       setApiError(message);
     }
     setIsLoading(false);
@@ -50,12 +53,10 @@ export function ForgotPasswordForm() {
         </div>
         <div className="space-y-2">
           <h3 className="font-heading text-xl font-semibold text-ink-900">
-            Email envoy&eacute; !
+            {t('emailSent')}
           </h3>
           <p className="text-sm text-ink-500">
-            Si un compte est associ&eacute; &agrave; cette adresse email, vous
-            recevrez un lien pour r&eacute;initialiser votre mot de passe
-            d&apos;ici quelques minutes.
+            {t('emailSentDescription')}
           </p>
         </div>
         <Link
@@ -66,7 +67,7 @@ export function ForgotPasswordForm() {
           )}
         >
           <ArrowLeft className="h-4 w-4" />
-          Retour &agrave; la connexion
+          {t('backToLogin')}
         </Link>
       </div>
     );
@@ -75,8 +76,7 @@ export function ForgotPasswordForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <p className="text-sm text-ink-500">
-        Entrez votre adresse email et nous vous enverrons un lien pour
-        r&eacute;initialiser votre mot de passe.
+        {t('forgotPasswordFormDescription')}
       </p>
 
       {apiError && (
@@ -91,13 +91,13 @@ export function ForgotPasswordForm() {
           htmlFor="email"
           className="block text-sm font-medium text-ink-700"
         >
-          Adresse email
+          {tc('emailAddress')}
         </label>
         <input
           id="email"
           type="email"
           autoComplete="email"
-          placeholder="votre@email.com"
+          placeholder={t('emailPlaceholder')}
           className={cn(
             'w-full rounded-xl border bg-white px-4 py-3 text-sm transition-colors',
             'placeholder:text-ink-400 focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20',
@@ -123,10 +123,10 @@ export function ForgotPasswordForm() {
         {isLoading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            Envoi en cours...
+            {t('sendingEmail')}
           </>
         ) : (
-          'Envoyer le lien'
+          t('sendLink')
         )}
       </button>
     </form>

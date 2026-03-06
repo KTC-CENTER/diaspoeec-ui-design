@@ -4,7 +4,7 @@ export interface PlanLecture {
   dureeJours: number;
   joursCompletes: number;
   icone: string;
-  lectureDisponible: boolean;
+  lectureDisponible?: boolean;
 }
 
 export interface LectureJour {
@@ -12,6 +12,7 @@ export interface LectureJour {
   reference: string;
   titre: string;
   texte: string;
+  contenu?: string;
   likeCount: number;
   userLiked: boolean;
 }

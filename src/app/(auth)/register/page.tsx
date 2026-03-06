@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Loader2, Lock } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { RegisterForm } from '@/features/auth/components/register-form';
 import { GoogleOAuthButton } from '@/features/auth/components/google-oauth-button';
 import { ENDPOINTS } from '@/lib/api/endpoints';
@@ -11,6 +12,8 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export default function RegisterPage() {
   const [inscriptionsOuvertes, setInscriptionsOuvertes] = useState<boolean | null>(null);
+  const t = useTranslations('auth');
+  const tc = useTranslations('common');
 
   useEffect(() => {
     fetch(`${API_BASE}${ENDPOINTS.SETTINGS_PUBLIC}`)
@@ -38,20 +41,19 @@ export default function RegisterPage() {
         </div>
         <div className="space-y-2">
           <h2 className="font-heading text-2xl font-bold text-ink-900">
-            Inscriptions ferm&eacute;es
+            {t('registrationsClosed')}
           </h2>
           <p className="text-sm text-ink-500">
-            Les inscriptions sont temporairement suspendues.
-            Veuillez r&eacute;essayer ult&eacute;rieurement.
+            {t('registrationsClosedMessage')}
           </p>
         </div>
         <p className="text-center text-sm text-ink-500">
-          D&eacute;j&agrave; un compte ?{' '}
+          {t('alreadyHaveAccount')}{' '}
           <Link
             href="/login"
             className="font-semibold text-forest-700 transition-colors hover:text-forest-500"
           >
-            Se connecter
+            {t('signIn')}
           </Link>
         </p>
       </div>
@@ -63,10 +65,10 @@ export default function RegisterPage() {
       {/* Header */}
       <div className="space-y-2 text-center">
         <h2 className="font-heading text-2xl font-bold text-ink-900">
-          Cr&eacute;er votre compte
+          {t('createAccount')}
         </h2>
         <p className="text-sm text-ink-500">
-          Rejoignez la communaut&eacute; DiaspoEEC
+          {t('joinCommunity')}
         </p>
       </div>
 
@@ -76,7 +78,7 @@ export default function RegisterPage() {
       {/* Divider */}
       <div className="flex items-center gap-4">
         <div className="h-px flex-1 bg-ink-200" />
-        <span className="text-xs font-medium text-ink-400">ou</span>
+        <span className="text-xs font-medium text-ink-400">{tc('or')}</span>
         <div className="h-px flex-1 bg-ink-200" />
       </div>
 
@@ -85,12 +87,12 @@ export default function RegisterPage() {
 
       {/* Login link */}
       <p className="text-center text-sm text-ink-500">
-        D&eacute;j&agrave; un compte ?{' '}
+        {t('alreadyHaveAccount')}{' '}
         <Link
           href="/login"
           className="font-semibold text-forest-700 transition-colors hover:text-forest-500"
         >
-          Se connecter
+          {t('signIn')}
         </Link>
       </p>
     </div>

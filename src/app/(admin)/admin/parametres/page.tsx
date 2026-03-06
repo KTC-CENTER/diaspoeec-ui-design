@@ -22,49 +22,31 @@ import { useToastStore } from '@/stores/toast.store';
 import { useUIStore } from '@/stores/ui.store';
 import { useSettings, useUpdateSettings } from '@/features/admin/hooks/use-admin';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import { useTranslations } from 'next-intl';
 import type { AppSettingsData } from '@/lib/api/admin.api';
 
-/* ── Options for select items ── */
-const selectOptions: Record<string, string[]> = {
-  'Langue par defaut': ['Francais', 'English', 'Deutsch', 'Espanol'],
-  'Fuseau horaire': [
+/* ── Options for select items (keyed by apiKey) ── */
+const selectOptionsByApiKey: Record<string, string[]> = {
+  fuseauHoraire: [
     'Europe/Paris (UTC+1)',
     'Europe/London (UTC+0)',
     'Europe/Berlin (UTC+1)',
     'Africa/Douala (UTC+1)',
     'America/New_York (UTC-5)',
   ],
-  'Duree de session': ['1 heure', '4 heures', '12 heures', '24 heures', '7 jours'],
-  'Devise par defaut': ['EUR', 'USD', 'GBP', 'XAF', 'CHF'],
-};
-
-/* ── Mapping between UI keys and API field names ── */
-const settingsKeyMap: Record<string, keyof AppSettingsData> = {
-  'General-Nom de la communaute': 'nomCommunaute',
-  'General-Langue par defaut': 'langueDefaut',
-  'General-Fuseau horaire': 'fuseauHoraire',
-  'General-Mode maintenance': 'modeMaintenance',
-  'Notifications-Notifications push': 'notificationsPush',
-  'Notifications-Email de bienvenue': 'emailBienvenue',
-  'Notifications-Rappels evenements': 'rappelsEvenements',
-  'Notifications-Resume hebdomadaire': 'resumeHebdomadaire',
-  'Securite-Double authentification': 'doubleAuthentification',
-  'Securite-Duree de session': 'dureeSession',
-  'Securite-Inscription ouverte': 'inscriptionsOuvertes',
-  'Dons & Paiements-Devise par defaut': 'deviseDefaut',
-  'Dons & Paiements-Recus automatiques': 'recusAutomatiques',
+  deviseDefaut: ['EUR', 'USD', 'GBP', 'XAF', 'CHF'],
 };
 
 /* ── Section definitions ── */
 interface SettingItem {
-  label: string;
+  labelKey: string;
   apiKey: keyof AppSettingsData;
   type: 'text' | 'select' | 'toggle' | 'status';
-  description?: string;
+  descriptionKey?: string;
 }
 
 interface SettingSection {
-  title: string;
+  titleKey: string;
   icon: typeof Globe;
   iconBg: string;
   iconColor: string;
@@ -73,53 +55,55 @@ interface SettingSection {
 
 const settingSections: SettingSection[] = [
   {
-    title: 'General',
+    titleKey: 'general',
     icon: Globe,
     iconBg: 'bg-sage-200',
     iconColor: 'text-forest-900',
     items: [
-      { label: 'Nom de la communaute', apiKey: 'nomCommunaute', type: 'text' },
-      { label: 'Langue par defaut', apiKey: 'langueDefaut', type: 'select' },
-      { label: 'Fuseau horaire', apiKey: 'fuseauHoraire', type: 'select' },
-      { label: 'Mode maintenance', apiKey: 'modeMaintenance', type: 'toggle', description: 'Desactive l\'acces public au site' },
+      { labelKey: 'communityName', apiKey: 'nomCommunaute', type: 'text' },
+      { labelKey: 'defaultLanguage', apiKey: 'langueDefaut', type: 'select' },
+      { labelKey: 'timezone', apiKey: 'fuseauHoraire', type: 'select' },
+      { labelKey: 'maintenanceMode', apiKey: 'modeMaintenance', type: 'toggle', descriptionKey: 'maintenanceDesc' },
     ],
   },
   {
-    title: 'Notifications',
+    titleKey: 'notifications',
     icon: Bell,
     iconBg: 'bg-gold-200/50',
     iconColor: 'text-gold-600',
     items: [
-      { label: 'Notifications push', apiKey: 'notificationsPush', type: 'toggle' },
-      { label: 'Email de bienvenue', apiKey: 'emailBienvenue', type: 'toggle' },
-      { label: 'Rappels evenements', apiKey: 'rappelsEvenements', type: 'toggle' },
-      { label: 'Resume hebdomadaire', apiKey: 'resumeHebdomadaire', type: 'toggle' },
+      { labelKey: 'pushNotifications', apiKey: 'notificationsPush', type: 'toggle' },
+      { labelKey: 'welcomeEmail', apiKey: 'emailBienvenue', type: 'toggle' },
+      { labelKey: 'eventReminders', apiKey: 'rappelsEvenements', type: 'toggle' },
+      { labelKey: 'weeklySummary', apiKey: 'resumeHebdomadaire', type: 'toggle' },
     ],
   },
   {
-    title: 'Securite',
+    titleKey: 'security',
     icon: Shield,
     iconBg: 'bg-red-50',
     iconColor: 'text-red-500',
     items: [
-      { label: 'Double authentification', apiKey: 'doubleAuthentification', type: 'toggle' },
-      { label: 'Duree de session', apiKey: 'dureeSession', type: 'select' },
-      { label: 'Inscription ouverte', apiKey: 'inscriptionsOuvertes', type: 'toggle' },
+      { labelKey: 'twoFactorAuth', apiKey: 'doubleAuthentification', type: 'toggle' },
+      { labelKey: 'sessionDuration', apiKey: 'dureeSession', type: 'select' },
+      { labelKey: 'openRegistration', apiKey: 'inscriptionsOuvertes', type: 'toggle' },
     ],
   },
   {
-    title: 'Dons & Paiements',
+    titleKey: 'donationsPayments',
     icon: Key,
     iconBg: 'bg-terra-500/10',
     iconColor: 'text-terra-600',
     items: [
-      { label: 'Devise par defaut', apiKey: 'deviseDefaut', type: 'select' },
-      { label: 'Recus automatiques', apiKey: 'recusAutomatiques', type: 'toggle' },
+      { labelKey: 'defaultCurrency', apiKey: 'deviseDefaut', type: 'select' },
+      { labelKey: 'autoReceipts', apiKey: 'recusAutomatiques', type: 'toggle' },
     ],
   },
 ];
 
 export default function AdminParametresPage() {
+  const t = useTranslations('adminSettings');
+  const tc = useTranslations('common');
   const { data: settings, isLoading } = useSettings();
   const updateSettingsMutation = useUpdateSettings();
 
@@ -132,6 +116,16 @@ export default function AdminParametresPage() {
   const { addToast } = useToastStore();
   const { theme, setTheme } = useUIStore();
   const isDark = theme === 'dark';
+
+  // Build translated select options
+  const languageOptions = (t.raw('languageOptions') as string[]) ?? [];
+  const sessionOptions = (t.raw('sessionOptions') as string[]) ?? [];
+
+  const getSelectOptions = (apiKey: string): string[] => {
+    if (apiKey === 'langueDefaut') return languageOptions;
+    if (apiKey === 'dureeSession') return sessionOptions;
+    return selectOptionsByApiKey[apiKey] ?? [];
+  };
 
   // Sync local state from API data
   useEffect(() => {
@@ -171,22 +165,22 @@ export default function AdminParametresPage() {
   const handleSave = async () => {
     try {
       await updateSettingsMutation.mutateAsync(localSettings);
-      addToast('Parametres enregistres avec succes', 'success');
+      addToast(t('saveSuccess'), 'success');
     } catch {
-      addToast('Erreur lors de l\'enregistrement', 'error');
+      addToast(t('saveError'), 'error');
     }
   };
 
   const handleReset = () => {
     if (settings) setLocalSettings(settings);
-    addToast('Parametres reinitialises', 'success');
+    addToast(t('resetSuccess'), 'success');
   };
 
-  const handleExport = () => addToast('Export des donnees en cours...', 'info');
+  const handleExport = () => addToast(t('exportInProgress'), 'info');
 
   const handleDangerResetConfirm = () => {
     setShowResetConfirm(false);
-    addToast('Base de donnees reinitialisee', 'warning');
+    addToast(t('databaseReset'), 'warning');
   };
 
   if (isLoading) {
@@ -208,9 +202,9 @@ export default function AdminParametresPage() {
             className="text-2xl font-semibold text-forest-900 md:text-3xl"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            Parametres
+            {t('title')}
           </h2>
-          <p className="mt-1 text-sm text-ink-500">Configuration generale de la plateforme</p>
+          <p className="mt-1 text-sm text-ink-500">{t('subtitle')}</p>
         </div>
         <div className="flex gap-3">
           <button
@@ -218,7 +212,7 @@ export default function AdminParametresPage() {
             className="inline-flex items-center gap-2 rounded-xl border-2 border-forest-900/20 bg-white px-4 py-2.5 text-sm font-medium text-forest-900 transition-all hover:bg-sage-200"
           >
             <RotateCcw className="h-4 w-4" />
-            Reinitialiser
+            {t('reset')}
           </button>
           <button
             onClick={handleSave}
@@ -230,7 +224,7 @@ export default function AdminParametresPage() {
             ) : (
               <Save className="h-4 w-4" />
             )}
-            Enregistrer
+            {tc('save')}
           </button>
         </div>
       </div>
@@ -246,14 +240,14 @@ export default function AdminParametresPage() {
             )}
           </div>
           <h3 className="text-lg font-semibold text-forest-900" style={{ fontFamily: 'var(--font-heading)' }}>
-            Apparence
+            {t('appearance')}
           </h3>
         </div>
         <div className="flex items-center justify-between px-6 py-4 transition-colors hover:bg-cream-50/50">
           <div>
-            <p className="text-sm font-medium text-ink-900">Mode sombre</p>
+            <p className="text-sm font-medium text-ink-900">{t('darkMode')}</p>
             <p className="text-xs text-ink-500">
-              {isDark ? 'Le theme sombre est actif' : 'Activer le theme sombre pour l\'interface'}
+              {isDark ? t('darkModeActive') : t('darkModeInactive')}
             </p>
           </div>
           <button
@@ -278,14 +272,14 @@ export default function AdminParametresPage() {
         {settingSections.map((section) => {
           const Icon = section.icon;
           return (
-            <div key={section.title} className="overflow-hidden rounded-2xl border border-forest-900/5 bg-white shadow-sm">
+            <div key={section.titleKey} className="overflow-hidden rounded-2xl border border-forest-900/5 bg-white shadow-sm">
               {/* Section header */}
               <div className="flex items-center gap-3 border-b border-gray-50 px-6 py-4">
                 <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${section.iconBg}`}>
                   <Icon className={`h-[18px] w-[18px] ${section.iconColor}`} />
                 </div>
                 <h3 className="text-lg font-semibold text-forest-900" style={{ fontFamily: 'var(--font-heading)' }}>
-                  {section.title}
+                  {t(section.titleKey)}
                 </h3>
               </div>
 
@@ -298,12 +292,12 @@ export default function AdminParametresPage() {
 
                   return (
                     <div
-                      key={item.label}
+                      key={item.labelKey}
                       className="flex items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-cream-50/50"
                     >
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-ink-900">{item.label}</p>
-                        {item.description && <p className="text-xs text-ink-500">{item.description}</p>}
+                        <p className="text-sm font-medium text-ink-900">{t(item.labelKey)}</p>
+                        {item.descriptionKey && <p className="text-xs text-ink-500">{t(item.descriptionKey)}</p>}
                       </div>
 
                       {/* Toggle */}
@@ -383,7 +377,7 @@ export default function AdminParametresPage() {
                             <>
                               <div className="fixed inset-0 z-10" onClick={() => setOpenSelect(null)} />
                               <div className="absolute left-0 sm:left-auto sm:right-0 z-20 mt-1 min-w-[180px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-forest-900/10 bg-white py-1 shadow-lg">
-                                {(selectOptions[item.label] ?? []).map((opt) => (
+                                {getSelectOptions(item.apiKey).map((opt) => (
                                   <button
                                     key={opt}
                                     onClick={() => handleSelectOption(item.apiKey, opt)}
@@ -417,32 +411,32 @@ export default function AdminParametresPage() {
             <Database className="h-[18px] w-[18px] text-red-600" />
           </div>
           <h3 className="text-lg font-semibold text-red-700" style={{ fontFamily: 'var(--font-heading)' }}>
-            Zone dangereuse
+            {t('dangerZone')}
           </h3>
         </div>
         <div className="divide-y divide-red-50">
           <div className="flex items-center justify-between px-6 py-4">
             <div>
-              <p className="text-sm font-medium text-ink-900">Exporter toutes les donnees</p>
-              <p className="text-xs text-ink-500">Telecharger une copie complete des donnees</p>
+              <p className="text-sm font-medium text-ink-900">{t('exportAllData')}</p>
+              <p className="text-xs text-ink-500">{t('exportAllDataDesc')}</p>
             </div>
             <button
               onClick={handleExport}
               className="rounded-xl border-2 border-ink-200 px-4 py-2 text-sm font-medium text-ink-600 transition-all hover:bg-ink-50"
             >
-              Exporter
+              {t('export')}
             </button>
           </div>
           <div className="flex items-center justify-between px-6 py-4">
             <div>
-              <p className="text-sm font-medium text-red-700">Reinitialiser la base de donnees</p>
-              <p className="text-xs text-ink-500">Cette action est irreversible</p>
+              <p className="text-sm font-medium text-red-700">{t('resetDatabase')}</p>
+              <p className="text-xs text-ink-500">{t('resetDatabaseDesc')}</p>
             </div>
             <button
               onClick={() => setShowResetConfirm(true)}
               className="rounded-xl bg-red-50 px-4 py-2 text-sm font-medium text-red-600 transition-all hover:bg-red-100"
             >
-              Reinitialiser
+              {t('reset')}
             </button>
           </div>
         </div>
@@ -450,10 +444,10 @@ export default function AdminParametresPage() {
 
       <ConfirmDialog
         open={showResetConfirm}
-        title="Reinitialiser la base de donnees"
-        message="Cette action va supprimer toutes les donnees de la plateforme. Cette action est irreversible. Etes-vous sur de vouloir continuer ?"
-        confirmLabel="Reinitialiser"
-        cancelLabel="Annuler"
+        title={t('resetDatabaseConfirmTitle')}
+        message={t('resetDatabaseConfirmMessage')}
+        confirmLabel={t('reset')}
+        cancelLabel={tc('cancel')}
         variant="danger"
         onConfirm={handleDangerResetConfirm}
         onCancel={() => setShowResetConfirm(false)}

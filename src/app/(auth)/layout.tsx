@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 const decoPatternSvg = `url("data:image/svg+xml,%3Csvg width='120' height='120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M60 0L120 60L60 120L0 60Z' fill='none' stroke='%23F4D35E' stroke-width='1.5'/%3E%3Ccircle cx='60' cy='60' r='20' fill='none' stroke='%23FEFAE0' stroke-width='1'/%3E%3Ccircle cx='60' cy='60' r='35' fill='none' stroke='%23F4D35E' stroke-width='.6'/%3E%3Cpath d='M60 25v70M25 60h70' stroke='%23FEFAE0' stroke-width='.5'/%3E%3Cpath d='M35 35l50 50M85 35L35 85' stroke='%23F4D35E' stroke-width='.4'/%3E%3C/svg%3E")`;
 
@@ -20,6 +21,7 @@ export default function AuthLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const t = useTranslations('auth');
   return (
     <div className="flex min-h-screen">
       {/* ── Left decorative panel (desktop only) ── */}
@@ -113,7 +115,7 @@ export default function AuthLayout({
               Diaspo<span className="text-gold-600">EEC</span>
             </h1>
           </Link>
-          <p className="text-ink-600 text-sm mt-1.5">Connexion à votre espace communautaire</p>
+          <p className="text-ink-600 text-sm mt-1.5">{t('connectingToSpace')}</p>
         </div>
 
         {/* Auth card */}

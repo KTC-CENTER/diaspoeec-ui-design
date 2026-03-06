@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { loginSchema, type LoginFormData } from '@/features/auth/schemas/auth.schema';
 import { useLogin } from '@/features/auth/hooks/use-auth';
 
@@ -31,6 +32,8 @@ export function LoginForm() {
   const { mutate: login, isPending, error } = useLogin();
   const [showPassword, setShowPassword] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const t = useTranslations('auth');
+  const tc = useTranslations('common');
 
   const {
     register,
@@ -59,7 +62,7 @@ export function LoginForm() {
       {/* Email */}
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-ink-700 mb-1.5">
-          Adresse email
+          {tc('emailAddress')}
         </label>
         <div className="relative">
           <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-ink-400/50" />
@@ -67,7 +70,7 @@ export function LoginForm() {
             id="email"
             type="email"
             autoComplete="email"
-            placeholder="vous@exemple.com"
+            placeholder={t('loginEmailPlaceholder')}
             className={inputClassName(!!errors.email)}
             style={{
               ...inputStyle,
@@ -87,7 +90,7 @@ export function LoginForm() {
       {/* Password */}
       <div>
         <label htmlFor="password" className="block text-sm font-medium text-ink-700 mb-1.5">
-          Mot de passe
+          {tc('password')}
         </label>
         <div className="relative">
           <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-ink-400/50" />
@@ -95,7 +98,7 @@ export function LoginForm() {
             id="password"
             type={showPassword ? 'text' : 'password'}
             autoComplete="current-password"
-            placeholder="Entrez votre mot de passe"
+            placeholder={t('passwordPlaceholder')}
             className={`${inputClassName(!!errors.password)} pr-11`}
             style={{
               ...inputStyle,
@@ -119,7 +122,7 @@ export function LoginForm() {
             href="/forgot-password"
             className="text-sm text-forest-900/70 hover:text-forest-900 transition-colors hover:underline"
           >
-            Mot de passe oublié ?
+            {t('forgotPassword')}
           </Link>
         </div>
         {errors.password && (
@@ -152,10 +155,10 @@ export function LoginForm() {
         {isPending ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            Connexion en cours...
+            {t('loggingIn')}
           </>
         ) : (
-          'Se connecter'
+          tc('login')
         )}
       </button>
     </form>

@@ -8,6 +8,7 @@ import { Menu, X, Bell, LogOut, Home, BookOpen, Calendar, Heart, User, Church, R
 import { cn } from '@/lib/utils/cn';
 import { useUIStore } from '@/stores/ui.store';
 import { useAuthStore } from '@/stores/auth.store';
+import { useTranslations } from 'next-intl';
 import type { LucideIcon } from 'lucide-react';
 import type { UserRole } from '@/types';
 
@@ -19,33 +20,6 @@ interface MobileNavItem {
   icon: LucideIcon;
   label: string;
   href: string;
-}
-
-const baseMobileNavItems: MobileNavItem[] = [
-  { icon: Home, label: 'Accueil', href: '/accueil' },
-  { icon: BookOpen, label: 'Meditations', href: '/meditations' },
-  { icon: Calendar, label: 'Evenements', href: '/evenements' },
-  { icon: Heart, label: 'Dons', href: '/dons' },
-  { icon: Church, label: 'Cultes', href: '/cultes' },
-  { icon: Radio, label: 'Bible', href: '/bible' },
-  { icon: Bell, label: 'Notifications', href: '/notifications' },
-  { icon: User, label: 'Profil', href: '/profil' },
-];
-
-function getMobileGestionItems(role?: UserRole): MobileNavItem[] {
-  if (!role) return [];
-  const items: MobileNavItem[] = [];
-  if (role === 'pasteur' || role === 'admin') {
-    items.push({ icon: PenSquare, label: 'Mes meditations', href: '/gestion/meditations' });
-    items.push({ icon: BookCheck, label: 'Plans Bible', href: '/gestion/bible' });
-  }
-  if (role === 'pasteur' || role === 'responsable_zone' || role === 'admin') {
-    items.push({ icon: CalendarPlus, label: 'Mes evenements', href: '/gestion/evenements' });
-  }
-  if (role === 'responsable_zone' || role === 'admin') {
-    items.push({ icon: ClipboardList, label: 'Membres zone', href: '/gestion/membres' });
-  }
-  return items;
 }
 
 function getInitials(name: string): string {
@@ -64,6 +38,35 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
   const { mobileMenuOpen, setMobileMenuOpen } = useUIStore();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const tn = useTranslations('nav');
+  const tc = useTranslations('common');
+
+  const baseMobileNavItems: MobileNavItem[] = [
+    { icon: Home, label: tn('home'), href: '/accueil' },
+    { icon: BookOpen, label: tn('meditations'), href: '/meditations' },
+    { icon: Calendar, label: tn('events'), href: '/evenements' },
+    { icon: Heart, label: tn('donations'), href: '/dons' },
+    { icon: Church, label: tn('services'), href: '/cultes' },
+    { icon: Radio, label: tn('bible'), href: '/bible' },
+    { icon: Bell, label: tn('notifications'), href: '/notifications' },
+    { icon: User, label: tn('profile'), href: '/profil' },
+  ];
+
+  function getMobileGestionItems(role?: UserRole): MobileNavItem[] {
+    if (!role) return [];
+    const items: MobileNavItem[] = [];
+    if (role === 'pasteur' || role === 'admin') {
+      items.push({ icon: PenSquare, label: tn('myMeditations'), href: '/gestion/meditations' });
+      items.push({ icon: BookCheck, label: tn('biblePlans'), href: '/gestion/bible' });
+    }
+    if (role === 'pasteur' || role === 'responsable_zone' || role === 'admin') {
+      items.push({ icon: CalendarPlus, label: tn('myEvents'), href: '/gestion/evenements' });
+    }
+    if (role === 'responsable_zone' || role === 'admin') {
+      items.push({ icon: ClipboardList, label: tn('zoneMembers'), href: '/gestion/membres' });
+    }
+    return items;
+  }
 
   // Build nav items with role-specific gestion items
   const gestionItems = getMobileGestionItems(user?.role);
@@ -113,7 +116,7 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
         <button
           onClick={() => setMobileMenuOpen(true)}
           className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-700 hover:bg-ink-100 transition-colors"
-          aria-label="Ouvrir le menu"
+          aria-label={tc('openMenu')}
         >
           <Menu className="h-5 w-5" />
         </button>
@@ -133,7 +136,7 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
         <Link
           href="/notifications"
           className="relative flex h-9 w-9 items-center justify-center rounded-lg text-ink-700 hover:bg-ink-100 transition-colors"
-          aria-label={`Notifications${notificationCount > 0 ? ` (${notificationCount} non lues)` : ''}`}
+          aria-label={`${tn('notifications')}${notificationCount > 0 ? ` (${notificationCount} ${tn('unread')})` : ''}`}
         >
           <Bell className="h-5 w-5" />
           {notificationCount > 0 && (
@@ -161,7 +164,7 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
         )}
         role="dialog"
         aria-modal="true"
-        aria-label="Menu de navigation"
+        aria-label={tc('navMenu')}
         onKeyDown={handleKeyDown}
       >
         {/* Drawer Header */}
@@ -178,7 +181,7 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
           <button
             onClick={handleClose}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 hover:bg-ink-100 transition-colors"
-            aria-label="Fermer le menu"
+            aria-label={tc('closeMenu')}
           >
             <X className="h-5 w-5" />
           </button>
@@ -231,7 +234,7 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-ink-900">
-                {user?.nomComplet ?? 'Utilisateur'}
+                {user?.nomComplet ?? tc('user')}
               </p>
               <p className="truncate text-xs text-ink-500">
                 {user?.paroisseOrigine ?? ''}
@@ -244,7 +247,7 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
                 router.push('/login');
               }}
               className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-400 hover:bg-ink-100 hover:text-ink-700 transition-colors"
-              aria-label="Se deconnecter"
+              aria-label={tc('logout')}
             >
               <LogOut className="h-4 w-4" />
             </button>

@@ -16,19 +16,12 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { getEvenements } from '@/lib/api/evenements.api';
 import { useCreateEvenement, useUpdateEvenement, useDeleteEvenement } from '@/features/evenements/hooks/use-evenements';
+import { useTranslations } from 'next-intl';
 import { useToastStore } from '@/stores/toast.store';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { RoleGuard } from '@/features/gestion/components/role-guard';
 import { CustomSelect } from '@/components/forms/custom-select';
 import type { Evenement, EventType } from '@/types';
-
-const typeLabels: Record<string, string> = {
-  culte: 'Culte',
-  conference: 'Conference',
-  retraite: 'Retraite',
-  formation: 'Formation',
-  jeunesse: 'Jeunesse',
-};
 
 const typeBadgeColors: Record<string, string> = {
   culte: 'bg-sage-200 text-forest-900',
@@ -38,16 +31,28 @@ const typeBadgeColors: Record<string, string> = {
   jeunesse: 'bg-purple-50 text-purple-700',
 };
 
-const types = ['Tous', 'culte', 'conference', 'retraite', 'formation', 'jeunesse'];
 const typeOptions: EventType[] = ['culte', 'conference', 'retraite', 'formation', 'jeunesse'];
 
 function GestionEvenementsContent() {
+  const t = useTranslations('gestionEvenements');
+  const tc = useTranslations('common');
+  const te = useTranslations('evenements');
+
+  const typeLabels: Record<string, string> = {
+    culte: te('typeCulte'),
+    conference: te('typeConference'),
+    retraite: te('typeRetraite'),
+    formation: te('typeFormation'),
+    jeunesse: te('typeJeunesse'),
+  };
+
+  const types = [tc('all'), 'culte', 'conference', 'retraite', 'formation', 'jeunesse'];
   const { data: evenementsData } = useQuery({ queryKey: ['gestion-evenements'], queryFn: () => getEvenements() });
   const items = evenementsData ?? [];
   const createMutation = useCreateEvenement();
   const updateMutation = useUpdateEvenement();
   const deleteMutation = useDeleteEvenement();
-  const [activeType, setActiveType] = useState('Tous');
+  const [activeType, setActiveType] = useState(tc('all'));
   const [search, setSearch] = useState('');
 
   // Modal states
@@ -83,7 +88,7 @@ function GestionEvenementsContent() {
   const { addToast } = useToastStore();
 
   const filtered = items.filter((e) => {
-    const matchType = activeType === 'Tous' || e.type === activeType;
+    const matchType = activeType === tc('all') || e.type === activeType;
     const matchSearch =
       !search || e.titre.toLowerCase().includes(search.toLowerCase());
     return matchType && matchSearch;
@@ -115,10 +120,10 @@ function GestionEvenementsContent() {
       {
         onSuccess: () => {
           setEditItem(null);
-          addToast('Evenement mis a jour', 'success');
+          addToast(t('eventUpdated'), 'success');
         },
         onError: () => {
-          addToast('Erreur lors de la mise a jour', 'error');
+          addToast(t('errorUpdate'), 'error');
         },
       },
     );
@@ -129,10 +134,10 @@ function GestionEvenementsContent() {
     deleteMutation.mutate(deleteItem.id, {
       onSuccess: () => {
         setDeleteItem(null);
-        addToast('Evenement supprime', 'success');
+        addToast(t('eventDeleted'), 'success');
       },
       onError: () => {
-        addToast('Erreur lors de la suppression', 'error');
+        addToast(t('errorDelete'), 'error');
       },
     });
   };
@@ -152,7 +157,7 @@ function GestionEvenementsContent() {
 
   const handleCreateSubmit = () => {
     if (!createTitre.trim() || !createLieu.trim() || !createDate) {
-      addToast('Veuillez remplir le titre, la date et le lieu', 'error');
+      addToast(t('errorFieldsRequired'), 'error');
       return;
     }
     createMutation.mutate(
@@ -168,10 +173,10 @@ function GestionEvenementsContent() {
       {
         onSuccess: () => {
           setShowCreateModal(false);
-          addToast('Evenement cree', 'success');
+          addToast(t('eventCreated'), 'success');
         },
         onError: () => {
-          addToast('Erreur lors de la creation', 'error');
+          addToast(t('errorCreate'), 'error');
         },
       },
     );
@@ -186,10 +191,10 @@ function GestionEvenementsContent() {
             className="text-2xl font-semibold text-forest-900 md:text-3xl"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            Mes evenements
+            {t('pageTitle')}
           </h1>
           <p className="mt-1 text-sm text-ink-500">
-            Creez et gerez les evenements de votre communaute
+            {t('pageSubtitle')}
           </p>
         </div>
         <button
@@ -197,7 +202,7 @@ function GestionEvenementsContent() {
           className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-terra-600 to-orange-400 px-5 py-3 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
         >
           <Plus className="h-4 w-4" />
-          Nouvel evenement
+          {t('newEvent')}
         </button>
       </div>
 
@@ -207,7 +212,7 @@ function GestionEvenementsContent() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
           <input
             type="text"
-            placeholder="Rechercher un evenement..."
+            placeholder={t('searchEvent')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-xl border border-forest-900/10 bg-cream-50 py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
@@ -224,7 +229,7 @@ function GestionEvenementsContent() {
                   : 'bg-white text-ink-600 border border-ink-200 hover:bg-sage-200'
               }`}
             >
-              {type === 'Tous' ? 'Tous' : typeLabels[type] || type}
+              {type === tc('all') ? tc('all') : typeLabels[type] || type}
             </button>
           ))}
         </div>
@@ -233,26 +238,26 @@ function GestionEvenementsContent() {
       {/* Stats */}
       <div className="mb-6 flex flex-wrap gap-3">
         <span className="rounded-full border border-forest-900/10 bg-sage-200 px-3 py-1 text-xs font-medium text-forest-900">
-          {items.length} evenement{items.length > 1 ? 's' : ''}
+          {t('eventCount', { count: items.length })}
         </span>
         <span className="rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-medium text-green-700">
-          {items.filter((e) => e.actif).length} actif{items.filter((e) => e.actif).length > 1 ? 's' : ''}
+          {t('activeCount', { count: items.filter((e) => e.actif).length })}
         </span>
         <span className="rounded-full border border-yellow-200 bg-yellow-50 px-3 py-1 text-xs font-medium text-yellow-700">
-          {items.filter((e) => new Date(e.date) > new Date()).length} a venir
+          {t('upcomingCount', { count: items.filter((e) => new Date(e.date) > new Date()).length })}
         </span>
       </div>
 
       {/* Table */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-200 py-16">
-          <p className="text-ink-400 mb-4">Aucun evenement trouve</p>
+          <p className="text-ink-400 mb-4">{t('noEventFound')}</p>
           <button
             onClick={handleCreateOpen}
             className="inline-flex items-center gap-2 rounded-xl bg-terra-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-terra-700"
           >
             <Plus className="h-4 w-4" />
-            Creer un evenement
+            {t('createEvent')}
           </button>
         </div>
       ) : (
@@ -261,12 +266,12 @@ function GestionEvenementsContent() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-cream-50/50">
-                  <th className="px-4 py-3 text-left font-medium text-ink-500">Evenement</th>
-                  <th className="hidden px-4 py-3 text-left font-medium text-ink-500 sm:table-cell">Type</th>
-                  <th className="hidden px-4 py-3 text-left font-medium text-ink-500 md:table-cell">Lieu</th>
-                  <th className="hidden px-4 py-3 text-center font-medium text-ink-500 lg:table-cell">Participants</th>
-                  <th className="px-4 py-3 text-left font-medium text-ink-500">Date</th>
-                  <th className="px-4 py-3 text-right font-medium text-ink-500">Actions</th>
+                  <th className="px-4 py-3 text-left font-medium text-ink-500">{t('event')}</th>
+                  <th className="hidden px-4 py-3 text-left font-medium text-ink-500 sm:table-cell">{t('type')}</th>
+                  <th className="hidden px-4 py-3 text-left font-medium text-ink-500 md:table-cell">{t('location')}</th>
+                  <th className="hidden px-4 py-3 text-center font-medium text-ink-500 lg:table-cell">{t('participantsCol')}</th>
+                  <th className="px-4 py-3 text-left font-medium text-ink-500">{t('date')}</th>
+                  <th className="px-4 py-3 text-right font-medium text-ink-500">{tc('actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -307,14 +312,14 @@ function GestionEvenementsContent() {
                       <div className="flex flex-col gap-0.5">
                         <span className="flex items-center gap-1 text-xs text-ink-500">
                           <Calendar className="h-3 w-3" />
-                          {new Date(evt.date).toLocaleDateString('fr-FR', {
+                          {new Date(evt.date).toLocaleDateString(undefined, {
                             day: 'numeric',
                             month: 'short',
                             year: 'numeric',
                           })}
                         </span>
                         <span className="text-xs text-ink-400">
-                          {new Date(evt.date).toLocaleTimeString('fr-FR', {
+                          {new Date(evt.date).toLocaleTimeString(undefined, {
                             hour: '2-digit',
                             minute: '2-digit',
                           })}
@@ -367,60 +372,60 @@ function GestionEvenementsContent() {
               className="mb-4 text-lg font-semibold text-ink-900"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
-              Detail de l&apos;evenement
+              {t('eventDetail')}
             </h3>
 
             <div className="space-y-4">
               <div>
-                <p className="text-sm font-medium text-ink-500">Titre</p>
+                <p className="text-sm font-medium text-ink-500">{tc('title')}</p>
                 <p className="text-sm text-ink-900">{viewItem.titre}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-ink-500">Type</p>
+                <p className="text-sm font-medium text-ink-500">{t('type')}</p>
                 <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${typeBadgeColors[viewItem.type] || 'bg-gray-100 text-gray-600'}`}>
                   {typeLabels[viewItem.type] || viewItem.type}
                 </span>
               </div>
               <div>
-                <p className="text-sm font-medium text-ink-500">Date et heure</p>
+                <p className="text-sm font-medium text-ink-500">{t('dateTime')}</p>
                 <p className="text-sm text-ink-900">
-                  {new Date(viewItem.date).toLocaleDateString('fr-FR', {
+                  {new Date(viewItem.date).toLocaleDateString(undefined, {
                     weekday: 'long',
                     day: 'numeric',
                     month: 'long',
                     year: 'numeric',
                   })}
-                  {' a '}
-                  {new Date(viewItem.date).toLocaleTimeString('fr-FR', {
+                  {` ${t('atTime')} `}
+                  {new Date(viewItem.date).toLocaleTimeString(undefined, {
                     hour: '2-digit',
                     minute: '2-digit',
                   })}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-ink-500">Lieu</p>
+                <p className="text-sm font-medium text-ink-500">{t('location')}</p>
                 <p className="flex items-center gap-1 text-sm text-ink-900">
                   <MapPin className="h-3.5 w-3.5 shrink-0 text-ink-400" />
                   {viewItem.lieu}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-ink-500">Description</p>
+                <p className="text-sm font-medium text-ink-500">{tc('description')}</p>
                 <p className="whitespace-pre-line text-sm leading-relaxed text-ink-700">
                   {viewItem.description}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-ink-500">Participants</p>
+                <p className="text-sm font-medium text-ink-500">{t('participantsCol')}</p>
                 <p className="flex items-center gap-1 text-sm text-ink-900">
                   <Users className="h-3.5 w-3.5 text-ink-400" />
-                  {viewItem.participantsInscrits} inscrits
-                  {viewItem.maxParticipants ? ` / ${viewItem.maxParticipants} places` : ''}
+                  {t('registeredCount', { count: viewItem.participantsInscrits })}
+                  {viewItem.maxParticipants ? ` / ${viewItem.maxParticipants} ${t('places')}` : ''}
                 </p>
               </div>
               {viewItem.lienZoom && (
                 <div>
-                  <p className="text-sm font-medium text-ink-500">Lien en ligne</p>
+                  <p className="text-sm font-medium text-ink-500">{t('onlineLink')}</p>
                   <a
                     href={viewItem.lienZoom}
                     target="_blank"
@@ -439,7 +444,7 @@ function GestionEvenementsContent() {
                 onClick={() => setViewItem(null)}
                 className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
               >
-                Fermer
+                {tc('close')}
               </button>
             </div>
           </div>
@@ -462,12 +467,12 @@ function GestionEvenementsContent() {
               className="mb-4 text-lg font-semibold text-ink-900"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
-              Modifier l&apos;evenement
+              {t('editEvent')}
             </h3>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Titre</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{tc('title')}</label>
                 <input
                   type="text"
                   value={editTitre}
@@ -476,7 +481,7 @@ function GestionEvenementsContent() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Type</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{t('type')}</label>
                 <CustomSelect
                   value={editType}
                   onChange={(value) => setEditType(value as EventType)}
@@ -484,7 +489,7 @@ function GestionEvenementsContent() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Date et heure</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{t('dateTime')}</label>
                 <div className="grid grid-cols-2 gap-3">
                   <input
                     type="date"
@@ -501,7 +506,7 @@ function GestionEvenementsContent() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Lieu</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{t('location')}</label>
                 <input
                   type="text"
                   value={editLieu}
@@ -510,18 +515,18 @@ function GestionEvenementsContent() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Nombre de places (optionnel)</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{t('maxParticipants')}</label>
                 <input
                   type="number"
                   min="1"
                   value={editMaxParticipants}
                   onChange={(e) => setEditMaxParticipants(e.target.value)}
-                  placeholder="Illimite si vide"
+                  placeholder={t('unlimitedIfEmpty')}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Description</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{tc('description')}</label>
                 <textarea
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
@@ -540,18 +545,18 @@ function GestionEvenementsContent() {
                       onChange={(e) => setEditEstEnLigne(e.target.checked)}
                       className="h-4 w-4 rounded accent-forest-700"
                     />
-                    <span className="text-sm font-medium text-ink-700">Culte en ligne (YouTube / Zoom)</span>
+                    <span className="text-sm font-medium text-ink-700">{tc('onlineService')}</span>
                   </label>
                   {editEstEnLigne && (
                     <div>
-                      <label className="block text-sm font-medium text-ink-700 mb-1.5">Lien YouTube ou Zoom</label>
+                      <label className="block text-sm font-medium text-ink-700 mb-1.5">{t('zoomLink')}</label>
                       <div className="relative">
                         <Video className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
                         <input
                           type="url"
                           value={editLienZoom}
                           onChange={(e) => setEditLienZoom(e.target.value)}
-                          placeholder="https://youtube.com/live/... ou https://zoom.us/j/..."
+                          placeholder={t('zoomPlaceholder')}
                           className="w-full rounded-xl border border-forest-900/10 bg-cream-50 py-2.5 pl-10 pr-4 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                         />
                       </div>
@@ -566,14 +571,14 @@ function GestionEvenementsContent() {
                 onClick={() => setEditItem(null)}
                 className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
               >
-                Annuler
+                {tc('cancel')}
               </button>
               <button
                 onClick={handleEditSave}
                 disabled={updateMutation.isPending}
                 className="rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg disabled:opacity-50"
               >
-                {updateMutation.isPending ? 'Enregistrement...' : 'Enregistrer'}
+                {updateMutation.isPending ? tc('saving') : tc('save')}
               </button>
             </div>
           </div>
@@ -596,22 +601,22 @@ function GestionEvenementsContent() {
               className="mb-4 text-lg font-semibold text-ink-900"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
-              Nouvel evenement
+              {t('newEvent')}
             </h3>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Titre</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{tc('title')}</label>
                 <input
                   type="text"
                   value={createTitre}
                   onChange={(e) => setCreateTitre(e.target.value)}
-                  placeholder="Titre de l'evenement"
+                  placeholder={t('titlePlaceholder')}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Type</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{t('type')}</label>
                 <CustomSelect
                   value={createType}
                   onChange={(value) => setCreateType(value as EventType)}
@@ -620,7 +625,7 @@ function GestionEvenementsContent() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-ink-700 mb-1.5">
-                  Date et heure <span className="text-red-500">*</span>
+                  {t('dateTime')} <span className="text-red-500">*</span>
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <input
@@ -639,33 +644,33 @@ function GestionEvenementsContent() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Lieu</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{t('location')}</label>
                 <input
                   type="text"
                   value={createLieu}
                   onChange={(e) => setCreateLieu(e.target.value)}
-                  placeholder="Lieu de l'evenement"
+                  placeholder={t('locationPlaceholder')}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Nombre de places (optionnel)</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{t('maxParticipants')}</label>
                 <input
                   type="number"
                   min="1"
                   value={createMaxParticipants}
                   onChange={(e) => setCreateMaxParticipants(e.target.value)}
-                  placeholder="Illimite si vide"
+                  placeholder={t('unlimitedIfEmpty')}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Description</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{tc('description')}</label>
                 <textarea
                   value={createDescription}
                   onChange={(e) => setCreateDescription(e.target.value)}
                   rows={5}
-                  placeholder="Description de l'evenement"
+                  placeholder={t('descriptionPlaceholder')}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
@@ -680,18 +685,18 @@ function GestionEvenementsContent() {
                       onChange={(e) => setCreateEstEnLigne(e.target.checked)}
                       className="h-4 w-4 rounded accent-forest-700"
                     />
-                    <span className="text-sm font-medium text-ink-700">Culte en ligne (YouTube / Zoom)</span>
+                    <span className="text-sm font-medium text-ink-700">{tc('onlineService')}</span>
                   </label>
                   {createEstEnLigne && (
                     <div>
-                      <label className="block text-sm font-medium text-ink-700 mb-1.5">Lien YouTube ou Zoom</label>
+                      <label className="block text-sm font-medium text-ink-700 mb-1.5">{t('zoomLink')}</label>
                       <div className="relative">
                         <Video className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
                         <input
                           type="url"
                           value={createLienZoom}
                           onChange={(e) => setCreateLienZoom(e.target.value)}
-                          placeholder="https://youtube.com/live/... ou https://zoom.us/j/..."
+                          placeholder={t('zoomPlaceholder')}
                           className="w-full rounded-xl border border-forest-900/10 bg-cream-50 py-2.5 pl-10 pr-4 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                         />
                       </div>
@@ -706,14 +711,14 @@ function GestionEvenementsContent() {
                 onClick={() => setShowCreateModal(false)}
                 className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
               >
-                Annuler
+                {tc('cancel')}
               </button>
               <button
                 onClick={handleCreateSubmit}
                 disabled={createMutation.isPending}
                 className="rounded-xl bg-gradient-to-r from-terra-600 to-orange-400 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg disabled:opacity-50"
               >
-                {createMutation.isPending ? 'Creation...' : 'Creer'}
+                {createMutation.isPending ? tc('creating') : tc('create')}
               </button>
             </div>
           </div>
@@ -723,10 +728,10 @@ function GestionEvenementsContent() {
       {/* Delete Confirm Dialog */}
       <ConfirmDialog
         open={!!deleteItem}
-        title="Supprimer cet evenement ?"
-        message={`Etes-vous sur de vouloir supprimer "${deleteItem?.titre ?? ''}" ? Cette action est irreversible.`}
-        confirmLabel="Supprimer"
-        cancelLabel="Annuler"
+        title={t('deleteEvent')}
+        message={t('deleteEventConfirm', { title: deleteItem?.titre ?? '' })}
+        confirmLabel={tc('delete')}
+        cancelLabel={tc('cancel')}
         variant="danger"
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteItem(null)}

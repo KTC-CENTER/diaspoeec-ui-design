@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { Radio, Video } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { formatRelativeTime } from '@/lib/utils/format';
 import type { Video as VideoType } from '@/types';
 
@@ -11,6 +12,7 @@ interface LiveBannerProps {
 
 export function LiveBanner({ video }: LiveBannerProps) {
   const router = useRouter();
+  const t = useTranslations('cultes');
   const startedAgo = formatRelativeTime(video.publishedAt);
 
   return (
@@ -71,7 +73,7 @@ export function LiveBanner({ video }: LiveBannerProps) {
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-terra-600 px-8 py-3 font-semibold text-white shadow-lg shadow-red-600/30 transition-all duration-300 hover:from-red-700 hover:to-terra-600/90 hover:shadow-red-600/40 sm:w-auto"
         >
           <Radio className="h-5 w-5" />
-          Rejoindre le culte en direct
+          {t('joinLive')}
         </button>
       </div>
     </div>

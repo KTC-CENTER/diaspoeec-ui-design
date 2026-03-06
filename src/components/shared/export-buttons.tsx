@@ -13,7 +13,7 @@ export function ExportButtons({ onExportCSV, onExportExcel, className }: ExportB
       <button
         onClick={onExportCSV}
         className="inline-flex items-center gap-1.5 rounded-lg border border-ink-200 bg-white px-3 py-1.5 text-xs font-medium text-ink-600 transition-all hover:border-ink-300 hover:bg-ink-100/50 hover:text-ink-800"
-        aria-label="Exporter en CSV"
+        aria-label="Export CSV"
       >
         <Download className="h-3.5 w-3.5" />
         CSV
@@ -21,7 +21,7 @@ export function ExportButtons({ onExportCSV, onExportExcel, className }: ExportB
       <button
         onClick={onExportExcel}
         className="inline-flex items-center gap-1.5 rounded-lg border border-ink-200 bg-white px-3 py-1.5 text-xs font-medium text-ink-600 transition-all hover:border-forest-700/30 hover:bg-forest-900/5 hover:text-forest-700"
-        aria-label="Exporter en Excel"
+        aria-label="Export Excel"
       >
         <FileSpreadsheet className="h-3.5 w-3.5" />
         Excel

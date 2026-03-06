@@ -14,6 +14,7 @@ import {
   Facebook, Youtube, Instagram, Twitter, Mail, Phone,
 } from 'lucide-react';
 import { CustomSelect } from '@/components/forms/custom-select';
+import { useTranslations } from 'next-intl';
 
 /* ─────────────────────── HELPERS ─────────────────────── */
 
@@ -117,92 +118,34 @@ function Reveal({ children, className = '', direction = 'up', delay = 0 }: {
 
 /* ─────────────────────── FEATURES DATA ─────────────────────── */
 
-const features = [
-  {
-    icon: BookHeart,
-    title: 'Méditations quotidiennes',
-    desc: "Commencez chaque journée avec une méditation inspirée de la Parole. Lectures bibliques, prières guidées et réflexions spirituelles.",
-    bgClass: 'bg-sage-200',
-    bgStyle: undefined as React.CSSProperties | undefined,
-    iconColor: 'text-forest-900',
-  },
-  {
-    icon: CalendarHeart,
-    title: 'Événements & Cultes',
-    desc: "Retrouvez tous les événements de votre paroisse et de la communauté mondiale. Inscriptions, rappels et partage en un clic.",
-    bgClass: 'bg-gold-200',
-    bgStyle: undefined as React.CSSProperties | undefined,
-    iconColor: 'text-gold-600',
-  },
-  {
-    icon: HandHeart,
-    title: 'Dons en ligne',
-    desc: "Soutenez les projets de l'église par des dons sécurisés. Dîme, offrandes et contributions aux campagnes spéciales.",
-    bgClass: '',
-    bgStyle: { background: 'rgba(193,120,23,0.12)' } as React.CSSProperties,
-    iconColor: 'text-terra-600',
-  },
-  {
-    icon: ScrollText,
-    title: 'Guide Biblique',
-    desc: "Explorez la Bible avec des plans de lecture personnalisés, des commentaires pastoraux et des groupes d'étude.",
-    bgClass: 'bg-sage-200',
-    bgStyle: undefined as React.CSSProperties | undefined,
-    iconColor: 'text-forest-900',
-  },
-  {
-    icon: Radio,
-    title: 'Cultes en Direct',
-    desc: "Suivez les cultes en direct depuis n'importe où dans le monde. Replays disponibles et notifications avant chaque diffusion.",
-    bgClass: 'bg-gold-200',
-    bgStyle: undefined as React.CSSProperties | undefined,
-    iconColor: 'text-gold-600',
-  },
-  {
-    icon: UsersRound,
-    title: 'Communauté',
-    desc: "Échangez avec des fidèles du monde entier. Groupes de prière, forums de discussion et entraide entre frères et sœurs.",
-    bgClass: '',
-    bgStyle: { background: 'rgba(193,120,23,0.12)' } as React.CSSProperties,
-    iconColor: 'text-terra-600',
-  },
+const featuresMeta = [
+  { icon: BookHeart, key: 'featureDailyMeditations', descKey: 'featureDailyMeditationsDesc', bgClass: 'bg-sage-200', bgStyle: undefined as React.CSSProperties | undefined, iconColor: 'text-forest-900' },
+  { icon: CalendarHeart, key: 'featureEventsCultes', descKey: 'featureEventsCultesDesc', bgClass: 'bg-gold-200', bgStyle: undefined as React.CSSProperties | undefined, iconColor: 'text-gold-600' },
+  { icon: HandHeart, key: 'featureOnlineDonations', descKey: 'featureOnlineDonationsDesc', bgClass: '', bgStyle: { background: 'rgba(193,120,23,0.12)' } as React.CSSProperties, iconColor: 'text-terra-600' },
+  { icon: ScrollText, key: 'featureBibleGuide', descKey: 'featureBibleGuideDesc', bgClass: 'bg-sage-200', bgStyle: undefined as React.CSSProperties | undefined, iconColor: 'text-forest-900' },
+  { icon: Radio, key: 'featureLiveServices', descKey: 'featureLiveServicesDesc', bgClass: 'bg-gold-200', bgStyle: undefined as React.CSSProperties | undefined, iconColor: 'text-gold-600' },
+  { icon: UsersRound, key: 'featureCommunity', descKey: 'featureCommunityDesc', bgClass: '', bgStyle: { background: 'rgba(193,120,23,0.12)' } as React.CSSProperties, iconColor: 'text-terra-600' },
 ];
 
-const donors = [
-  { initials: 'MN', name: 'Marie Ngo Nyemb', location: 'Paris, France', time: 'il y a 2h', amount: '50 €', gradient: 'from-forest-900 to-forest-700' },
-  { initials: 'JT', name: 'Jean Tagne', location: 'Montréal, Canada', time: 'il y a 5h', amount: '100 €', gradient: 'from-gold-600 to-gold-400' },
-  { initials: 'AF', name: 'Amélie Fotso', location: 'Berlin, Allemagne', time: 'il y a 8h', amount: '25 €', gradient: 'from-terra-600 to-gold-600' },
-  { initials: 'PE', name: 'Paul Essomba', location: 'Bruxelles, Belgique', time: 'il y a 12h', amount: '75 €', gradient: 'from-forest-900 to-forest-700' },
+const donorsMeta = [
+  { initials: 'MN', name: 'Marie Ngo Nyemb', location: 'Paris, France', timeKey: 'donor1Time', amount: '50 €', gradient: 'from-forest-900 to-forest-700' },
+  { initials: 'JT', name: 'Jean Tagne', location: 'Montréal, Canada', timeKey: 'donor2Time', amount: '100 €', gradient: 'from-gold-600 to-gold-400' },
+  { initials: 'AF', name: 'Amélie Fotso', location: 'Berlin, Allemagne', timeKey: 'donor3Time', amount: '25 €', gradient: 'from-terra-600 to-gold-600' },
+  { initials: 'PE', name: 'Paul Essomba', location: 'Bruxelles, Belgique', timeKey: 'donor4Time', amount: '75 €', gradient: 'from-forest-900 to-forest-700' },
 ];
 
-const testimonials = [
-  {
-    text: "Depuis que j'utilise DiaspoEEC, je me sens connectée à ma paroisse de Douala comme si j'y étais encore. Les cultes en direct et les méditations quotidiennes nourrissent ma foi chaque jour.",
-    name: 'Grace Ekambi',
-    city: 'Lyon, France',
-    initials: 'GE',
-    gradient: 'from-forest-900 to-forest-700',
-  },
-  {
-    text: "La fonctionnalité de dons en ligne a transformé notre façon de contribuer. Je peux soutenir les projets de mon église au Cameroun directement depuis mon téléphone, en toute sécurité.",
-    name: 'Samuel Mbarga',
-    city: 'Toronto, Canada',
-    initials: 'SM',
-    gradient: 'from-gold-600 to-gold-400',
-  },
-  {
-    text: "Les groupes de prière en ligne ont été une bénédiction extraordinaire. Malgré la distance, je prie chaque semaine avec mes frères et sœurs du Cameroun, d'Europe et d'Amérique.",
-    name: 'Ruth Nkondock',
-    city: 'Zurich, Suisse',
-    initials: 'RN',
-    gradient: 'from-terra-600 to-gold-600',
-  },
+const testimonialsMeta = [
+  { textKey: 'testimonial1Text', name: 'Grace Ekambi', city: 'Lyon, France', initials: 'GE', gradient: 'from-forest-900 to-forest-700' },
+  { textKey: 'testimonial2Text', name: 'Samuel Mbarga', city: 'Toronto, Canada', initials: 'SM', gradient: 'from-gold-600 to-gold-400' },
+  { textKey: 'testimonial3Text', name: 'Ruth Nkondock', city: 'Zurich, Suisse', initials: 'RN', gradient: 'from-terra-600 to-gold-600' },
 ];
 
 /* ─────────────────────── MAIN COMPONENT ─────────────────────── */
 
 export default function LandingPage() {
   const router = useRouter();
+  const t = useTranslations('landing');
+  const tc = useTranslations('common');
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const hasHydrated = useAuthStore((s) => s._hasHydrated);
   const [scrolled, setScrolled] = useState(false);
@@ -232,11 +175,11 @@ export default function LandingPage() {
   }, []);
 
   const navLinks = [
-    { href: '#accueil', label: 'Accueil' },
-    { href: '#apropos', label: 'À propos' },
-    { href: '#fonctionnalites', label: 'Fonctionnalités' },
-    { href: '#dons', label: 'Dons' },
-    { href: '#contact', label: 'Contact' },
+    { href: '#accueil', label: t('home') },
+    { href: '#apropos', label: t('about') },
+    { href: '#fonctionnalites', label: t('features') },
+    { href: '#dons', label: t('donations') },
+    { href: '#contact', label: t('contact') },
   ];
 
   const getConvertedAmount = (base: number) => Math.round(base * rates[currency]);
@@ -278,11 +221,11 @@ export default function LandingPage() {
             <div className="hidden lg:block">
               <Link href="/login" className="inline-flex items-center gap-2 bg-forest-900 text-white px-6 py-3 rounded-2xl font-semibold text-sm shadow-lg hover:-translate-y-0.5 hover:shadow-xl transition-all duration-300" style={{ boxShadow: '0 4px 14px rgba(27,67,50,0.2)' }}>
                 <LogIn className="w-4 h-4" />
-                Rejoindre la communauté
+                {t('joinCommunity')}
               </Link>
             </div>
 
-            <button onClick={() => setMobileMenuOpen(true)} className="lg:hidden w-11 h-11 flex items-center justify-center rounded-xl hover:bg-sage-200 transition-colors" aria-label="Menu">
+            <button onClick={() => setMobileMenuOpen(true)} className="lg:hidden w-11 h-11 flex items-center justify-center rounded-xl hover:bg-sage-200 transition-colors" aria-label={tc('openMenu')}>
               <Menu className="w-6 h-6 text-forest-900" />
             </button>
           </div>
@@ -296,7 +239,7 @@ export default function LandingPage() {
           style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
         >
           <div className="flex justify-end mb-10">
-            <button onClick={() => setMobileMenuOpen(false)} className="w-11 h-11 flex items-center justify-center rounded-xl hover:bg-sage-200 transition-colors" aria-label="Fermer">
+            <button onClick={() => setMobileMenuOpen(false)} className="w-11 h-11 flex items-center justify-center rounded-xl hover:bg-sage-200 transition-colors" aria-label={tc('close')}>
               <X className="w-6 h-6 text-forest-900" />
             </button>
           </div>
@@ -309,7 +252,7 @@ export default function LandingPage() {
             <hr className="border-sage-400/50 my-2" />
             <Link href="/login" className="inline-flex items-center justify-center gap-2 bg-forest-900 text-white px-6 py-3.5 rounded-2xl font-semibold shadow-lg" onClick={() => setMobileMenuOpen(false)}>
               <LogIn className="w-4 h-4" />
-              Rejoindre la communauté
+              {t('joinCommunity')}
             </Link>
           </div>
         </div>
@@ -329,52 +272,51 @@ export default function LandingPage() {
           <div className="text-center max-w-4xl mx-auto">
             <motion.div initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="inline-flex items-center gap-2 bg-white/70 backdrop-blur-sm px-5 py-2.5 rounded-full mb-8 shadow-sm">
               <span className="w-2 h-2 bg-gold-600 rounded-full animate-pulse" />
-              <span className="text-sm font-medium text-ink-600">Église Évangélique du Cameroun — Diaspora</span>
+              <span className="text-sm font-medium text-ink-600">{t('heroBadge')}</span>
             </motion.div>
 
             <motion.h1 initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }} className="font-[var(--font-heading)] text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-forest-900 leading-tight mb-6">
-              Ensemble, où que{' '}
+              {t('heroTitleStart')}{' '}
               <span className="relative inline-block">
-                <span className="relative z-10">nous soyons</span>
+                <span className="relative z-10">{t('heroTitleHighlight')}</span>
                 <GoldUnderlineSvg />
               </span>
             </motion.h1>
 
             <motion.p initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }} className="text-lg sm:text-xl text-ink-600 leading-relaxed max-w-2xl mx-auto mb-10">
-              Rejoignez la première plateforme qui connecte les fidèles de l&apos;EEC à travers le monde.
-              Prières, cultes en direct, dons et entraide — vivez votre foi en communauté, sans frontières.
+              {t('heroDescription')}
             </motion.p>
 
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.6 }} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
               <Link href="/register" className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-forest-900 text-white px-8 py-4 rounded-2xl font-semibold text-lg shadow-xl hover:-translate-y-0.5 hover:shadow-2xl transition-all duration-300" style={{ boxShadow: '0 8px 30px rgba(27,67,50,0.2)' }}>
                 <Users className="w-5 h-5" />
-                Rejoindre la communauté
+                {t('joinCommunity')}
               </Link>
               <a href="#dons" className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-gold-600 text-white px-8 py-4 rounded-2xl font-semibold text-lg shadow-xl hover:-translate-y-0.5 hover:shadow-2xl transition-all duration-300" style={{ boxShadow: '0 8px 30px rgba(212,160,23,0.25)' }}>
                 <Heart className="w-5 h-5" />
-                Faire un don
+                {t('makeDonation')}
               </a>
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.8 }} className="grid grid-cols-3 gap-4 sm:gap-8 max-w-xl mx-auto">
               <div className="text-center">
                 <div className="font-[var(--font-heading)] text-3xl sm:text-4xl font-bold text-forest-900 mb-1">100 000+</div>
-                <div className="text-sm text-ink-600 font-medium">Fidèles</div>
+                <div className="text-sm text-ink-600 font-medium">{t('statMembers')}</div>
               </div>
               <div className="text-center border-x border-sage-400/50">
                 <div className="font-[var(--font-heading)] text-3xl sm:text-4xl font-bold text-forest-900 mb-1">45+</div>
-                <div className="text-sm text-ink-600 font-medium">Pays</div>
+                <div className="text-sm text-ink-600 font-medium">{t('statCountries')}</div>
               </div>
               <div className="text-center">
                 <div className="font-[var(--font-heading)] text-3xl sm:text-4xl font-bold text-forest-900 mb-1">500+</div>
-                <div className="text-sm text-ink-600 font-medium">Événements</div>
+                <div className="text-sm text-ink-600 font-medium">{t('statEvents')}</div>
               </div>
             </motion.div>
           </div>
         </div>
 
         <motion.div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-60" animate={{ y: [0, -8, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}>
-          <span className="text-xs font-medium text-ink-600 tracking-widest uppercase">Découvrir</span>
+          <span className="text-xs font-medium text-ink-600 tracking-widest uppercase">{t('discover')}</span>
           <ChevronDown className="w-5 h-5 text-forest-900" />
         </motion.div>
       </section>
@@ -385,26 +327,23 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <Reveal direction="left">
-              <span className="inline-block text-sm font-semibold text-gold-600 uppercase tracking-widest mb-4">Notre Mission</span>
+              <span className="inline-block text-sm font-semibold text-gold-600 uppercase tracking-widest mb-4">{t('ourMission')}</span>
               <h2 className="font-[var(--font-heading)] text-4xl lg:text-5xl font-bold text-forest-900 leading-tight mb-6">
-                Une foi vivante,<br />une communauté unie
+                {t('aboutTitle')}
               </h2>
               <p className="text-lg text-ink-600 leading-relaxed mb-6">
-                L&apos;Église Évangélique du Cameroun rassemble des fidèles sur tous les continents.
-                DiaspoEEC est née d&apos;un rêve simple : que chaque membre, peu importe où il se trouve,
-                puisse vivre sa foi, contribuer et rester connecté à sa communauté d&apos;origine.
+                {t('aboutDesc1')}
               </p>
               <p className="text-lg text-ink-600 leading-relaxed mb-8">
-                De Douala à Paris, de Yaoundé à Montréal, de Bafoussam à Berlin —
-                nous sommes une seule famille dans le Christ.
+                {t('aboutDesc2')}
               </p>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-sage-200 flex items-center justify-center flex-shrink-0">
                   <BookOpen className="w-6 h-6 text-forest-900" />
                 </div>
                 <p className="italic text-ink-600 font-[var(--font-heading)] text-lg">
-                  « Car là où deux ou trois sont assemblés en mon nom, je suis au milieu d&apos;eux. »
-                  <span className="block text-sm not-italic text-ink-400 mt-1">Matthieu 18:20</span>
+                  {t('aboutBibleQuote')}
+                  <span className="block text-sm not-italic text-ink-400 mt-1">{t('aboutBibleRef')}</span>
                 </p>
               </div>
             </Reveal>
@@ -414,10 +353,10 @@ export default function LandingPage() {
                 <div className="bg-white rounded-[2rem] p-8 shadow-xl" style={{ ...kentePatternStyle, boxShadow: '0 20px 60px rgba(27,67,50,0.05)' }}>
                   <div className="grid grid-cols-2 gap-4">
                     {[
-                      { icon: Globe, value: '45+', label: 'Pays représentés', bg: 'bg-sage-200', iconBg: 'bg-forest-900' },
-                      { icon: Church, value: '120+', label: 'Paroisses connectées', bg: 'bg-gold-200', iconBg: 'bg-gold-600' },
-                      { icon: HandHeart, value: '2M+', label: 'Euros collectés', bg: 'bg-gold-200', iconBg: 'bg-terra-600' },
-                      { icon: Video, value: '800+', label: 'Cultes diffusés', bg: 'bg-sage-200', iconBg: 'bg-forest-700' },
+                      { icon: Globe, value: '45+', label: t('statCountriesRepresented'), bg: 'bg-sage-200', iconBg: 'bg-forest-900' },
+                      { icon: Church, value: '120+', label: t('statParishesConnected'), bg: 'bg-gold-200', iconBg: 'bg-gold-600' },
+                      { icon: HandHeart, value: '2M+', label: t('statEurosCollected'), bg: 'bg-gold-200', iconBg: 'bg-terra-600' },
+                      { icon: Video, value: '800+', label: t('statServicesBroadcast'), bg: 'bg-sage-200', iconBg: 'bg-forest-700' },
                     ].map((stat) => (
                       <div key={stat.label} className={`${stat.bg} rounded-3xl p-6 text-center`}>
                         <div className={`w-14 h-14 ${stat.iconBg} rounded-2xl flex items-center justify-center mx-auto mb-3`}>
@@ -442,18 +381,18 @@ export default function LandingPage() {
         <PatternDivider />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Reveal className="text-center max-w-2xl mx-auto mb-16">
-            <span className="inline-block text-sm font-semibold text-gold-600 uppercase tracking-widest mb-4">Fonctionnalités</span>
+            <span className="inline-block text-sm font-semibold text-gold-600 uppercase tracking-widest mb-4">{t('features')}</span>
             <h2 className="font-[var(--font-heading)] text-4xl lg:text-5xl font-bold text-forest-900 leading-tight mb-6">
-              Tout pour vivre votre foi<br />au quotidien
+              {t('featuresTitle')}
             </h2>
             <p className="text-lg text-ink-600">
-              Une plateforme complète, conçue avec amour pour les besoins de notre communauté.
+              {t('featuresSubtitle')}
             </p>
           </Reveal>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {features.map((feature, i) => (
-              <Reveal key={feature.title} delay={i * 0.1}>
+            {featuresMeta.map((feature, i) => (
+              <Reveal key={feature.key} delay={i * 0.1}>
                 <div
                   className="bg-white rounded-[2rem] p-8 shadow-md border border-sage-200/50 group cursor-default"
                   style={{ transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)', boxShadow: '0 4px 6px rgba(27,67,50,0.05)' }}
@@ -466,8 +405,8 @@ export default function LandingPage() {
                   >
                     <feature.icon className={`w-8 h-8 ${feature.iconColor} transition-colors duration-500`} />
                   </div>
-                  <h3 className="font-[var(--font-heading)] text-xl font-bold text-forest-900 mb-3">{feature.title}</h3>
-                  <p className="text-ink-600 leading-relaxed">{feature.desc}</p>
+                  <h3 className="font-[var(--font-heading)] text-xl font-bold text-forest-900 mb-3">{t(feature.key)}</h3>
+                  <p className="text-ink-600 leading-relaxed">{t(feature.descKey)}</p>
                 </div>
               </Reveal>
             ))}
@@ -482,12 +421,12 @@ export default function LandingPage() {
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Reveal className="text-center max-w-2xl mx-auto mb-16">
-            <span className="inline-block text-sm font-semibold text-gold-600 uppercase tracking-widest mb-4">Soutenir l&apos;œuvre</span>
+            <span className="inline-block text-sm font-semibold text-gold-600 uppercase tracking-widest mb-4">{t('supportTheWork')}</span>
             <h2 className="font-[var(--font-heading)] text-4xl lg:text-5xl font-bold text-forest-900 leading-tight mb-6">
-              Votre générosité<br />construit l&apos;avenir
+              {t('donationTitle')}
             </h2>
             <p className="text-lg text-ink-600">
-              Chaque don, petit ou grand, contribue à bâtir une communauté plus forte et plus unie.
+              {t('donationSubtitle')}
             </p>
           </Reveal>
 
@@ -501,13 +440,13 @@ export default function LandingPage() {
                       <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                         <Building2 className="w-5 h-5 text-white" />
                       </div>
-                      <span className="text-sage-400 text-sm font-semibold uppercase tracking-wider">Campagne en cours</span>
+                      <span className="text-sage-400 text-sm font-semibold uppercase tracking-wider">{t('currentCampaign')}</span>
                     </div>
                     <h3 className="font-[var(--font-heading)] text-2xl sm:text-3xl font-bold text-white mb-2">
-                      Construction du Centre Communautaire
+                      {t('campaignTitle')}
                     </h3>
                     <p className="text-sage-400/80 text-sm">
-                      Un lieu de rassemblement pour toute la diaspora EEC en région parisienne.
+                      {t('campaignDescription')}
                     </p>
                   </div>
                 </div>
@@ -533,17 +472,17 @@ export default function LandingPage() {
                       />
                     </div>
                     <div className="flex justify-between mt-2">
-                      <span className="text-xs text-ink-400">342 donateurs</span>
-                      <span className="text-xs text-ink-400">28 000 € restants</span>
+                      <span className="text-xs text-ink-400">{t('donorsCount')}</span>
+                      <span className="text-xs text-ink-400">{t('remainingAmount')}</span>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-center gap-4 mb-8">
                     <button onClick={() => setDonationType('ponctuel')} className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all ${donationType === 'ponctuel' ? 'bg-forest-900 text-white shadow-md' : 'bg-sage-200 text-forest-900 hover:bg-sage-300'}`}>
-                      Don ponctuel
+                      {t('oneTimeDonation')}
                     </button>
                     <button onClick={() => setDonationType('mensuel')} className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all ${donationType === 'mensuel' ? 'bg-forest-900 text-white shadow-md' : 'bg-sage-200 text-forest-900 hover:bg-sage-300'}`}>
-                      Don mensuel
+                      {t('monthlyDonation')}
                     </button>
                   </div>
 
@@ -570,7 +509,7 @@ export default function LandingPage() {
                         type="number"
                         value={customAmount}
                         onChange={(e) => setCustomAmount(e.target.value)}
-                        placeholder="Autre montant"
+                        placeholder={t('otherAmount')}
                         className="w-full border-2 border-sage-400 rounded-2xl px-5 py-3.5 text-forest-900 font-semibold placeholder:text-ink-400 focus:border-forest-900 focus:ring-4 focus:ring-forest-900/10 outline-none transition-all"
                       />
                     </div>
@@ -589,13 +528,13 @@ export default function LandingPage() {
                   <button className="w-full bg-gold-600 text-white py-4 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-3 hover:-translate-y-0.5 transition-all duration-300" style={{ boxShadow: '0 8px 30px rgba(212,160,23,0.25)' }}>
                     <Heart className="w-5 h-5" />
                     {currency === 'XAF'
-                      ? `Faire un don de ${displayAmount.toLocaleString('fr-FR')} FCFA`
-                      : `Faire un don de ${displayAmount} ${displaySymbol}`}
+                      ? t('donateAmountCFA', { amount: displayAmount.toLocaleString('fr-FR') })
+                      : t('donateAmount', { amount: displayAmount, symbol: displaySymbol })}
                   </button>
 
                   <p className="text-center text-xs text-ink-400 mt-4 flex items-center justify-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5" />
-                    Paiement 100% sécurisé • Reçu fiscal disponible
+                    {t('securePayment')}
                   </p>
                 </div>
               </div>
@@ -605,17 +544,17 @@ export default function LandingPage() {
               <div className="bg-white rounded-[2rem] shadow-lg p-8 border border-sage-200/30 mb-6" style={{ boxShadow: '0 10px 40px rgba(27,67,50,0.05)' }}>
                 <h4 className="font-[var(--font-heading)] text-lg font-bold text-forest-900 mb-6 flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-gold-600" />
-                  Derniers donateurs
+                  {t('latestDonors')}
                 </h4>
                 <div className="space-y-5">
-                  {donors.map((donor) => (
+                  {donorsMeta.map((donor) => (
                     <div key={donor.initials} className="flex items-center gap-4">
                       <div className={`bg-gradient-to-br ${donor.gradient} w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0`}>
                         {donor.initials}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-ink-900 text-sm">{donor.name}</div>
-                        <div className="text-xs text-ink-400">{donor.location} • {donor.time}</div>
+                        <div className="text-xs text-ink-400">{donor.location} • {t(donor.timeKey)}</div>
                       </div>
                       <span className="font-bold text-forest-900 text-sm bg-sage-200 px-3 py-1 rounded-full">{donor.amount}</span>
                     </div>
@@ -630,9 +569,9 @@ export default function LandingPage() {
                     <Quote className="w-6 h-6 text-gold-400" />
                   </div>
                   <p className="font-[var(--font-heading)] text-lg italic leading-relaxed mb-4 text-white/90">
-                    « Celui qui sème abondamment moissonnera aussi abondamment. »
+                    {t('donationBibleQuote')}
                   </p>
-                  <p className="text-sm text-sage-400">2 Corinthiens 9:6</p>
+                  <p className="text-sm text-sage-400">{t('donationBibleRef')}</p>
                 </div>
               </div>
             </Reveal>
@@ -645,15 +584,15 @@ export default function LandingPage() {
         <PatternDivider />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Reveal className="text-center max-w-2xl mx-auto mb-16">
-            <span className="inline-block text-sm font-semibold text-gold-600 uppercase tracking-widest mb-4">Témoignages</span>
+            <span className="inline-block text-sm font-semibold text-gold-600 uppercase tracking-widest mb-4">{t('testimonials')}</span>
             <h2 className="font-[var(--font-heading)] text-4xl lg:text-5xl font-bold text-forest-900 leading-tight mb-6">
-              Ils vivent leur foi<br />avec DiaspoEEC
+              {t('testimonialsTitle')}
             </h2>
           </Reveal>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((t, i) => (
-              <Reveal key={t.name} delay={i * 0.1}>
+            {testimonialsMeta.map((tm, i) => (
+              <Reveal key={tm.name} delay={i * 0.1}>
                 <div
                   className="bg-white rounded-[2rem] p-8 shadow-lg border border-sage-200/30 relative cursor-default"
                   style={{ transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)', boxShadow: '0 10px 40px rgba(27,67,50,0.05)' }}
@@ -661,16 +600,16 @@ export default function LandingPage() {
                   onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 10px 40px rgba(27,67,50,0.05)'; e.currentTarget.style.transform = 'translateY(0)'; }}
                 >
                   <div className="absolute top-4 right-6 font-[var(--font-heading)] text-[5rem] leading-none text-gold-600 opacity-30">&ldquo;</div>
-                  <p className="text-ink-600 leading-relaxed mb-8 relative z-10">{t.text}</p>
+                  <p className="text-ink-600 leading-relaxed mb-8 relative z-10">{t(tm.textKey)}</p>
                   <div className="flex items-center gap-4">
-                    <div className={`bg-gradient-to-br ${t.gradient} w-12 h-12 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0`}>
-                      {t.initials}
+                    <div className={`bg-gradient-to-br ${tm.gradient} w-12 h-12 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0`}>
+                      {tm.initials}
                     </div>
                     <div>
-                      <div className="font-semibold text-ink-900">{t.name}</div>
+                      <div className="font-semibold text-ink-900">{tm.name}</div>
                       <div className="text-sm text-ink-400 flex items-center gap-1">
                         <MapPin className="w-3.5 h-3.5" />
-                        {t.city}
+                        {tm.city}
                       </div>
                     </div>
                   </div>
@@ -697,12 +636,11 @@ export default function LandingPage() {
             </motion.div>
 
             <h2 className="font-[var(--font-heading)] text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight mb-6">
-              Téléchargez l&apos;application<br />
+              {t('downloadAppTitle')}<br />
               <span className="text-gold-400">DiaspoEEC</span>
             </h2>
             <p className="text-xl text-sage-400/90 max-w-2xl mx-auto mb-12 leading-relaxed">
-              Emportez votre communauté partout avec vous. Méditations, cultes en direct,
-              dons et bien plus — le tout dans votre poche.
+              {t('downloadAppDesc')}
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
@@ -711,7 +649,7 @@ export default function LandingPage() {
                   <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
                 </svg>
                 <div className="text-left">
-                  <div className="text-xs text-white/70">Télécharger sur</div>
+                  <div className="text-xs text-white/70">{t('downloadOn')}</div>
                   <div className="text-white font-semibold text-lg leading-tight">App Store</div>
                 </div>
               </a>
@@ -723,7 +661,7 @@ export default function LandingPage() {
                   <path d="M26.77 14.79 3.72 1.034C2.414.292 1.253.382.55 1.126L20.326 21.45 26.77 14.79Z" fill="#3BAD49"/>
                 </svg>
                 <div className="text-left">
-                  <div className="text-xs text-white/70">Disponible sur</div>
+                  <div className="text-xs text-white/70">{t('availableOn')}</div>
                   <div className="text-white font-semibold text-lg leading-tight">Google Play</div>
                 </div>
               </a>
@@ -732,12 +670,12 @@ export default function LandingPage() {
             <div className="flex items-center justify-center gap-6 text-white/60 text-sm flex-wrap">
               <span className="flex items-center gap-1.5">
                 <Star className="w-4 h-4 text-gold-400 fill-gold-400" />
-                4.8/5 étoiles
+                {t('appRating')}
               </span>
               <span className="w-1 h-1 rounded-full bg-white/30" />
-              <span>10 000+ téléchargements</span>
+              <span>{t('appDownloads')}</span>
               <span className="w-1 h-1 rounded-full bg-white/30" />
-              <span>Gratuit</span>
+              <span>{t('appFree')}</span>
             </div>
           </Reveal>
         </div>
@@ -757,8 +695,7 @@ export default function LandingPage() {
                 </span>
               </Link>
               <p className="text-white/50 leading-relaxed mb-6 text-sm">
-                La plateforme numérique de l&apos;Église Évangélique du Cameroun pour
-                la diaspora. Unis dans la foi, connectés par la technologie.
+                {t('footerDescription')}
               </p>
               <div className="flex gap-3">
                 {[Facebook, Youtube, Instagram, Twitter].map((Icon, i) => (
@@ -770,25 +707,25 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h4 className="font-[var(--font-heading)] text-white font-bold mb-6">Navigation</h4>
+              <h4 className="font-[var(--font-heading)] text-white font-bold mb-6">{t('footerNavigation')}</h4>
               <ul className="space-y-3">
-                {['Accueil', 'À propos', 'Fonctionnalités', 'Faire un don', 'Témoignages'].map((item) => (
+                {[t('home'), t('about'), t('features'), t('makeDonation'), t('testimonials')].map((item) => (
                   <li key={item}><a href="#" className="text-white/50 hover:text-gold-600 transition-colors text-sm">{item}</a></li>
                 ))}
               </ul>
             </div>
 
             <div>
-              <h4 className="font-[var(--font-heading)] text-white font-bold mb-6">Ressources</h4>
+              <h4 className="font-[var(--font-heading)] text-white font-bold mb-6">{t('footerResources')}</h4>
               <ul className="space-y-3">
-                {['Guide Biblique', 'Méditations', 'Cultes en direct', 'Annuaire des paroisses', 'Aide & Support'].map((item) => (
+                {[t('bibleGuide'), t('meditations'), t('liveServices'), t('parishDirectory'), t('helpSupport')].map((item) => (
                   <li key={item}><a href="#" className="text-white/50 hover:text-gold-600 transition-colors text-sm">{item}</a></li>
                 ))}
               </ul>
             </div>
 
             <div>
-              <h4 className="font-[var(--font-heading)] text-white font-bold mb-6">Contact</h4>
+              <h4 className="font-[var(--font-heading)] text-white font-bold mb-6">{t('contact')}</h4>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
                   <Mail className="w-4 h-4 text-gold-600 mt-0.5 flex-shrink-0" />
@@ -800,7 +737,7 @@ export default function LandingPage() {
                 </li>
                 <li className="flex items-start gap-3">
                   <MapPin className="w-4 h-4 text-gold-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-white/50 text-sm">Siège : Douala, Cameroun<br />Bureau Europe : Paris, France</span>
+                  <span className="text-white/50 text-sm">{t('footerHQ')}<br />{t('footerEuropeOffice')}</span>
                 </li>
               </ul>
             </div>
@@ -808,12 +745,12 @@ export default function LandingPage() {
 
           <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-white/40 text-sm">
-              © 2026 Église Évangélique du Cameroun. Tous droits réservés.
+              {t('footerCopyright')}
             </p>
             <div className="flex items-center gap-6">
-              <a href="#" className="text-white/40 hover:text-gold-600 transition-colors text-sm">Politique de confidentialité</a>
-              <a href="#" className="text-white/40 hover:text-gold-600 transition-colors text-sm">Mentions légales</a>
-              <a href="#" className="text-white/40 hover:text-gold-600 transition-colors text-sm">CGU</a>
+              <a href="#" className="text-white/40 hover:text-gold-600 transition-colors text-sm">{t('privacyPolicy')}</a>
+              <a href="#" className="text-white/40 hover:text-gold-600 transition-colors text-sm">{t('legalNotice')}</a>
+              <a href="#" className="text-white/40 hover:text-gold-600 transition-colors text-sm">{t('termsOfUse')}</a>
             </div>
           </div>
         </div>

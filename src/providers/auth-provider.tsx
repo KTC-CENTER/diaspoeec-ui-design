@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { useAuthStore } from '@/stores/auth.store';
 import { getToken, getRefreshToken, setTokens } from '@/lib/api/client';
+import { useLocaleStore, type AppLocale, SUPPORTED_LOCALES } from '@/stores/locale.store';
 import type { User } from '@/types';
 
 interface AuthContextValue {
@@ -73,6 +74,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
           const json = await res.json();
           const userData = json?.data ?? json;
           updateUser(userData);
+          // Sync locale from user preference
+          if (userData.langue && SUPPORTED_LOCALES.includes(userData.langue as AppLocale)) {
+            useLocaleStore.getState().setLocale(userData.langue as AppLocale);
+          }
         } else {
           logout();
         }

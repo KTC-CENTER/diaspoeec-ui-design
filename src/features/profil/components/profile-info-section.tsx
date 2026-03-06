@@ -1,4 +1,5 @@
 import { User, Globe, Church, Mail, Phone, Calendar, UserCircle, CheckCircle, Home, Droplets, PenLine } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 
 interface InfoItem {
@@ -31,6 +32,7 @@ const sectionIconMap: Record<string, typeof User> = {
 };
 
 export function ProfileInfoSection({ title, items, sectionIcon, onEdit }: ProfileInfoSectionProps) {
+  const tc = useTranslations('common');
   const SectionIcon = sectionIcon ? sectionIconMap[sectionIcon] : User;
 
   return (
@@ -49,7 +51,7 @@ export function ProfileInfoSection({ title, items, sectionIcon, onEdit }: Profil
             className="flex items-center gap-1 text-sm font-medium text-forest-700 transition-colors hover:text-forest-900"
           >
             <PenLine className="h-3.5 w-3.5" />
-            Modifier
+            {tc('edit')}
           </button>
         )}
       </div>

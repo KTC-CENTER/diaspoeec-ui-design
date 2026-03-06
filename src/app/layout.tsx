@@ -3,6 +3,7 @@ import { Fraunces, Outfit } from 'next/font/google';
 import { QueryProvider } from '@/providers/query-provider';
 import { AuthProvider } from '@/providers/auth-provider';
 import { CapacitorProvider } from '@/providers/capacitor-provider';
+import { IntlProvider } from '@/providers/intl-provider';
 import './globals.css';
 
 const fraunces = Fraunces({
@@ -78,7 +79,9 @@ export default function RootLayout({
       >
         <QueryProvider>
           <AuthProvider>
-            <CapacitorProvider>{children}</CapacitorProvider>
+            <CapacitorProvider>
+              <IntlProvider>{children}</IntlProvider>
+            </CapacitorProvider>
           </AuthProvider>
         </QueryProvider>
       </body>

@@ -2,6 +2,7 @@
 
 import { Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { useTranslations } from 'next-intl';
 
 interface SearchInputProps {
   placeholder?: string;
@@ -11,11 +12,13 @@ interface SearchInputProps {
 }
 
 export function SearchInput({
-  placeholder = 'Rechercher...',
+  placeholder,
   value,
   onChange,
   className,
 }: SearchInputProps) {
+  const tc = useTranslations('common');
+  const resolvedPlaceholder = placeholder ?? `${tc('search')}...`;
   return (
     <div
       className={cn(
@@ -28,14 +31,14 @@ export function SearchInput({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
+        placeholder={resolvedPlaceholder}
         className="min-w-0 flex-1 bg-transparent text-sm text-ink-900 placeholder:text-ink-400 outline-none"
       />
       {value && (
         <button
           onClick={() => onChange('')}
           className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-ink-400 hover:bg-ink-100 hover:text-ink-600 transition-colors"
-          aria-label="Effacer la recherche"
+          aria-label={tc('clearSearch')}
         >
           <X className="h-3.5 w-3.5" />
         </button>

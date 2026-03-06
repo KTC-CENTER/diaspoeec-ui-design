@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useToastStore } from '@/stores/toast.store';
 
 interface FeedBirthdayProps {
@@ -11,6 +12,7 @@ interface FeedBirthdayProps {
 export function FeedBirthday({ name, age }: FeedBirthdayProps) {
   const [wished, setWished] = useState(false);
   const { addToast } = useToastStore();
+  const t = useTranslations('feed');
   return (
     <article
       className="rounded-2xl overflow-hidden card-hover shadow-sm"
@@ -24,10 +26,10 @@ export function FeedBirthday({ name, age }: FeedBirthdayProps) {
           </div>
           <div className="flex-1">
             <h3 className="text-lg font-bold text-ink-900 mb-0.5">
-              Joyeux anniversaire !
+              {t('happyBirthday')}
             </h3>
             <p className="text-sm text-ink-600">
-              {name} fete ses {age} ans aujourd&apos;hui
+              {t('birthdayMessage', { name, age })}
             </p>
           </div>
         </div>
@@ -36,7 +38,7 @@ export function FeedBirthday({ name, age }: FeedBirthdayProps) {
         <button
           onClick={() => {
             setWished(true);
-            addToast(`Votre voeu d'anniversaire a ete envoye a ${name} !`, 'success');
+            addToast(t('wishSent', { name }), 'success');
           }}
           disabled={wished}
           className={`mt-4 w-full py-2.5 text-sm font-semibold rounded-xl transition-colors shadow-sm ${
@@ -45,7 +47,7 @@ export function FeedBirthday({ name, age }: FeedBirthdayProps) {
               : 'bg-gold-600 text-white hover:bg-terra-600'
           }`}
         >
-          {wished ? 'Voeu envoye !' : 'Lui souhaiter'}
+          {wished ? t('wishSentBtn') : t('sendWish')}
         </button>
       </div>
     </article>

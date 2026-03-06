@@ -1,6 +1,7 @@
 'use client';
 
 import { AlertTriangle, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -17,12 +18,16 @@ export function ConfirmDialog({
   open,
   title,
   message,
-  confirmLabel = 'Confirmer',
-  cancelLabel = 'Annuler',
+  confirmLabel,
+  cancelLabel,
   variant = 'danger',
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const tc = useTranslations('common');
+  const resolvedConfirmLabel = confirmLabel ?? tc('confirm');
+  const resolvedCancelLabel = cancelLabel ?? tc('cancel');
+
   if (!open) return null;
 
   const confirmColors = {
@@ -62,13 +67,13 @@ export function ConfirmDialog({
             onClick={onCancel}
             className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
           >
-            {cancelLabel}
+            {resolvedCancelLabel}
           </button>
           <button
             onClick={onConfirm}
             className={`rounded-xl px-4 py-2.5 text-sm font-medium transition ${confirmColors[variant]}`}
           >
-            {confirmLabel}
+            {resolvedConfirmLabel}
           </button>
         </div>
       </div>

@@ -2,20 +2,11 @@
 
 import { useState } from 'react';
 import { Search } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { useMeditations } from '@/features/meditations/hooks/use-meditations';
 import { MeditationCard } from '@/features/meditations/components/meditation-card';
 import { MeditationFeatured } from '@/features/meditations/components/meditation-featured';
-
-const categories = [
-  { key: 'toutes', label: 'Toutes' },
-  { key: 'foi', label: 'Foi' },
-  { key: 'priere', label: 'Priere' },
-  { key: 'famille', label: 'Famille' },
-  { key: 'esperance', label: 'Esperance' },
-  { key: 'grace', label: 'Grace' },
-  { key: 'perseverance', label: 'Perseverance' },
-];
 
 function CardSkeleton() {
   return (
@@ -31,9 +22,20 @@ function CardSkeleton() {
 }
 
 export default function MeditationsPage() {
+  const t = useTranslations('meditations');
   const [selectedCategorie, setSelectedCategorie] = useState('toutes');
   const [searchQuery, setSearchQuery] = useState('');
   const { data: meditations, isLoading } = useMeditations(selectedCategorie);
+
+  const categories = [
+    { key: 'toutes', label: t('all') },
+    { key: 'foi', label: t('faith') },
+    { key: 'priere', label: t('prayer') },
+    { key: 'famille', label: t('family') },
+    { key: 'esperance', label: t('hope') },
+    { key: 'grace', label: t('grace') },
+    { key: 'perseverance', label: t('perseverance') },
+  ];
 
   const filteredMeditations = meditations?.filter((m) => {
     if (!searchQuery.trim()) return true;
@@ -53,7 +55,7 @@ export default function MeditationsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <h1 className="text-3xl font-bold text-ink-900">
-          Meditations
+          {t('title')}
         </h1>
 
         {/* Search Input */}
@@ -61,7 +63,7 @@ export default function MeditationsPage() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
           <input
             type="text"
-            placeholder="Rechercher une meditation..."
+            placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full md:w-72 pl-10 pr-4 py-2.5 bg-white border border-forest-900/10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-900/20 focus:border-forest-900/30 transition-all"
@@ -119,7 +121,7 @@ export default function MeditationsPage() {
           ) : (
             !featured && (
               <div className="flex flex-col items-center justify-center py-16 text-center">
-                <p className="text-ink-400">Aucune meditation trouvee</p>
+                <p className="text-ink-400">{t('noResults')}</p>
               </div>
             )
           )}

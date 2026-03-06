@@ -13,39 +13,13 @@ import {
   Flag,
   Loader2,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { formatMontant, formatRelativeTime } from '@/lib/utils/format';
 import { DashboardStats } from '@/features/admin/components/dashboard-stats';
 import { BarChart } from '@/features/admin/components/bar-chart';
 import { DiasporaMap } from '@/features/admin/components/diaspora-map';
 import { useAdminStats } from '@/features/admin/hooks/use-admin';
-
-const quickActions = [
-  {
-    label: 'Publier une meditation',
-    icon: BookOpen,
-    href: '/admin/meditations',
-    gradient: 'bg-gradient-to-r from-forest-900 to-forest-700',
-  },
-  {
-    label: 'Creer un evenement',
-    icon: CalendarPlus,
-    href: '/admin/evenements',
-    gradient: 'bg-gradient-to-r from-terra-600 to-orange-400',
-  },
-  {
-    label: 'Lancer une campagne',
-    icon: Megaphone,
-    href: '/admin/dons',
-    gradient: 'bg-gradient-to-r from-gold-600 to-gold-400',
-  },
-  {
-    label: 'Envoyer une notification',
-    icon: BellRing,
-    href: '/admin/parametres',
-    isOutline: true,
-  },
-];
 
 const ACTION_ICON: Record<string, typeof Heart> = {
   inscription: UserPlus,
@@ -64,7 +38,35 @@ const ACTION_STYLE: Record<string, { bg: string; iconColor: string }> = {
 };
 
 export default function AdminDashboardPage() {
+  const t = useTranslations('admin');
   const { data: stats, isLoading } = useAdminStats();
+
+  const quickActions = [
+    {
+      label: t('publishMeditation'),
+      icon: BookOpen,
+      href: '/admin/meditations',
+      gradient: 'bg-gradient-to-r from-forest-900 to-forest-700',
+    },
+    {
+      label: t('createEvent'),
+      icon: CalendarPlus,
+      href: '/admin/evenements',
+      gradient: 'bg-gradient-to-r from-terra-600 to-orange-400',
+    },
+    {
+      label: t('launchCampaign'),
+      icon: Megaphone,
+      href: '/admin/dons',
+      gradient: 'bg-gradient-to-r from-gold-600 to-gold-400',
+    },
+    {
+      label: t('sendNotification'),
+      icon: BellRing,
+      href: '/admin/parametres',
+      isOutline: true,
+    },
+  ];
 
   return (
     <section className="mx-auto max-w-[1400px] p-4 md:p-8">
@@ -74,10 +76,10 @@ export default function AdminDashboardPage() {
           className="text-2xl font-semibold text-forest-900 md:text-3xl"
           style={{ fontFamily: 'var(--font-heading)' }}
         >
-          Tableau de bord
+          {t('dashboard')}
         </h2>
         <p className="mt-1 text-sm text-ink-500">
-          Vue d&apos;ensemble de la communaute DiaspoEEC
+          {t('dashboardDesc')}
         </p>
       </div>
 
@@ -101,7 +103,7 @@ export default function AdminDashboardPage() {
                   ? stats.evolutionMembres.map((e) => ({ label: e.mois, value: e.nombre }))
                   : []
               }
-              title="Evolution des inscriptions"
+              title={t('registrationTrend')}
               color="forest"
             />
             <BarChart
@@ -110,7 +112,7 @@ export default function AdminDashboardPage() {
                   ? stats.donsParCampagne.map((d) => ({ label: d.campagne, value: d.montant }))
                   : []
               }
-              title="Dons par campagne"
+              title={t('donationsByCampaign')}
               color="forest"
               horizontal
             />
@@ -135,7 +137,7 @@ export default function AdminDashboardPage() {
             className="mb-4 text-lg font-semibold text-forest-900"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            Activite recente
+            {t('recentActivity')}
           </h3>
 
           {isLoading ? (
@@ -169,11 +171,11 @@ export default function AdminDashboardPage() {
                       <p className="text-sm text-ink-900">
                         {item.type === 'don' && item.montant ? (
                           <>
-                            Don de{' '}
+                            {t('donationFrom')}{' '}
                             <span className="font-semibold text-gold-600">
                               {formatMontant(item.montant, item.devise ?? 'EUR')}
                             </span>{' '}
-                            recu{' '}
+                            {t('received')}{' '}
                             <span className="text-ink-500">
                               ({item.description.split('(')[1]?.replace(')', '') ?? ''})
                             </span>
@@ -191,7 +193,7 @@ export default function AdminDashboardPage() {
               })}
             </div>
           ) : (
-            <p className="py-8 text-center text-sm text-ink-400">Aucune activite recente</p>
+            <p className="py-8 text-center text-sm text-ink-400">{t('noRecentActivity')}</p>
           )}
         </div>
 
@@ -201,7 +203,7 @@ export default function AdminDashboardPage() {
             className="mb-4 text-lg font-semibold text-forest-900"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            Actions rapides
+            {t('quickActions')}
           </h3>
           <div className="space-y-3">
             {quickActions.map((action) => {
@@ -237,17 +239,17 @@ export default function AdminDashboardPage() {
           {stats && (
             <div className="mt-6 space-y-2 border-t border-gray-100 pt-4">
               <div className="flex justify-between text-xs text-ink-500">
-                <span>Campagnes actives</span>
+                <span>{t('activeCampaigns')}</span>
                 <span className="font-semibold text-forest-900">{stats.campagnesActives}</span>
               </div>
               <div className="flex justify-between text-xs text-ink-500">
-                <span>Signalements en attente</span>
+                <span>{t('pendingReports')}</span>
                 <span className={cn('font-semibold', stats.signalementsEnAttente > 0 ? 'text-red-500' : 'text-forest-900')}>
                   {stats.signalementsEnAttente}
                 </span>
               </div>
               <div className="flex justify-between text-xs text-ink-500">
-                <span>Evenements a venir</span>
+                <span>{t('upcomingEvents')}</span>
                 <span className="font-semibold text-forest-900">{stats.evenementsAVenir}</span>
               </div>
             </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Search,
   Edit3,
@@ -17,6 +17,7 @@ import {
   Radio,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { getVideos } from '@/lib/api/cultes.api';
 import { useCreateVideo, useUpdateVideo, useDeleteVideo } from '@/features/cultes/hooks/use-cultes';
 import { useToastStore } from '@/stores/toast.store';
@@ -24,28 +25,6 @@ import { useAuthStore } from '@/stores/auth.store';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { CustomSelect } from '@/components/forms/custom-select';
 import type { Video as VideoType } from '@/types';
-
-// ─── Constants ───────────────────────────────────────────────────────────────
-
-const TYPE_OPTIONS = [
-  { value: 'enregistre', label: 'Enregistre' },
-  { value: 'planifie', label: 'Live planifie' },
-];
-
-const GRADIENT_OPTIONS = [
-  { value: 'from-forest-700 to-forest-500', label: 'Vert foret' },
-  { value: 'from-forest-900 to-sage-400', label: 'Foret profond' },
-  { value: 'from-gold-600 to-terra-600', label: 'Or et terre' },
-  { value: 'from-terra-600 to-gold-500', label: 'Terre chaude' },
-  { value: 'from-forest-900 to-ink-800', label: 'Nuit profonde' },
-  { value: 'from-ink-900 via-[#2a1a3e] to-forest-900', label: 'Mystique' },
-];
-
-const BADGE_OPTIONS = [
-  { value: '', label: 'Aucun badge' },
-  { value: 'POPULAIRE', label: 'Populaire' },
-  { value: 'NOEL', label: 'Noel' },
-];
 
 function formatDuration(seconds?: number) {
   if (!seconds) return '';
@@ -64,12 +43,34 @@ type ModalState =
   | null;
 
 export default function AdminYoutubePage() {
+  const t = useTranslations('adminYoutube');
+  const tc = useTranslations('common');
   const { data: videosData } = useQuery({ queryKey: ['admin-videos'], queryFn: getVideos });
   const createMutation = useCreateVideo();
   const updateMutation = useUpdateVideo();
   const deleteMutation = useDeleteVideo();
   const { addToast } = useToastStore();
   const user = useAuthStore((s) => s.user);
+
+  const TYPE_OPTIONS = useMemo(() => [
+    { value: 'enregistre', label: t('typeRecorded') },
+    { value: 'planifie', label: t('typeLiveScheduled') },
+  ], [t]);
+
+  const GRADIENT_OPTIONS = useMemo(() => [
+    { value: 'from-forest-700 to-forest-500', label: t('gradientForestGreen') },
+    { value: 'from-forest-900 to-sage-400', label: t('gradientDeepForest') },
+    { value: 'from-gold-600 to-terra-600', label: t('gradientGoldEarth') },
+    { value: 'from-terra-600 to-gold-500', label: t('gradientWarmEarth') },
+    { value: 'from-forest-900 to-ink-800', label: t('gradientDeepNight') },
+    { value: 'from-ink-900 via-[#2a1a3e] to-forest-900', label: t('gradientMystic') },
+  ], [t]);
+
+  const BADGE_OPTIONS = useMemo(() => [
+    { value: '', label: tc('noBadge') },
+    { value: 'POPULAIRE', label: tc('popular') },
+    { value: 'NOEL', label: t('badgeChristmas') },
+  ], [t, tc]);
 
   const items = videosData ?? [];
   const [search, setSearch] = useState('');
@@ -166,15 +167,15 @@ export default function AdminYoutubePage() {
         },
       },
       {
-        onSuccess: () => { closeModal(); addToast('Video mise a jour', 'success'); },
-        onError: () => addToast('Erreur lors de la mise a jour', 'error'),
+        onSuccess: () => { closeModal(); addToast(t('videoUpdated'), 'success'); },
+        onError: () => addToast(t('errorUpdate'), 'error'),
       }
     );
   };
 
   const handleCreateSubmit = () => {
     if (!createTitre.trim() || !createYoutubeId.trim() || !createAuteur.trim()) {
-      addToast("Veuillez remplir le titre, l'auteur et l'ID YouTube", 'error');
+      addToast(t('errorFieldsRequired'), 'error');
       return;
     }
     const scheduledAt =
@@ -193,8 +194,8 @@ export default function AdminYoutubePage() {
         dureeSeconds: createDuree ? Number(createDuree) : undefined,
       },
       {
-        onSuccess: () => { closeModal(); addToast('Video ajoutee', 'success'); },
-        onError: () => addToast('Erreur lors de la creation', 'error'),
+        onSuccess: () => { closeModal(); addToast(t('videoAdded'), 'success'); },
+        onError: () => addToast(t('errorCreate'), 'error'),
       }
     );
   };
@@ -202,8 +203,8 @@ export default function AdminYoutubePage() {
   const handleDeleteConfirm = () => {
     if (!deleteTarget) return;
     deleteMutation.mutate(deleteTarget.id, {
-      onSuccess: () => { setDeleteTarget(null); addToast('Video supprimee', 'success'); },
-      onError: () => addToast('Erreur lors de la suppression', 'error'),
+      onSuccess: () => { setDeleteTarget(null); addToast(t('videoDeleted'), 'success'); },
+      onError: () => addToast(t('errorDelete'), 'error'),
     });
   };
 
@@ -216,16 +217,16 @@ export default function AdminYoutubePage() {
             className="text-2xl font-semibold text-forest-900 md:text-3xl"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            YouTube & Videos
+            {t('pageTitle')}
           </h2>
-          <p className="mt-1 text-sm text-ink-500">Gerez les videos et contenus multimedia</p>
+          <p className="mt-1 text-sm text-ink-500">{t('pageSubtitle')}</p>
         </div>
         <button
           onClick={openCreate}
           className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-red-500 px-5 py-3 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
         >
           <Upload className="h-4 w-4" />
-          Ajouter une video
+          {t('addVideo')}
         </button>
       </div>
 
@@ -240,7 +241,7 @@ export default function AdminYoutubePage() {
               <p className="text-2xl font-bold text-forest-900" style={{ fontFamily: 'var(--font-heading)' }}>
                 {items.length}
               </p>
-              <p className="text-xs text-ink-500">Videos</p>
+              <p className="text-xs text-ink-500">{t('statVideos')}</p>
             </div>
           </div>
         </div>
@@ -253,7 +254,7 @@ export default function AdminYoutubePage() {
               <p className="text-2xl font-bold text-forest-900" style={{ fontFamily: 'var(--font-heading)' }}>
                 {totalViews.toLocaleString('fr-FR')}
               </p>
-              <p className="text-xs text-ink-500">Vues totales</p>
+              <p className="text-xs text-ink-500">{t('statTotalViews')}</p>
             </div>
           </div>
         </div>
@@ -266,7 +267,7 @@ export default function AdminYoutubePage() {
               <p className="text-2xl font-bold text-gold-600" style={{ fontFamily: 'var(--font-heading)' }}>
                 {totalLikes.toLocaleString('fr-FR')}
               </p>
-              <p className="text-xs text-ink-500">Likes totaux</p>
+              <p className="text-xs text-ink-500">{t('statTotalLikes')}</p>
             </div>
           </div>
         </div>
@@ -279,7 +280,7 @@ export default function AdminYoutubePage() {
               <p className="text-2xl font-bold text-terra-600" style={{ fontFamily: 'var(--font-heading)' }}>
                 +12%
               </p>
-              <p className="text-xs text-ink-500">Croissance</p>
+              <p className="text-xs text-ink-500">{t('statGrowth')}</p>
             </div>
           </div>
         </div>
@@ -291,7 +292,7 @@ export default function AdminYoutubePage() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
           <input
             type="text"
-            placeholder="Rechercher une video..."
+            placeholder={t('searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-xl border border-forest-900/10 bg-cream-50 py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
@@ -326,7 +327,7 @@ export default function AdminYoutubePage() {
               )}
               {video.type === 'planifie' && (
                 <span className="absolute left-2 top-2 flex items-center gap-1 rounded-md bg-gold-600/90 px-2 py-0.5 text-[10px] font-bold uppercase text-white">
-                  <Calendar className="h-3 w-3" /> PLANIFIE
+                  <Calendar className="h-3 w-3" /> {t('scheduled')}
                 </span>
               )}
               {video.badge && video.type !== 'live' && video.type !== 'planifie' && (
@@ -344,7 +345,7 @@ export default function AdminYoutubePage() {
               <p className="mt-1 text-xs text-ink-400">{video.auteur}</p>
               <div className="mt-2 flex items-center gap-4 text-xs text-ink-500">
                 <span className="flex items-center gap-1">
-                  <Eye className="h-3.5 w-3.5" /> {video.vues.toLocaleString('fr-FR')} vues
+                  <Eye className="h-3.5 w-3.5" /> {video.vues.toLocaleString('fr-FR')} {tc('views')}
                 </span>
                 <span className="flex items-center gap-1">
                   <Heart className="h-3.5 w-3.5" /> {video.likes}
@@ -391,10 +392,10 @@ export default function AdminYoutubePage() {
       {/* Delete Confirm Dialog */}
       <ConfirmDialog
         open={!!deleteTarget}
-        title="Supprimer la video"
-        message={`Etes-vous sur de vouloir supprimer "${deleteTarget?.titre}" ? Cette action est irreversible.`}
-        confirmLabel="Supprimer"
-        cancelLabel="Annuler"
+        title={t('deleteVideoTitle')}
+        message={t('deleteVideoConfirm', { title: deleteTarget?.titre ?? '' })}
+        confirmLabel={tc('delete')}
+        cancelLabel={tc('cancel')}
         variant="danger"
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteTarget(null)}
@@ -409,7 +410,7 @@ export default function AdminYoutubePage() {
               <X className="h-4 w-4" />
             </button>
             <h3 className="mb-6 text-xl font-semibold text-forest-900" style={{ fontFamily: 'var(--font-heading)' }}>
-              Details de la video
+              {t('videoDetails')}
             </h3>
             <div className="mb-5 aspect-video overflow-hidden rounded-xl">
               <iframe
@@ -422,34 +423,34 @@ export default function AdminYoutubePage() {
             </div>
             <div className="space-y-4">
               <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Titre</p>
+                <p className="text-xs font-medium uppercase tracking-wide text-ink-400">{t('labelTitle')}</p>
                 <p className="mt-1 text-sm font-medium text-ink-900">{modal.video.titre}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Auteur</p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-ink-400">{t('labelAuthor')}</p>
                   <p className="mt-1 text-sm text-ink-700">{modal.video.auteur}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-ink-400">YouTube ID</p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-ink-400">{t('labelYoutubeId')}</p>
                   <p className="mt-1 text-sm font-mono text-ink-700">{modal.video.youtubeId}</p>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Vues</p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-ink-400">{t('labelViews')}</p>
                   <p className="mt-1 text-lg font-bold text-forest-900" style={{ fontFamily: 'var(--font-heading)' }}>
                     {modal.video.vues.toLocaleString('fr-FR')}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Likes</p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-ink-400">{t('labelLikes')}</p>
                   <p className="mt-1 text-lg font-bold text-gold-600" style={{ fontFamily: 'var(--font-heading)' }}>
                     {modal.video.likes}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Duree</p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-ink-400">{t('labelDuration')}</p>
                   <p className="mt-1 text-lg font-bold text-ink-700" style={{ fontFamily: 'var(--font-heading)' }}>
                     {modal.video.dureeSeconds ? formatDuration(modal.video.dureeSeconds) : '—'}
                   </p>
@@ -457,7 +458,7 @@ export default function AdminYoutubePage() {
               </div>
               {modal.video.badge && (
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Badge</p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-ink-400">{t('labelBadge')}</p>
                   <span className={`mt-1 inline-block rounded-md px-2.5 py-1 text-xs font-bold uppercase text-white ${
                     modal.video.badge === 'POPULAIRE' ? 'bg-gold-600' : 'bg-red-500'
                   }`}>
@@ -468,7 +469,7 @@ export default function AdminYoutubePage() {
             </div>
             <div className="mt-6 flex justify-end">
               <button onClick={closeModal} className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50">
-                Fermer
+                {tc('close')}
               </button>
             </div>
           </div>
@@ -484,29 +485,29 @@ export default function AdminYoutubePage() {
               <X className="h-4 w-4" />
             </button>
             <h3 className="mb-6 text-xl font-semibold text-forest-900" style={{ fontFamily: 'var(--font-heading)' }}>
-              Modifier la video
+              {t('editVideo')}
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink-700">Titre</label>
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('labelTitle')}</label>
                 <input type="text" value={editTitre} onChange={(e) => setEditTitre(e.target.value)} className={inputCls} />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink-700">Auteur</label>
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('labelAuthor')}</label>
                 <input type="text" value={editAuteur} onChange={(e) => setEditAuteur(e.target.value)} className={inputCls} />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink-700">YouTube ID</label>
-                <input type="text" value={editYoutubeId} onChange={(e) => setEditYoutubeId(e.target.value)} placeholder="ex: dQw4w9WgXcQ" className={inputCls} />
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('labelYoutubeId')}</label>
+                <input type="text" value={editYoutubeId} onChange={(e) => setEditYoutubeId(e.target.value)} placeholder={t('youtubeIdPlaceholder')} className={inputCls} />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink-700">Type</label>
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('labelType')}</label>
                 <CustomSelect value={editType} onChange={(v) => setEditType(v as 'enregistre' | 'planifie')} options={TYPE_OPTIONS} />
               </div>
               {editType === 'planifie' && (
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-ink-700">
-                    Date et heure du live <span className="text-red-500">*</span>
+                    {t('labelLiveDateTime')} <span className="text-red-500">*</span>
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     <input type="date" value={editScheduledDate} onChange={(e) => setEditScheduledDate(e.target.value)} className={inputCls} />
@@ -516,30 +517,30 @@ export default function AdminYoutubePage() {
               )}
               {editType === 'enregistre' && (
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-ink-700">Duree (secondes, optionnel)</label>
-                  <input type="number" min="0" value={editDuree} onChange={(e) => setEditDuree(e.target.value)} placeholder="ex: 3600 pour 1h" className={inputCls} />
+                  <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('labelDurationSeconds')}</label>
+                  <input type="number" min="0" value={editDuree} onChange={(e) => setEditDuree(e.target.value)} placeholder={t('durationPlaceholder')} className={inputCls} />
                 </div>
               )}
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink-700">Couleur de vignette</label>
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('labelThumbnailColor')}</label>
                 <CustomSelect value={editGradient} onChange={setEditGradient} options={GRADIENT_OPTIONS} />
                 <div className={`mt-2 h-10 rounded-xl bg-gradient-to-r ${editGradient}`} />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink-700">Badge</label>
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('labelBadge')}</label>
                 <CustomSelect value={editBadge} onChange={setEditBadge} options={BADGE_OPTIONS} />
               </div>
             </div>
             <div className="mt-6 flex justify-end gap-3">
               <button onClick={closeModal} className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50">
-                Annuler
+                {tc('cancel')}
               </button>
               <button
                 onClick={handleEditSave}
                 disabled={updateMutation.isPending}
                 className="rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg disabled:opacity-50"
               >
-                {updateMutation.isPending ? 'Enregistrement...' : 'Enregistrer'}
+                {updateMutation.isPending ? tc('saving') : tc('save')}
               </button>
             </div>
           </div>
@@ -555,30 +556,30 @@ export default function AdminYoutubePage() {
               <X className="h-4 w-4" />
             </button>
             <h3 className="mb-6 text-xl font-semibold text-forest-900" style={{ fontFamily: 'var(--font-heading)' }}>
-              Ajouter une video
+              {t('addVideo')}
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink-700">Titre <span className="text-red-500">*</span></label>
-                <input type="text" value={createTitre} onChange={(e) => setCreateTitre(e.target.value)} placeholder="Titre de la video" className={inputCls} />
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('labelTitle')} <span className="text-red-500">*</span></label>
+                <input type="text" value={createTitre} onChange={(e) => setCreateTitre(e.target.value)} placeholder={t('titlePlaceholder')} className={inputCls} />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink-700">Auteur <span className="text-red-500">*</span></label>
-                <input type="text" value={createAuteur} onChange={(e) => setCreateAuteur(e.target.value)} placeholder="Nom du predicateur" className={inputCls} />
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('labelAuthor')} <span className="text-red-500">*</span></label>
+                <input type="text" value={createAuteur} onChange={(e) => setCreateAuteur(e.target.value)} placeholder={t('authorPlaceholder')} className={inputCls} />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink-700">YouTube ID <span className="text-red-500">*</span></label>
-                <input type="text" value={createYoutubeId} onChange={(e) => setCreateYoutubeId(e.target.value)} placeholder="ex: dQw4w9WgXcQ" className={inputCls} />
-                <p className="mt-1 text-xs text-ink-400">L&apos;ID se trouve dans l&apos;URL : youtube.com/watch?v=<strong>ID</strong></p>
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('labelYoutubeId')} <span className="text-red-500">*</span></label>
+                <input type="text" value={createYoutubeId} onChange={(e) => setCreateYoutubeId(e.target.value)} placeholder={t('youtubeIdPlaceholder')} className={inputCls} />
+                <p className="mt-1 text-xs text-ink-400">{t('youtubeIdHint')}</p>
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink-700">Type</label>
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('labelType')}</label>
                 <CustomSelect value={createType} onChange={(v) => setCreateType(v as 'enregistre' | 'planifie')} options={TYPE_OPTIONS} />
               </div>
               {createType === 'planifie' && (
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-ink-700">
-                    Date et heure du live <span className="text-red-500">*</span>
+                    {t('labelLiveDateTime')} <span className="text-red-500">*</span>
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     <input type="date" value={createScheduledDate} onChange={(e) => setCreateScheduledDate(e.target.value)} className={inputCls} />
@@ -588,30 +589,30 @@ export default function AdminYoutubePage() {
               )}
               {createType === 'enregistre' && (
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-ink-700">Duree (secondes, optionnel)</label>
-                  <input type="number" min="0" value={createDuree} onChange={(e) => setCreateDuree(e.target.value)} placeholder="ex: 3600 pour 1h" className={inputCls} />
+                  <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('labelDurationSeconds')}</label>
+                  <input type="number" min="0" value={createDuree} onChange={(e) => setCreateDuree(e.target.value)} placeholder={t('durationPlaceholder')} className={inputCls} />
                 </div>
               )}
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink-700">Couleur de vignette</label>
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('labelThumbnailColor')}</label>
                 <CustomSelect value={createGradient} onChange={setCreateGradient} options={GRADIENT_OPTIONS} />
                 <div className={`mt-2 h-10 rounded-xl bg-gradient-to-r ${createGradient}`} />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink-700">Badge</label>
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('labelBadge')}</label>
                 <CustomSelect value={createBadge} onChange={setCreateBadge} options={BADGE_OPTIONS} />
               </div>
             </div>
             <div className="mt-6 flex justify-end gap-3">
               <button onClick={closeModal} className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50">
-                Annuler
+                {tc('cancel')}
               </button>
               <button
                 onClick={handleCreateSubmit}
                 disabled={createMutation.isPending}
                 className="rounded-xl bg-gradient-to-r from-red-600 to-red-500 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg disabled:opacity-50"
               >
-                {createMutation.isPending ? 'Ajout...' : 'Ajouter'}
+                {createMutation.isPending ? tc('adding') : tc('add')}
               </button>
             </div>
           </div>

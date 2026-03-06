@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Plus,
   Pencil,
@@ -32,6 +33,8 @@ function slugify(text: string): string {
 }
 
 export default function AdminParoissesPage() {
+  const t = useTranslations('admin');
+  const tc = useTranslations('common');
   const { data: paroisses, isLoading } = useParoissesAdmin();
   const createMutation = useCreateParoisse();
   const updateMutation = useUpdateParoisse();
@@ -71,18 +74,18 @@ export default function AdminParoissesPage() {
           id: editing.id,
           data: { label: formLabel.trim(), ville: formVille.trim() || undefined, slug },
         });
-        addToast('Paroisse modifiee', 'success');
+        addToast(t('parishUpdated'), 'success');
       } else {
         await createMutation.mutateAsync({
           slug,
           label: formLabel.trim(),
           ville: formVille.trim() || undefined,
         });
-        addToast('Paroisse ajoutee', 'success');
+        addToast(t('parishAdded'), 'success');
       }
       resetForm();
     } catch {
-      addToast('Erreur lors de l\'enregistrement', 'error');
+      addToast(t('saveError'), 'error');
     }
   };
 
@@ -90,9 +93,9 @@ export default function AdminParoissesPage() {
     if (!deleteTarget) return;
     try {
       await deleteMutation.mutateAsync(deleteTarget.id);
-      addToast('Paroisse supprimee', 'success');
+      addToast(t('parishDeleted'), 'success');
     } catch {
-      addToast('Erreur lors de la suppression', 'error');
+      addToast(t('deleteError'), 'error');
     }
     setDeleteTarget(null);
   };
@@ -100,9 +103,9 @@ export default function AdminParoissesPage() {
   const handleToggleActif = async (p: ParoisseData) => {
     try {
       await updateMutation.mutateAsync({ id: p.id, data: { actif: !p.actif } });
-      addToast(p.actif ? 'Paroisse desactivee' : 'Paroisse activee', 'success');
+      addToast(p.actif ? t('parishDeactivated') : t('parishActivated'), 'success');
     } catch {
-      addToast('Erreur', 'error');
+      addToast(tc('error'), 'error');
     }
   };
 
@@ -115,10 +118,10 @@ export default function AdminParoissesPage() {
             className="text-2xl font-semibold text-forest-900 md:text-3xl"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            Paroisses
+            {t('parishesTitle')}
           </h2>
           <p className="mt-1 text-sm text-ink-500">
-            Gerer la liste des paroisses affichees lors de l&apos;inscription
+            {t('parishesSubtitle')}
           </p>
         </div>
         <button
@@ -126,7 +129,7 @@ export default function AdminParoissesPage() {
           className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
         >
           <Plus className="h-4 w-4" />
-          Ajouter une paroisse
+          {t('addParish')}
         </button>
       </div>
 
@@ -134,36 +137,36 @@ export default function AdminParoissesPage() {
       {showForm && (
         <div className="mb-6 rounded-2xl border border-forest-900/5 bg-white p-6 shadow-sm">
           <h3 className="mb-4 text-lg font-semibold text-forest-900" style={{ fontFamily: 'var(--font-heading)' }}>
-            {editing ? 'Modifier la paroisse' : 'Nouvelle paroisse'}
+            {editing ? t('editParish') : t('newParish')}
           </h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
-              <label className="mb-1 block text-xs font-medium text-ink-500">Nom</label>
+              <label className="mb-1 block text-xs font-medium text-ink-500">{t('parishName')}</label>
               <input
                 value={formLabel}
                 onChange={(e) => {
                   setFormLabel(e.target.value);
                   if (!editing) setFormSlug(slugify(e.target.value));
                 }}
-                placeholder="Paroisse de Bonanjo, Douala"
+                placeholder={t('parishNamePlaceholder')}
                 className="w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-900 outline-none focus:border-forest-500 focus:ring-2 focus:ring-forest-500/10"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-ink-500">Ville</label>
+              <label className="mb-1 block text-xs font-medium text-ink-500">{t('parishCity')}</label>
               <input
                 value={formVille}
                 onChange={(e) => setFormVille(e.target.value)}
-                placeholder="Douala"
+                placeholder={t('parishCityPlaceholder')}
                 className="w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-900 outline-none focus:border-forest-500 focus:ring-2 focus:ring-forest-500/10"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-ink-500">Slug</label>
+              <label className="mb-1 block text-xs font-medium text-ink-500">{t('parishSlug')}</label>
               <input
                 value={formSlug}
                 onChange={(e) => setFormSlug(e.target.value)}
-                placeholder="bonanjo-douala"
+                placeholder={t('parishSlugPlaceholder')}
                 className="w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-900 outline-none focus:border-forest-500 focus:ring-2 focus:ring-forest-500/10"
               />
             </div>
@@ -179,14 +182,14 @@ export default function AdminParoissesPage() {
               ) : (
                 <Check className="h-4 w-4" />
               )}
-              {editing ? 'Modifier' : 'Ajouter'}
+              {editing ? tc('edit') : tc('add')}
             </button>
             <button
               onClick={resetForm}
               className="inline-flex items-center gap-2 rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
             >
               <X className="h-4 w-4" />
-              Annuler
+              {tc('cancel')}
             </button>
           </div>
         </div>
@@ -256,7 +259,7 @@ export default function AdminParoissesPage() {
             ) : (
               <div className="py-12 text-center">
                 <Church className="mx-auto mb-3 h-10 w-10 text-ink-300" />
-                <p className="text-sm text-ink-500">Aucune paroisse enregistree</p>
+                <p className="text-sm text-ink-500">{t('noParishes')}</p>
               </div>
             )}
           </div>
@@ -266,17 +269,17 @@ export default function AdminParoissesPage() {
       {/* Stats */}
       {paroisses && paroisses.length > 0 && (
         <div className="mt-4 flex items-center gap-4 text-xs text-ink-500">
-          <span>{paroisses.length} paroisse{paroisses.length > 1 ? 's' : ''} au total</span>
-          <span>{paroisses.filter((p) => p.actif).length} active{paroisses.filter((p) => p.actif).length > 1 ? 's' : ''}</span>
+          <span>{paroisses.length} {t('parishTotal')}</span>
+          <span>{paroisses.filter((p) => p.actif).length} {t('parishActiveCount')}</span>
         </div>
       )}
 
       <ConfirmDialog
         open={!!deleteTarget}
-        title="Supprimer la paroisse"
-        message={`Etes-vous sur de vouloir supprimer "${deleteTarget?.label}" ? Cette action est irreversible.`}
-        confirmLabel="Supprimer"
-        cancelLabel="Annuler"
+        title={t('deleteParish')}
+        message={t('deleteParishConfirm', { name: deleteTarget?.label })}
+        confirmLabel={tc('delete')}
+        cancelLabel={tc('cancel')}
         variant="danger"
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}

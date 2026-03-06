@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowLeft, Smartphone, Monitor, Tablet, LogOut, Check, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { useToastStore } from '@/stores/toast.store';
 import { useSessions, useRevokeSession, useRevokeAllSessions } from '@/features/profil/hooks/use-sessions';
@@ -14,6 +15,10 @@ const iconMap: Record<string, typeof Monitor> = {
 };
 
 export default function AppareilsPage() {
+  const t = useTranslations('appareils');
+  const tp = useTranslations('profil');
+  const tc = useTranslations('common');
+
   const { addToast } = useToastStore();
   const { data: sessions, isLoading } = useSessions();
   const revokeMutation = useRevokeSession();
@@ -21,15 +26,15 @@ export default function AppareilsPage() {
 
   const handleDisconnect = (sessionId: string, deviceName: string) => {
     revokeMutation.mutate(sessionId, {
-      onSuccess: () => addToast(`Appareil "${deviceName}" deconnecte`, 'success'),
-      onError: () => addToast('Erreur lors de la deconnexion', 'error'),
+      onSuccess: () => addToast(t('deviceDisconnected', { name: deviceName }), 'success'),
+      onError: () => addToast(t('disconnectError'), 'error'),
     });
   };
 
   const handleDisconnectAll = () => {
     revokeAllMutation.mutate(undefined, {
-      onSuccess: () => addToast('Tous les autres appareils ont ete deconnectes', 'success'),
-      onError: () => addToast('Erreur lors de la deconnexion', 'error'),
+      onSuccess: () => addToast(t('allDisconnected'), 'success'),
+      onError: () => addToast(t('disconnectError'), 'error'),
     });
   };
 
@@ -43,15 +48,15 @@ export default function AppareilsPage() {
           className="group mb-4 inline-flex items-center gap-2 text-sm font-medium text-forest-700 transition-colors hover:text-forest-900"
         >
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-          Retour au profil
+          {tp('backToProfile')}
         </Link>
         <h1
           className="mb-1 text-3xl font-bold text-forest-900 md:text-4xl"
           style={{ fontFamily: 'var(--font-heading)' }}
         >
-          Appareils connectes
+          {t('title')}
         </h1>
-        <p className="text-ink-500">Gerez les appareils ayant acces a votre compte</p>
+        <p className="text-ink-500">{t('subtitle')}</p>
       </div>
 
       <div className="rounded-2xl border border-sage-400/10 bg-white p-5 shadow-sm md:p-6">
@@ -61,12 +66,9 @@ export default function AppareilsPage() {
         >
           <Smartphone className="h-5 w-5 text-gold-600" />
           {isLoading ? (
-            'Chargement...'
+            tc('loading')
           ) : (
-            <>
-              {sessions?.length ?? 0} appareil{(sessions?.length ?? 0) > 1 ? 's' : ''} connecte
-              {(sessions?.length ?? 0) > 1 ? 's' : ''}
-            </>
+            t('devicesCount', { count: sessions?.length ?? 0 })
           )}
         </h2>
 
@@ -100,12 +102,12 @@ export default function AppareilsPage() {
                       {session.current && (
                         <span className="flex items-center gap-1 rounded-full bg-forest-900/10 px-2 py-0.5 text-[10px] font-bold text-forest-900">
                           <Check className="h-3 w-3" />
-                          Cet appareil
+                          {t('thisDevice')}
                         </span>
                       )}
                     </div>
                     <p className="text-xs text-ink-500">
-                      {session.current ? 'Actif maintenant' : formatRelativeTime(session.lastActiveAt)}
+                      {session.current ? t('activeNow') : formatRelativeTime(session.lastActiveAt)}
                       {session.ipAddress && <> &middot; {session.ipAddress}</>}
                     </p>
                   </div>
@@ -116,7 +118,7 @@ export default function AppareilsPage() {
                       className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium text-red-500 transition-colors hover:bg-red-50 disabled:opacity-50"
                     >
                       <LogOut className="h-3.5 w-3.5" />
-                      Deconnecter
+                      {t('disconnect')}
                     </button>
                   )}
                 </div>
@@ -137,7 +139,7 @@ export default function AppareilsPage() {
           ) : (
             <LogOut className="h-4 w-4" />
           )}
-          Deconnecter tous les autres appareils
+          {t('disconnectAll')}
         </button>
       )}
     </div>

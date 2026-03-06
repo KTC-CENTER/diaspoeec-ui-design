@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { BookOpen, ChevronRight, Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   useLectureJour,
   usePlansLecture,
@@ -30,6 +31,8 @@ function SectionSkeleton({ count = 2 }: { count?: number }) {
 }
 
 export default function BiblePage() {
+  const t = useTranslations('bible');
+  const tc = useTranslations('common');
   const { data: lectureJour, isLoading: loadingLecture } = useLectureJour();
   const { data: plans, isLoading: loadingPlans } = usePlansLecture();
   const { data: plansDecouverte, isLoading: loadingDecouverte } = usePlansDecouverte();
@@ -43,10 +46,10 @@ export default function BiblePage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-ink-900 mb-1">
-          Guide Biblique
+          {t('title')}
         </h1>
         <p className="text-ink-400">
-          Nourrissez votre foi chaque jour
+          {t('subtitle')}
         </p>
       </div>
 
@@ -76,7 +79,7 @@ export default function BiblePage() {
       {/* My Plans */}
       <section className="mb-8">
         <h2 className="text-xl font-bold text-ink-900 mb-5">
-          Mes plans en cours
+          {t('myPlans')}
         </h2>
 
         {loadingPlans ? (
@@ -91,7 +94,7 @@ export default function BiblePage() {
           <div className="rounded-2xl bg-white border border-forest-900/6 p-8 text-center shadow-sm">
             <BookOpen className="mx-auto mb-3 h-10 w-10 text-ink-300" />
             <p className="text-sm text-ink-400">
-              Vous n&apos;avez pas de plan en cours. Decouvrez nos plans de lecture ci-dessous.
+              {t('noPlans')}
             </p>
           </div>
         )}
@@ -104,13 +107,13 @@ export default function BiblePage() {
       <section className="mb-8">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl font-bold text-ink-900">
-            Decouvrir des plans
+            {t('discoverPlans')}
           </h2>
           <button
             onClick={() => setShowAllPlans(!showAllPlans)}
             className="text-sm text-forest-900 font-medium hover:text-forest-700 transition-colors flex items-center gap-1"
           >
-            {showAllPlans ? 'Reduire' : 'Voir tout'} <ChevronRight className={`w-4 h-4 transition-transform ${showAllPlans ? 'rotate-90' : ''}`} />
+            {showAllPlans ? tc('collapse') : tc('seeAll')} <ChevronRight className={`w-4 h-4 transition-transform ${showAllPlans ? 'rotate-90' : ''}`} />
           </button>
         </div>
 
@@ -153,14 +156,14 @@ export default function BiblePage() {
                           {plan.titre}
                         </h3>
                         <p className="text-xs text-ink-400 mb-3">
-                          {plan.dureeJours} jours
+                          {plan.dureeJours} {tc('days')}
                         </p>
                         <button
                           disabled={startPlanMutation.isPending || isStarted}
                           onClick={() => {
                             startPlanMutation.mutate(plan.id, {
-                              onSuccess: () => addToast(`Plan "${plan.titre}" demarre ! Bonne lecture.`, 'success'),
-                              onError: () => addToast('Erreur lors du demarrage', 'error'),
+                              onSuccess: () => addToast(t('planStarted', { title: plan.titre }), 'success'),
+                              onError: () => addToast(t('startError'), 'error'),
                             });
                           }}
                           className={`w-full py-2 text-xs font-semibold rounded-lg transition-colors ${
@@ -169,7 +172,7 @@ export default function BiblePage() {
                               : 'bg-cream-100 border border-forest-900/10 text-forest-900 hover:bg-sage-200'
                           } disabled:opacity-60`}
                         >
-                          {isStarted ? 'En cours ✓' : 'Commencer'}
+                          {isStarted ? t('inProgress') : t('start')}
                         </button>
                       </div>
                     </div>
@@ -188,13 +191,13 @@ export default function BiblePage() {
       <section>
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl font-bold text-ink-900">
-            Mes notes
+            {t('myNotes')}
           </h2>
           <button
-            onClick={() => addToast('Selectionnez un verset puis cliquez "Note" pour annoter', 'info')}
+            onClick={() => addToast(t('selectVerse'), 'info')}
             className="text-sm text-forest-900 font-medium hover:text-forest-700 transition-colors flex items-center gap-1"
           >
-            <Plus className="w-4 h-4" /> Nouvelle note
+            <Plus className="w-4 h-4" /> {t('newNote')}
           </button>
         </div>
 

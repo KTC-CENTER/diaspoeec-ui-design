@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { BookOpen, Heart, PenLine, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { useToastStore } from '@/stores/toast.store';
 import { useChapter, useCreateNote, useLectureLike } from '@/features/bible/hooks/use-bible';
@@ -13,6 +14,8 @@ interface DailyReadingProps {
 }
 
 export function DailyReading({ lecture }: DailyReadingProps) {
+  const t = useTranslations('bible');
+  const tc = useTranslations('common');
   const [liked, setLiked] = useState(lecture.userLiked ?? false);
   const [likeCount, setLikeCount] = useState(lecture.likeCount ?? 0);
   const [showFull, setShowFull] = useState(false);
@@ -52,11 +55,11 @@ export function DailyReading({ lecture }: DailyReadingProps) {
       { reference: lecture.reference, contenu: noteText.trim() },
       {
         onSuccess: () => {
-          addToast('Note enregistree', 'success');
+          addToast(t('noteSaved'), 'success');
           setNoteText('');
           setNoteOpen(false);
         },
-        onError: () => addToast('Erreur lors de l\'enregistrement', 'error'),
+        onError: () => addToast(tc('saveError'), 'error'),
       },
     );
   };
@@ -69,7 +72,7 @@ export function DailyReading({ lecture }: DailyReadingProps) {
         <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full bg-white/5 translate-y-8 -translate-x-8" />
 
         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-sm text-white text-xs font-semibold mb-4">
-          {'\u{1F4D6}'} Lecture du jour
+          {'\u{1F4D6}'} {t('dailyReading')}
         </span>
         <p className="text-white/70 text-sm font-medium uppercase tracking-wider mb-1">
           {lecture.reference}
@@ -115,8 +118,7 @@ export function DailyReading({ lecture }: DailyReadingProps) {
               </div>
             ) : (
               <p className="text-sm italic text-ink-500 text-center py-4">
-                Le texte complet sera disponible après l&apos;import de la Bible.
-                Lancez <code className="bg-sage-200 px-1 rounded">npm run import:bible</code> dans le dossier api/.
+                {t('textAvailableAfterImport')}
               </p>
             )}
           </div>
@@ -129,7 +131,7 @@ export function DailyReading({ lecture }: DailyReadingProps) {
             className="flex-1 py-3 bg-forest-900 text-white text-sm font-semibold rounded-xl hover:bg-forest-700 transition-colors shadow-sm flex items-center justify-center gap-2"
           >
             <BookOpen className="w-4 h-4" />
-            {showFull ? 'Reduire' : 'Lire le chapitre complet'}
+            {showFull ? t('reduce') : t('readFullChapter')}
           </button>
           <div className="flex gap-2">
             <button
@@ -154,7 +156,7 @@ export function DailyReading({ lecture }: DailyReadingProps) {
               )}
             >
               <PenLine className="w-4 h-4" />
-              Note
+              {t('note')}
             </button>
           </div>
         </div>
@@ -167,14 +169,14 @@ export function DailyReading({ lecture }: DailyReadingProps) {
               onChange={(e) => setNoteText(e.target.value)}
               rows={3}
               className="w-full rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm text-ink-900 placeholder:text-ink-400 outline-none focus:border-forest-500 focus:ring-2 focus:ring-forest-500/10 resize-none"
-              placeholder={`Note sur ${lecture.reference}...`}
+              placeholder={t('notePlaceholder', { reference: lecture.reference })}
             />
             <button
               disabled={createNote.isPending || !noteText.trim()}
               onClick={handleSaveNote}
               className="px-5 py-2 bg-forest-900 text-white text-sm font-semibold rounded-xl hover:bg-forest-700 transition-colors disabled:opacity-60"
             >
-              {createNote.isPending ? 'Enregistrement...' : 'Enregistrer'}
+              {createNote.isPending ? tc('saving') : tc('save')}
             </button>
           </div>
         )}

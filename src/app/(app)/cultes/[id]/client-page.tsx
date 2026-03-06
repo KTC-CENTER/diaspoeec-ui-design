@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useDynamicId } from '@/hooks/use-dynamic-id';
 import Link from 'next/link';
 import { ArrowLeft, Heart, Share2, Eye, Clock, Radio, Calendar, HandCoins } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { formatRelativeTime } from '@/lib/utils/format';
 import { useToastStore } from '@/stores/toast.store';
@@ -40,6 +41,8 @@ export default function VideoPage({ params }: { params: Promise<{ id: string }> 
   const { id: rawId } = use(params);
   const id = useDynamicId(rawId);
   const router = useRouter();
+  const t = useTranslations('cultes');
+  const tc = useTranslations('common');
   const { addToast } = useToastStore();
   const { data: video, isLoading } = useVideoById(id);
   const toggleLike = useToggleVideoLike();
@@ -62,7 +65,7 @@ export default function VideoPage({ params }: { params: Promise<{ id: string }> 
       }
     } else {
       await navigator.clipboard.writeText(url);
-      addToast('Lien copie dans le presse-papier', 'success');
+      addToast(tc('linkCopied'), 'success');
     }
   };
 
@@ -85,7 +88,7 @@ export default function VideoPage({ params }: { params: Promise<{ id: string }> 
       <div>
         <button onClick={() => router.back()} className="mb-6 flex items-center gap-2 text-ink-500 hover:text-ink-900 transition-colors">
           <ArrowLeft className="h-4 w-4" />
-          <span className="text-sm font-medium">Retour</span>
+          <span className="text-sm font-medium">{tc('back')}</span>
         </button>
         <div className="aspect-video w-full rounded-2xl shimmer-bg mb-6" />
         <div className="space-y-3">
@@ -99,9 +102,9 @@ export default function VideoPage({ params }: { params: Promise<{ id: string }> 
   if (!video) {
     return (
       <div className="text-center py-20">
-        <p className="text-ink-500">Video introuvable.</p>
+        <p className="text-ink-500">{t('notFound')}</p>
         <button onClick={() => router.back()} className="mt-4 text-forest-900 font-semibold underline">
-          Retour
+          {tc('back')}
         </button>
       </div>
     );
@@ -115,7 +118,7 @@ export default function VideoPage({ params }: { params: Promise<{ id: string }> 
         className="mb-6 flex items-center gap-2 text-ink-500 hover:text-ink-900 transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
-        <span className="text-sm font-medium">Retour</span>
+        <span className="text-sm font-medium">{tc('back')}</span>
       </button>
 
       {/* ── LIVE player ── */}
@@ -124,10 +127,10 @@ export default function VideoPage({ params }: { params: Promise<{ id: string }> 
           <div className="flex items-center gap-2 px-4 pt-4 pb-2">
             <span className="flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-1 text-xs font-bold text-white">
               <span className="h-2 w-2 rounded-full bg-white animate-[livePulse_1.5s_ease-in-out_infinite]" />
-              EN DIRECT
+              {t('live')}
             </span>
             {video.spectateursLive && (
-              <span className="text-sm text-white/60">{video.spectateursLive} spectateurs</span>
+              <span className="text-sm text-white/60">{video.spectateursLive} {tc('viewers')}</span>
             )}
           </div>
           <div className="mx-4 mb-4 aspect-video overflow-hidden rounded-xl">
@@ -148,7 +151,7 @@ export default function VideoPage({ params }: { params: Promise<{ id: string }> 
           <div className="mb-4 flex items-center gap-2">
             <Calendar className="h-5 w-5 text-gold-400" />
             <span className="text-sm font-semibold text-white/70 uppercase tracking-wider">
-              Culte programme
+              {t('plannedCulte')}
             </span>
           </div>
 
@@ -167,9 +170,9 @@ export default function VideoPage({ params }: { params: Promise<{ id: string }> 
           {countdown ? (
             <div className="flex items-center gap-3">
               {[
-                { value: countdown.h, label: 'heures' },
-                { value: countdown.m, label: 'minutes' },
-                { value: countdown.s, label: 'secondes' },
+                { value: countdown.h, label: t('hours') },
+                { value: countdown.m, label: t('minutes') },
+                { value: countdown.s, label: t('seconds') },
               ].map(({ value, label }) => (
                 <div key={label} className="flex flex-col items-center rounded-xl bg-white/10 px-4 py-3 min-w-[70px]">
                   <span className="text-3xl font-bold text-white tabular-nums">
@@ -182,7 +185,7 @@ export default function VideoPage({ params }: { params: Promise<{ id: string }> 
           ) : (
             <div className="flex items-center gap-2 text-white/60">
               <Radio className="h-4 w-4 animate-pulse text-red-400" />
-              <span className="text-sm">Demarrage imminent...</span>
+              <span className="text-sm">{t('startingSoon')}</span>
             </div>
           )}
 
@@ -215,12 +218,12 @@ export default function VideoPage({ params }: { params: Promise<{ id: string }> 
         <div className="mb-3 flex items-center gap-2 flex-wrap">
           {video.type === 'live' && (
             <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-700">
-              EN DIRECT
+              {t('live')}
             </span>
           )}
           {video.type === 'planifie' && (
             <span className="rounded-full bg-gold-100 px-2.5 py-0.5 text-xs font-bold text-gold-700">
-              A VENIR
+              {t('upcoming')}
             </span>
           )}
           {video.badge && (
@@ -244,7 +247,7 @@ export default function VideoPage({ params }: { params: Promise<{ id: string }> 
             <>
               <span className="flex items-center gap-1">
                 <Eye className="h-3.5 w-3.5" />
-                {video.vues} vues
+                {video.vues} {tc('views')}
               </span>
               {video.dureeSeconds && (
                 <span className="flex items-center gap-1">
@@ -279,7 +282,7 @@ export default function VideoPage({ params }: { params: Promise<{ id: string }> 
             className="flex items-center gap-2 rounded-xl bg-sage-100 px-4 py-2.5 text-sm font-semibold text-ink-700 transition-colors hover:bg-sage-200"
           >
             <Share2 className="h-4 w-4" />
-            Partager
+            {tc('share')}
           </button>
 
           {/* Bouton don — visible pendant le live et les enregistrements */}
@@ -289,7 +292,7 @@ export default function VideoPage({ params }: { params: Promise<{ id: string }> 
               className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-gold-600 to-gold-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
             >
               <HandCoins className="h-4 w-4" />
-              Faire un don
+              {tc('donate')}
             </Link>
           )}
         </div>

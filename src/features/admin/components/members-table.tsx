@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Search,
   FileText,
@@ -68,6 +69,9 @@ const memberExportColumns: ExportColumn<User>[] = [
 ];
 
 export function MembersTable() {
+  const t = useTranslations('admin');
+  const tc = useTranslations('common');
+
   const [search, setSearch] = useState('');
   const [diasporaFilter, setDiasporaFilter] = useState('all');
   const [paysFilter, setPaysFilter] = useState('all');
@@ -89,6 +93,20 @@ export function MembersTable() {
   const { addToast } = useToastStore();
   const updateMemberMutation = useUpdateMember();
   const reactivateMutation = useReactivateUser();
+
+  const ROLE_LABELS_T: Record<UserRole, string> = {
+    fidele: tc('fidele'),
+    pasteur: tc('pasteur'),
+    responsable_zone: tc('responsableZone'),
+    admin: tc('admin'),
+  };
+
+  const ROLE_OPTIONS_T: { value: UserRole; label: string }[] = [
+    { value: 'fidele', label: tc('fidele') },
+    { value: 'pasteur', label: tc('pasteur') },
+    { value: 'responsable_zone', label: tc('responsableZone') },
+    { value: 'admin', label: tc('admin') },
+  ];
 
   const { data, isLoading } = useAdminMembers({
     search,
@@ -138,11 +156,11 @@ export function MembersTable() {
       { id: roleMember.id, data: { role: selectedRole } },
       {
         onSuccess: () => {
-          addToast(`Role de ${roleMember.nomComplet} mis a jour`, 'success');
+          addToast(t('roleUpdated', { name: roleMember.nomComplet }), 'success');
           setRoleMember(null);
         },
         onError: () => {
-          addToast('Erreur lors de la mise a jour du role', 'error');
+          addToast(t('roleUpdateError'), 'error');
         },
       }
     );
@@ -161,12 +179,16 @@ export function MembersTable() {
       { id: deactivateMember.id, data: { statut: newStatut } },
       {
         onSuccess: () => {
-          const action = newStatut === 'inactif' ? 'desactive' : 'reactive';
-          addToast(`${deactivateMember.nomComplet} a ete ${action}`, 'success');
+          addToast(
+            newStatut === 'inactif'
+              ? t('memberDeactivated', { name: deactivateMember.nomComplet })
+              : t('memberReactivated', { name: deactivateMember.nomComplet }),
+            'success'
+          );
           setDeactivateMember(null);
         },
         onError: () => {
-          addToast('Erreur lors de la mise a jour du statut', 'error');
+          addToast(t('statusUpdateError'), 'error');
           setDeactivateMember(null);
         },
       }
@@ -182,7 +204,7 @@ export function MembersTable() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-500" />
             <input
               type="text"
-              placeholder="Rechercher un fidele..."
+              placeholder={t('searchMemberPlaceholder')}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -194,24 +216,24 @@ export function MembersTable() {
           <CustomSelect
             value={diasporaFilter}
             onChange={(value) => { setDiasporaFilter(value); setPage(1); }}
-            options={[{ value: 'all', label: 'Toutes les diasporas' }, ...DIASPORA_TYPES]}
+            options={[{ value: 'all', label: t('allDiasporas') }, ...DIASPORA_TYPES]}
             className="w-full md:w-auto md:min-w-[180px]"
           />
           <CustomSelect
             value={paysFilter}
             onChange={(value) => { setPaysFilter(value); setPage(1); }}
-            options={[{ value: 'all', label: 'Tous les pays' }, ...PAYS_LIST]}
+            options={[{ value: 'all', label: t('allCountries') }, ...PAYS_LIST]}
             className="w-full md:w-auto md:min-w-[160px]"
           />
           <CustomSelect
             value={roleFilter}
             onChange={(value) => { setRoleFilter(value); setPage(1); }}
             options={[
-              { value: 'all', label: 'Tous les roles' },
-              { value: 'fidele', label: 'Fidele' },
-              { value: 'pasteur', label: 'Pasteur' },
-              { value: 'responsable_zone', label: 'Responsable zone' },
-              { value: 'admin', label: 'Admin' },
+              { value: 'all', label: tc('allRoles') },
+              { value: 'fidele', label: tc('fidele') },
+              { value: 'pasteur', label: tc('pasteur') },
+              { value: 'responsable_zone', label: tc('responsableZone') },
+              { value: 'admin', label: tc('admin') },
             ]}
             className="w-full md:w-auto md:min-w-[160px]"
           />
@@ -219,10 +241,10 @@ export function MembersTable() {
             value={statutFilter}
             onChange={(value) => { setStatutFilter(value); setPage(1); }}
             options={[
-              { value: 'all', label: 'Tous statuts' },
-              { value: 'actif', label: 'Actif' },
-              { value: 'inactif', label: 'Inactif' },
-              { value: 'suspendu', label: 'Suspendu' },
+              { value: 'all', label: tc('allStatuses') },
+              { value: 'actif', label: tc('active') },
+              { value: 'inactif', label: tc('inactive') },
+              { value: 'suspendu', label: tc('suspended') },
             ]}
             className="w-full md:w-auto md:min-w-[140px]"
           />
@@ -234,19 +256,19 @@ export function MembersTable() {
         <div className="flex flex-wrap gap-3">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-forest-900/10 bg-white px-3 py-1.5 text-sm">
             <Users className="h-3.5 w-3.5 text-forest-900" />
-            <strong>{data.total.toLocaleString('fr-FR')}</strong> fideles
+            <strong>{data.total.toLocaleString()}</strong> {t('membersCount')}
           </span>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-white px-3 py-1.5 text-sm">
             <span className="h-2 w-2 rounded-full bg-green-500" />
-            <strong>{data.actifs.toLocaleString('fr-FR')}</strong> actifs
+            <strong>{data.actifs.toLocaleString()}</strong> {t('activeMembers')}
           </span>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-yellow-200 bg-white px-3 py-1.5 text-sm">
             <span className="h-2 w-2 rounded-full bg-yellow-500" />
-            <strong>{data.inactifs}</strong> inactifs
+            <strong>{data.inactifs}</strong> {t('inactiveMembers')}
           </span>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-sage-200 px-3 py-1.5 text-sm font-medium text-forest-900">
             <TrendingUp className="h-3.5 w-3.5" />
-            +{data.nouveaux} nouveaux ce mois
+            +{data.nouveaux} {t('newMembersThisMonth')}
           </span>
         </div>
       )}
@@ -265,25 +287,25 @@ export function MembersTable() {
               <thead>
                 <tr className="border-b border-forest-900/5 bg-forest-900/[0.03]">
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-ink-500">
-                    Nom
+                    {t('nameColumn')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-ink-500">
-                    Email
+                    {t('emailColumn')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-ink-500">
-                    Diaspora
+                    {t('diasporaColumn')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-ink-500">
-                    Pays
+                    {t('countryColumn')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-ink-500">
-                    Role
+                    {t('roleColumn')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-ink-500">
-                    Statut
+                    {t('statusColumn')}
                   </th>
                   <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-ink-500">
-                    Actions
+                    {t('actionsColumn')}
                   </th>
                 </tr>
               </thead>
@@ -324,35 +346,35 @@ export function MembersTable() {
                       <td className="px-4 py-3">
                         {member.role === 'pasteur' ? (
                           <span className="font-medium text-forest-900">
-                            Pasteur
+                            {tc('pasteur')}
                           </span>
                         ) : member.role === 'responsable_zone' ? (
                           <span className="font-medium text-terra-600">
-                            Resp. zone
+                            {t('respZone')}
                           </span>
                         ) : member.role === 'admin' ? (
                           <span className="font-medium text-purple-700">
-                            Admin
+                            {tc('admin')}
                           </span>
                         ) : (
-                          'Fidele'
+                          tc('fidele')
                         )}
                       </td>
                       <td className="px-4 py-3">
                         {member.statut === 'actif' ? (
                           <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600">
                             <span className="h-2 w-2 rounded-full bg-green-500" />
-                            Actif
+                            {tc('active')}
                           </span>
                         ) : member.statut === 'suspendu' ? (
                           <span className="inline-flex items-center gap-1 text-xs font-medium text-red-600">
                             <span className="h-2 w-2 rounded-full bg-red-500" />
-                            Suspendu
+                            {tc('suspended')}
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 text-xs font-medium text-yellow-600">
                             <span className="h-2 w-2 rounded-full bg-yellow-500" />
-                            Inactif
+                            {tc('inactive')}
                           </span>
                         )}
                       </td>
@@ -374,33 +396,33 @@ export function MembersTable() {
                                 onClick={() => handleViewProfile(member)}
                                 className="block w-full px-3 py-2 text-left text-sm transition hover:bg-sage-200"
                               >
-                                Voir profil
+                                {t('viewProfile')}
                               </button>
                               <button
                                 onClick={() => handleOpenRoleModal(member)}
                                 className="block w-full px-3 py-2 text-left text-sm transition hover:bg-sage-200"
                               >
-                                Modifier role
+                                {t('updateRole')}
                               </button>
                               {member.statut === 'suspendu' ? (
                                 <button
                                   onClick={() => {
                                     setOpenDropdown(null);
                                     reactivateMutation.mutate(member.id, {
-                                      onSuccess: () => addToast(`${member.nomComplet} a ete reactive`, 'success'),
-                                      onError: () => addToast('Erreur lors de la reactivation', 'error'),
+                                      onSuccess: () => addToast(t('memberReactivated', { name: member.nomComplet }), 'success'),
+                                      onError: () => addToast(t('reactivationError'), 'error'),
                                     });
                                   }}
                                   className="block w-full px-3 py-2 text-left text-sm text-green-600 transition hover:bg-green-50"
                                 >
-                                  Reactiver (suspendu)
+                                  {t('reactivateSuspended')}
                                 </button>
                               ) : (
                                 <button
                                   onClick={() => handleOpenDeactivate(member)}
                                   className="block w-full px-3 py-2 text-left text-sm text-red-500 transition hover:bg-red-50"
                                 >
-                                  {member.statut === 'actif' ? 'Desactiver' : 'Reactiver'}
+                                  {member.statut === 'actif' ? t('deactivate') : t('reactivate')}
                                 </button>
                               )}
                             </div>
@@ -436,12 +458,12 @@ export function MembersTable() {
                       {member.statut === 'actif' ? (
                         <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600">
                           <span className="h-2 w-2 rounded-full bg-green-500" />
-                          Actif
+                          {tc('active')}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 text-xs font-medium text-yellow-600">
                           <span className="h-2 w-2 rounded-full bg-yellow-500" />
-                          Inactif
+                          {tc('inactive')}
                         </span>
                       )}
                       <div className="relative">
@@ -461,19 +483,19 @@ export function MembersTable() {
                               onClick={() => handleViewProfile(member)}
                               className="block w-full px-3 py-2 text-left text-sm transition hover:bg-sage-200"
                             >
-                              Voir profil
+                              {t('viewProfile')}
                             </button>
                             <button
                               onClick={() => handleOpenRoleModal(member)}
                               className="block w-full px-3 py-2 text-left text-sm transition hover:bg-sage-200"
                             >
-                              Modifier role
+                              {t('updateRole')}
                             </button>
                             <button
                               onClick={() => handleOpenDeactivate(member)}
                               className="block w-full px-3 py-2 text-left text-sm text-red-500 transition hover:bg-red-50"
                             >
-                              {member.statut === 'actif' ? 'Desactiver' : 'Reactiver'}
+                              {member.statut === 'actif' ? t('deactivate') : t('reactivate')}
                             </button>
                           </div>
                         )}
@@ -495,18 +517,18 @@ export function MembersTable() {
                     </span>
                     {member.role === 'pasteur' ? (
                       <span className="text-xs font-medium text-forest-900">
-                        Pasteur
+                        {tc('pasteur')}
                       </span>
                     ) : member.role === 'responsable_zone' ? (
                       <span className="text-xs font-medium text-terra-600">
-                        Resp. zone
+                        {t('respZone')}
                       </span>
                     ) : member.role === 'admin' ? (
                       <span className="text-xs font-medium text-purple-700">
-                        Admin
+                        {tc('admin')}
                       </span>
                     ) : (
-                      <span className="text-xs">Fidele</span>
+                      <span className="text-xs">{tc('fidele')}</span>
                     )}
                   </div>
                 </div>
@@ -518,8 +540,8 @@ export function MembersTable() {
       <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
         <span className="text-sm text-ink-500">
           {(page - 1) * perPage + 1}-
-          {Math.min(page * perPage, members.length)} sur{' '}
-          <strong>{members.length.toLocaleString('fr-FR')}</strong>
+          {Math.min(page * perPage, members.length)} {t('onOf')}{' '}
+          <strong>{members.length.toLocaleString()}</strong>
         </span>
         {totalPages > 1 && (
           <div className="flex items-center gap-2">
@@ -528,7 +550,7 @@ export function MembersTable() {
               disabled={page === 1}
               className="rounded-lg border border-gray-200 px-3 py-2 text-sm transition hover:bg-white disabled:opacity-40"
             >
-              Precedent
+              {t('previousPage')}
             </button>
             {Array.from({ length: Math.min(totalPages, 3) }, (_, i) => i + 1).map(
               (p) => (
@@ -552,7 +574,7 @@ export function MembersTable() {
               disabled={page === totalPages}
               className="rounded-lg border border-gray-200 px-3 py-2 text-sm transition hover:bg-white disabled:opacity-40"
             >
-              Suivant
+              {t('nextPage')}
             </button>
           </div>
         )}
@@ -561,7 +583,7 @@ export function MembersTable() {
             className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm transition hover:bg-white"
             onClick={() => {
               exportToCSV(members, memberExportColumns, 'fideles');
-              addToast('Export CSV des fideles telecharge', 'success');
+              addToast(t('csvExportMembers'), 'success');
             }}
           >
             <FileText className="h-3.5 w-3.5" />
@@ -571,7 +593,7 @@ export function MembersTable() {
             className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm transition hover:bg-white"
             onClick={() => {
               exportToExcel(members, memberExportColumns, 'fideles');
-              addToast('Export Excel des fideles telecharge', 'success');
+              addToast(t('excelExportMembers'), 'success');
             }}
           >
             <FileSpreadsheet className="h-3.5 w-3.5" />
@@ -610,21 +632,21 @@ export function MembersTable() {
                   {profileMember.statut === 'actif' ? (
                     <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-600">
                       <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                      Actif
+                      {tc('active')}
                     </span>
                   ) : profileMember.statut === 'suspendu' ? (
                     <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600">
                       <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                      Suspendu
+                      {tc('suspended')}
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 rounded-full bg-yellow-50 px-2 py-0.5 text-xs font-medium text-yellow-600">
                       <span className="h-1.5 w-1.5 rounded-full bg-yellow-500" />
-                      Inactif
+                      {tc('inactive')}
                     </span>
                   )}
                   <span className="rounded-full bg-forest-900/10 px-2 py-0.5 text-xs font-medium text-forest-900">
-                    {ROLE_LABELS[profileMember.role]}
+                    {ROLE_LABELS_T[profileMember.role]}
                   </span>
                 </div>
               </div>
@@ -662,7 +684,7 @@ export function MembersTable() {
             <div className="mb-5 grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-ink-400">
-                  Type de diaspora
+                  {t('diasporaType')}
                 </p>
                 <p className="mt-1">
                   <span
@@ -677,16 +699,16 @@ export function MembersTable() {
               </div>
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-ink-400">
-                  Baptise
+                  {t('baptized')}
                 </p>
                 <p className="mt-1 text-sm text-ink-700">
-                  {profileMember.baptise ? 'Oui' : 'Non'}
+                  {profileMember.baptise ? tc('yes') : tc('no')}
                 </p>
               </div>
               {profileMember.baptise && profileMember.dateBapteme && (
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wide text-ink-400">
-                    Date de bapteme
+                    {t('baptismDate')}
                   </p>
                   <p className="mt-1 text-sm text-ink-700">
                     {formatDate(profileMember.dateBapteme)}
@@ -695,7 +717,7 @@ export function MembersTable() {
               )}
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-ink-400">
-                  Sexe
+                  {t('gender')}
                 </p>
                 <p className="mt-1 text-sm capitalize text-ink-700">
                   {profileMember.sexe}
@@ -707,7 +729,7 @@ export function MembersTable() {
             {profileMember.ministeres.length > 0 && (
               <div className="mb-5">
                 <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-400">
-                  Ministeres
+                  {t('ministries')}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {profileMember.ministeres.map((m) => (
@@ -729,28 +751,28 @@ export function MembersTable() {
                 <p className="text-lg font-bold text-ink-900">
                   {profileMember.donsEffectues}
                 </p>
-                <p className="text-xs text-ink-500">Dons effectues</p>
+                <p className="text-xs text-ink-500">{t('donationsMadeCount')}</p>
               </div>
               <div className="rounded-xl bg-cream-50 p-3 text-center">
                 <Calendar className="mx-auto mb-1 h-4 w-4 text-forest-900" />
                 <p className="text-lg font-bold text-ink-900">
                   {profileMember.evenementsSuivis}
                 </p>
-                <p className="text-xs text-ink-500">Evenements suivis</p>
+                <p className="text-xs text-ink-500">{t('eventsFollowed')}</p>
               </div>
               <div className="rounded-xl bg-cream-50 p-3 text-center">
                 <Heart className="mx-auto mb-1 h-4 w-4 text-forest-900" />
                 <p className="text-lg font-bold text-ink-900">
                   {profileMember.jaimesTotal}
                 </p>
-                <p className="text-xs text-ink-500">J&apos;aimes total</p>
+                <p className="text-xs text-ink-500">{t('totalLikes')}</p>
               </div>
             </div>
 
             {/* Inscription date */}
             <div className="border-t border-forest-900/5 pt-4">
               <p className="text-xs text-ink-400">
-                Membre depuis le{' '}
+                {t('memberSince')}{' '}
                 <span className="font-medium text-ink-600">
                   {formatDate(profileMember.createdAt)}
                 </span>
@@ -777,28 +799,28 @@ export function MembersTable() {
                 className="text-lg font-semibold text-ink-900"
                 style={{ fontFamily: 'var(--font-heading)' }}
               >
-                Modifier le role
+                {t('updateRole')}
               </h2>
               <p className="mt-1 text-sm text-ink-500">
-                Modifier le role de <strong>{roleMember.nomComplet}</strong>
+                {t('updateRoleOf', { name: roleMember.nomComplet })}
               </p>
             </div>
 
             <div className="mb-2">
               <p className="text-sm text-ink-500">
-                Role actuel :{' '}
+                {t('currentRole')} :{' '}
                 <span className="font-medium text-ink-700">
-                  {ROLE_LABELS[roleMember.role]}
+                  {ROLE_LABELS_T[roleMember.role]}
                 </span>
               </p>
             </div>
 
             <div className="mb-6 mt-4">
               <label className="block text-sm font-medium text-ink-700 mb-1.5">
-                Nouveau role
+                {t('newRole')}
               </label>
               <div className="space-y-2">
-                {ROLE_OPTIONS.map((option) => (
+                {ROLE_OPTIONS_T.map((option) => (
                   <button
                     key={option.value}
                     type="button"
@@ -842,13 +864,13 @@ export function MembersTable() {
                 onClick={() => setRoleMember(null)}
                 className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
               >
-                Annuler
+                {tc('cancel')}
               </button>
               <button
                 onClick={handleSaveRole}
                 className="rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg"
               >
-                Enregistrer
+                {tc('save')}
               </button>
             </div>
           </div>
@@ -860,18 +882,18 @@ export function MembersTable() {
         open={!!deactivateMember}
         title={
           deactivateMember?.statut === 'actif'
-            ? 'Desactiver ce compte ?'
-            : 'Reactiver ce compte ?'
+            ? t('deactivateAccount')
+            : t('reactivateAccount')
         }
         message={
           deactivateMember?.statut === 'actif'
-            ? `Le compte de ${deactivateMember?.nomComplet} sera desactive. Il ne pourra plus acceder a la plateforme.`
-            : `Le compte de ${deactivateMember?.nomComplet} sera reactive. Il pourra a nouveau acceder a la plateforme.`
+            ? t('deactivateMessage', { name: deactivateMember?.nomComplet ?? '' })
+            : t('reactivateMessage', { name: deactivateMember?.nomComplet ?? '' })
         }
         confirmLabel={
-          deactivateMember?.statut === 'actif' ? 'Desactiver' : 'Reactiver'
+          deactivateMember?.statut === 'actif' ? t('deactivate') : t('reactivate')
         }
-        cancelLabel="Annuler"
+        cancelLabel={tc('cancel')}
         variant={deactivateMember?.statut === 'actif' ? 'danger' : 'warning'}
         onConfirm={handleConfirmDeactivate}
         onCancel={() => setDeactivateMember(null)}

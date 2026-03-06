@@ -13,7 +13,7 @@ export interface CustomSelectOption {
 interface CustomSelectProps {
   value: string;
   onChange: (value: string) => void;
-  options: CustomSelectOption[];
+  options: readonly CustomSelectOption[];
   placeholder?: string;
   className?: string;
   error?: boolean;

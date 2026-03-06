@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import { Heart, Users } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { formatMontant } from '@/lib/utils/format';
 import type { Campagne } from '@/types';
@@ -24,9 +27,11 @@ interface CampaignCardProps {
 }
 
 export function CampaignCard({ campagne }: CampaignCardProps) {
-  const progress = Math.round(
-    (campagne.montantCollecte / campagne.objectifMontant) * 100
-  );
+  const tc = useTranslations('common');
+  const objectif = campagne.objectifMontant ?? 0;
+  const progress = objectif > 0
+    ? Math.round((campagne.montantCollecte / objectif) * 100)
+    : 0;
   const badge = statusBadge[campagne.statut] || statusBadge.active;
 
   return (
@@ -70,7 +75,7 @@ export function CampaignCard({ campagne }: CampaignCardProps) {
               {formatMontant(campagne.montantCollecte, 'EUR')}
               <span className="font-normal text-ink-400">
                 {' '}
-                / {formatMontant(campagne.objectifMontant, 'EUR')}
+                / {formatMontant(objectif, 'EUR')}
               </span>
             </span>
             <span className="text-xs font-medium text-forest-900">
@@ -83,7 +88,7 @@ export function CampaignCard({ campagne }: CampaignCardProps) {
         <div className="mt-4 flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs text-ink-400">
             <Users className="h-3.5 w-3.5" />
-            <span>{campagne.nombreDonateurs} donateurs</span>
+            <span>{campagne.nombreDonateurs} {tc('donors')}</span>
           </div>
           {campagne.statut === 'active' && (
             <span
@@ -94,7 +99,7 @@ export function CampaignCard({ campagne }: CampaignCardProps) {
               )}
             >
               <Heart className="h-3.5 w-3.5" />
-              Faire un don
+              {tc('donate')}
             </span>
           )}
         </div>

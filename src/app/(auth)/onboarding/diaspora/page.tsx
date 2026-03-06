@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { CustomSelect } from '@/components/forms/custom-select';
 import { OnboardingSteps } from '@/features/auth/components/onboarding-steps';
@@ -21,6 +22,8 @@ import {
 
 export default function OnboardingDiasporaPage() {
   const router = useRouter();
+  const t = useTranslations('onboarding');
+  const tc = useTranslations('common');
   const { user, updateUser } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -59,11 +62,10 @@ export default function OnboardingDiasporaPage() {
 
       <div className="space-y-2 text-center">
         <h2 className="font-heading text-xl font-bold text-ink-900">
-          Votre diaspora
+          {t('yourDiaspora')}
         </h2>
         <p className="text-sm text-ink-500">
-          Aidez-nous &agrave; vous connecter avec votre communaut&eacute;
-          locale.
+          {t('helpConnect')}
         </p>
       </div>
 
@@ -71,13 +73,13 @@ export default function OnboardingDiasporaPage() {
         {/* Type de diaspora */}
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-ink-700">
-            Type de diaspora
+            {t('diasporaType')}
           </label>
           <CustomSelect
             value={watch('typeDiaspora') || ''}
             onChange={(value) => setValue('typeDiaspora', value, { shouldValidate: true })}
             options={DIASPORA_TYPES}
-            placeholder="Selectionnez un type"
+            placeholder={t('selectType')}
             error={!!errors.typeDiaspora}
           />
           {errors.typeDiaspora && (
@@ -90,13 +92,13 @@ export default function OnboardingDiasporaPage() {
         {/* Pays de residence */}
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-ink-700">
-            Pays de residence
+            {t('residenceCountry')}
           </label>
           <CustomSelect
             value={watch('paysResidence') || ''}
             onChange={(value) => setValue('paysResidence', value, { shouldValidate: true })}
             options={PAYS_LIST}
-            placeholder="Selectionnez un pays"
+            placeholder={t('selectCountry')}
             error={!!errors.paysResidence}
           />
           {errors.paysResidence && (
@@ -112,12 +114,12 @@ export default function OnboardingDiasporaPage() {
             htmlFor="ville"
             className="block text-sm font-medium text-ink-700"
           >
-            Ville
+            {t('cityLabel')}
           </label>
           <input
             id="ville"
             type="text"
-            placeholder="Ex: Paris, Bruxelles, Montr&eacute;al..."
+            placeholder={t('cityPlaceholder')}
             className={cn(
               'w-full rounded-xl border bg-white px-4 py-3 text-sm transition-colors',
               'placeholder:text-ink-400 focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20',
@@ -141,7 +143,7 @@ export default function OnboardingDiasporaPage() {
             )}
           >
             <ArrowLeft className="h-4 w-4" />
-            Pr&eacute;c&eacute;dent
+            {tc('previous')}
           </button>
           <button
             type="submit"
@@ -155,7 +157,7 @@ export default function OnboardingDiasporaPage() {
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <>
-                Continuer
+                {tc('continue')}
                 <ArrowRight className="h-4 w-4" />
               </>
             )}

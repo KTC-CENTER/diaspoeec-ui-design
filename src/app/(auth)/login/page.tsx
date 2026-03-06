@@ -1,12 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { Shield, User } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { LoginForm } from '@/features/auth/components/login-form';
 import { GoogleOAuthButton } from '@/features/auth/components/google-oauth-button';
 import { QuickLoginButtons } from '@/features/auth/components/quick-login-buttons';
 
 export default function LoginPage() {
+  const t = useTranslations('auth');
+  const tc = useTranslations('common');
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -15,10 +18,10 @@ export default function LoginPage() {
           className="text-2xl font-bold text-forest-900"
           style={{ fontFamily: 'var(--font-heading)' }}
         >
-          Heureux de vous revoir
+          {t('welcomeBack')}
         </h2>
         <p className="text-sm text-ink-600 mt-2">
-          Connectez-vous pour retrouver votre communauté
+          {t('loginSubtitle')}
         </p>
       </div>
 
@@ -31,7 +34,7 @@ export default function LoginPage() {
       {/* Divider */}
       <div className="flex items-center gap-4">
         <div className="flex-1 h-px bg-gray-200" />
-        <span className="text-sm text-ink-600">ou</span>
+        <span className="text-sm text-ink-600">{tc('or')}</span>
         <div className="flex-1 h-px bg-gray-200" />
       </div>
 
@@ -40,12 +43,12 @@ export default function LoginPage() {
 
       {/* Register link */}
       <p className="text-center text-sm text-ink-600 mt-8">
-        Pas encore de compte ?{' '}
+        {t('noAccount')}{' '}
         <Link
           href="/register"
           className="font-semibold text-forest-900 hover:underline ml-1"
         >
-          S&apos;inscrire
+          {t('register')}
         </Link>
       </p>
     </div>

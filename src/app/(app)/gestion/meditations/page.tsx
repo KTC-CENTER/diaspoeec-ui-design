@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { getMeditations } from '@/lib/api/meditations.api';
 import { useCreateMeditation, useUpdateMeditation, useDeleteMeditation } from '@/features/meditations/hooks/use-meditations';
 import { useToastStore } from '@/stores/toast.store';
@@ -22,10 +23,23 @@ import { RoleGuard } from '@/features/gestion/components/role-guard';
 import { CustomSelect } from '@/components/forms/custom-select';
 import type { Meditation, MeditationCategorie } from '@/types';
 
-const categories = ['Toutes', 'Foi', 'Priere', 'Esperance', 'Famille', 'Grace', 'Perseverance'];
 const categorieOptions: MeditationCategorie[] = ['foi', 'priere', 'esperance', 'famille', 'grace', 'perseverance'];
 
 function GestionMeditationsContent() {
+  const t = useTranslations('gestion');
+  const tm = useTranslations('meditations');
+  const tc = useTranslations('common');
+
+  const categories = [
+    { key: 'Toutes', label: tm('all') },
+    { key: 'Foi', label: tm('faith') },
+    { key: 'Priere', label: tm('prayer') },
+    { key: 'Esperance', label: tm('hope') },
+    { key: 'Famille', label: tm('family') },
+    { key: 'Grace', label: tm('grace') },
+    { key: 'Perseverance', label: tm('perseverance') },
+  ];
+
   const user = useAuthStore((s) => s.user);
   const { data: meditationsData, isLoading, isError, error } = useQuery({
     queryKey: ['gestion-meditations', user?.id],
@@ -86,10 +100,10 @@ function GestionMeditationsContent() {
       {
         onSuccess: () => {
           setEditItem(null);
-          addToast('Meditation mise a jour', 'success');
+          addToast(t('meditationUpdated'), 'success');
         },
         onError: () => {
-          addToast('Erreur lors de la mise a jour', 'error');
+          addToast(t('updateError'), 'error');
         },
       }
     );
@@ -100,10 +114,10 @@ function GestionMeditationsContent() {
     deleteMutation.mutate(deleteItem.id, {
       onSuccess: () => {
         setDeleteItem(null);
-        addToast('Meditation supprimee', 'success');
+        addToast(t('meditationDeleted'), 'success');
       },
       onError: () => {
-        addToast('Erreur lors de la suppression', 'error');
+        addToast(t('deleteError'), 'error');
       },
     });
   };
@@ -118,7 +132,7 @@ function GestionMeditationsContent() {
 
   const handleCreateSubmit = () => {
     if (!createTitre.trim() || !createExtrait.trim()) {
-      addToast('Veuillez remplir tous les champs', 'error');
+      addToast(t('fillAllFields'), 'error');
       return;
     }
     createMutation.mutate(
@@ -131,10 +145,10 @@ function GestionMeditationsContent() {
       {
         onSuccess: () => {
           setShowCreateModal(false);
-          addToast('Meditation publiee', 'success');
+          addToast(t('meditationPublished'), 'success');
         },
         onError: () => {
-          addToast('Erreur lors de la creation', 'error');
+          addToast(t('createError'), 'error');
         },
       }
     );
@@ -149,10 +163,10 @@ function GestionMeditationsContent() {
             className="text-2xl font-semibold text-forest-900 md:text-3xl"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            Mes meditations
+            {t('myMeditations')}
           </h1>
           <p className="mt-1 text-sm text-ink-500">
-            Redigez et publiez vos meditations
+            {t('subtitle')}
           </p>
         </div>
         <button
@@ -160,7 +174,7 @@ function GestionMeditationsContent() {
           className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-3 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
         >
           <Plus className="h-4 w-4" />
-          Nouvelle meditation
+          {t('newMeditation')}
         </button>
       </div>
 
@@ -170,7 +184,7 @@ function GestionMeditationsContent() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
           <input
             type="text"
-            placeholder="Rechercher..."
+            placeholder={t('searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-xl border border-forest-900/10 bg-cream-50 py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
@@ -179,15 +193,15 @@ function GestionMeditationsContent() {
         <div className="flex flex-wrap gap-2">
           {categories.map((cat) => (
             <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
+              key={cat.key}
+              onClick={() => setActiveCategory(cat.key)}
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
-                activeCategory === cat
+                activeCategory === cat.key
                   ? 'bg-forest-900 text-white shadow-md'
                   : 'bg-white text-ink-600 border border-ink-200 hover:bg-sage-200'
               }`}
             >
-              {cat}
+              {cat.label}
             </button>
           ))}
         </div>
@@ -196,7 +210,7 @@ function GestionMeditationsContent() {
       {/* Stats */}
       <div className="mb-6 flex flex-wrap gap-3">
         <span className="rounded-full border border-forest-900/10 bg-sage-200 px-3 py-1 text-xs font-medium text-forest-900">
-          {items.length} meditation{items.length > 1 ? 's' : ''}
+          {t('meditationCount', { count: items.length })}
         </span>
       </div>
 
@@ -204,22 +218,22 @@ function GestionMeditationsContent() {
       {isLoading ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-200 py-16">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-forest-900/20 border-t-forest-900" />
-          <p className="mt-4 text-sm text-ink-400">Chargement des meditations...</p>
+          <p className="mt-4 text-sm text-ink-400">{t('loadingMeditations')}</p>
         </div>
       ) : isError ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-red-200 bg-red-50/50 py-16">
-          <p className="text-ink-500 mb-2">Erreur lors du chargement</p>
-          <p className="text-sm text-ink-400">Verifiez que le serveur est en ligne</p>
+          <p className="text-ink-500 mb-2">{t('loadError')}</p>
+          <p className="text-sm text-ink-400">{t('checkServer')}</p>
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-200 py-16">
-          <p className="text-ink-400 mb-4">Aucune meditation trouvee</p>
+          <p className="text-ink-400 mb-4">{t('noMeditations')}</p>
           <button
             onClick={handleCreateOpen}
             className="inline-flex items-center gap-2 rounded-xl bg-forest-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-forest-800"
           >
             <Plus className="h-4 w-4" />
-            Creer ma premiere meditation
+            {t('createFirst')}
           </button>
         </div>
       ) : (
@@ -228,11 +242,11 @@ function GestionMeditationsContent() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-cream-50/50">
-                  <th className="px-4 py-3 text-left font-medium text-ink-500">Titre</th>
-                  <th className="hidden px-4 py-3 text-left font-medium text-ink-500 sm:table-cell">Categorie</th>
-                  <th className="hidden px-4 py-3 text-center font-medium text-ink-500 lg:table-cell">Interactions</th>
-                  <th className="px-4 py-3 text-left font-medium text-ink-500">Date</th>
-                  <th className="px-4 py-3 text-right font-medium text-ink-500">Actions</th>
+                  <th className="px-4 py-3 text-left font-medium text-ink-500">{t('tableTitle')}</th>
+                  <th className="hidden px-4 py-3 text-left font-medium text-ink-500 sm:table-cell">{t('tableCategory')}</th>
+                  <th className="hidden px-4 py-3 text-center font-medium text-ink-500 lg:table-cell">{t('tableInteractions')}</th>
+                  <th className="px-4 py-3 text-left font-medium text-ink-500">{t('tableDate')}</th>
+                  <th className="px-4 py-3 text-right font-medium text-ink-500">{t('tableActions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -316,26 +330,26 @@ function GestionMeditationsContent() {
               className="mb-4 text-lg font-semibold text-ink-900"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
-              Detail de la meditation
+              {t('viewDetail')}
             </h3>
 
             <div className="space-y-4">
               <div>
-                <p className="text-sm font-medium text-ink-500">Titre</p>
+                <p className="text-sm font-medium text-ink-500">{t('tableTitle')}</p>
                 <p className="text-sm text-ink-900">{viewItem.titre}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-ink-500">Categorie</p>
+                <p className="text-sm font-medium text-ink-500">{t('tableCategory')}</p>
                 <span className="inline-block rounded-full bg-sage-200 px-2.5 py-0.5 text-xs font-medium capitalize text-forest-900">
                   {viewItem.categorie}
                 </span>
               </div>
               <div>
-                <p className="text-sm font-medium text-ink-500">Extrait</p>
+                <p className="text-sm font-medium text-ink-500">{t('excerpt')}</p>
                 <p className="text-sm leading-relaxed text-ink-700">{viewItem.extrait}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-ink-500">Date de publication</p>
+                <p className="text-sm font-medium text-ink-500">{t('publishDate')}</p>
                 <p className="text-sm text-ink-900">
                   {new Date(viewItem.publishedAt).toLocaleDateString('fr-FR', {
                     day: 'numeric',
@@ -346,13 +360,13 @@ function GestionMeditationsContent() {
               </div>
               <div className="flex gap-6">
                 <div>
-                  <p className="text-sm font-medium text-ink-500">Likes</p>
+                  <p className="text-sm font-medium text-ink-500">{t('likes')}</p>
                   <p className="flex items-center gap-1 text-sm text-ink-900">
                     <Heart className="h-3.5 w-3.5" /> {viewItem.likes}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-ink-500">Commentaires</p>
+                  <p className="text-sm font-medium text-ink-500">{t('commentsLabel')}</p>
                   <p className="flex items-center gap-1 text-sm text-ink-900">
                     <MessageCircle className="h-3.5 w-3.5" /> {viewItem.commentCount}
                   </p>
@@ -365,7 +379,7 @@ function GestionMeditationsContent() {
                 onClick={() => setViewItem(null)}
                 className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
               >
-                Fermer
+                {tc('close')}
               </button>
             </div>
           </div>
@@ -388,12 +402,12 @@ function GestionMeditationsContent() {
               className="mb-4 text-lg font-semibold text-ink-900"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
-              Modifier la meditation
+              {t('editMeditation')}
             </h3>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Titre</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{t('tableTitle')}</label>
                 <input
                   type="text"
                   value={editTitre}
@@ -402,7 +416,7 @@ function GestionMeditationsContent() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Categorie</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{t('tableCategory')}</label>
                 <CustomSelect
                   value={editCategorie}
                   onChange={(value) => setEditCategorie(value as MeditationCategorie)}
@@ -413,7 +427,7 @@ function GestionMeditationsContent() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Extrait</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{t('excerpt')}</label>
                 <textarea
                   value={editExtrait}
                   onChange={(e) => setEditExtrait(e.target.value)}
@@ -422,7 +436,7 @@ function GestionMeditationsContent() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Contenu</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{t('content')}</label>
                 <textarea
                   value={editContenu}
                   onChange={(e) => setEditContenu(e.target.value)}
@@ -437,14 +451,14 @@ function GestionMeditationsContent() {
                 onClick={() => setEditItem(null)}
                 className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
               >
-                Annuler
+                {tc('cancel')}
               </button>
               <button
                 onClick={handleEditSave}
                 disabled={updateMutation.isPending}
                 className="rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg disabled:opacity-50"
               >
-                {updateMutation.isPending ? 'Enregistrement...' : 'Enregistrer'}
+                {updateMutation.isPending ? tc('saving') : tc('save')}
               </button>
             </div>
           </div>
@@ -467,22 +481,22 @@ function GestionMeditationsContent() {
               className="mb-4 text-lg font-semibold text-ink-900"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
-              Nouvelle meditation
+              {t('newMeditation')}
             </h3>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Titre</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{t('tableTitle')}</label>
                 <input
                   type="text"
                   value={createTitre}
                   onChange={(e) => setCreateTitre(e.target.value)}
-                  placeholder="Titre de la meditation"
+                  placeholder={t('titlePlaceholder')}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Categorie</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{t('tableCategory')}</label>
                 <CustomSelect
                   value={createCategorie}
                   onChange={(value) => setCreateCategorie(value as MeditationCategorie)}
@@ -493,22 +507,22 @@ function GestionMeditationsContent() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Extrait</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{t('excerpt')}</label>
                 <textarea
                   value={createExtrait}
                   onChange={(e) => setCreateExtrait(e.target.value)}
                   rows={3}
-                  placeholder="Resume de la meditation"
+                  placeholder={t('excerptPlaceholder')}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Contenu</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{t('content')}</label>
                 <textarea
                   value={createContenu}
                   onChange={(e) => setCreateContenu(e.target.value)}
                   rows={8}
-                  placeholder="Redigez le contenu de votre meditation..."
+                  placeholder={t('contentPlaceholder')}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
@@ -519,14 +533,14 @@ function GestionMeditationsContent() {
                 onClick={() => setShowCreateModal(false)}
                 className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
               >
-                Annuler
+                {tc('cancel')}
               </button>
               <button
                 onClick={handleCreateSubmit}
                 disabled={createMutation.isPending}
                 className="rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg disabled:opacity-50"
               >
-                {createMutation.isPending ? 'Publication...' : 'Publier'}
+                {createMutation.isPending ? tc('publishing') : tc('publish')}
               </button>
             </div>
           </div>
@@ -536,10 +550,10 @@ function GestionMeditationsContent() {
       {/* Delete Confirm Dialog */}
       <ConfirmDialog
         open={!!deleteItem}
-        title="Supprimer cette meditation ?"
-        message={`Etes-vous sur de vouloir supprimer "${deleteItem?.titre ?? ''}" ? Cette action est irreversible.`}
-        confirmLabel="Supprimer"
-        cancelLabel="Annuler"
+        title={t('deleteConfirmTitle')}
+        message={t('deleteConfirmMessage', { title: deleteItem?.titre ?? '' })}
+        confirmLabel={t('deleteConfirmLabel')}
+        cancelLabel={tc('cancel')}
         variant="danger"
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteItem(null)}

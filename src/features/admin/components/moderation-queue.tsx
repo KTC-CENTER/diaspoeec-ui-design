@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Check,
   Trash2,
@@ -49,6 +50,8 @@ const severityConfig: Record<
 };
 
 export function ModerationQueue() {
+  const t = useTranslations('admin');
+  const tc = useTranslations('common');
   const { data, isLoading } = useModeration();
   const moderationAction = useModerationAction();
   const { addToast } = useToastStore();
@@ -59,13 +62,13 @@ export function ModerationQueue() {
     try {
       await moderationAction.mutateAsync({ id, action });
       const labels: Record<ModerationAction, string> = {
-        approuve: 'Contenu approuve',
-        supprime: 'Contenu supprime',
-        utilisateur_suspendu: 'Utilisateur suspendu',
+        approuve: t('contentApproved'),
+        supprime: t('contentDeleted'),
+        utilisateur_suspendu: tc('suspended'),
       };
       addToast(labels[action], 'success');
     } catch {
-      addToast('Erreur lors de la moderation', 'error');
+      addToast(t('moderationError'), 'error');
     } finally {
       setActionLoading(null);
     }
@@ -101,10 +104,10 @@ export function ModerationQueue() {
               className="text-lg font-semibold text-ink-900"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
-              Tout est en ordre !
+              {t('allInOrder')}
             </p>
             <p className="mt-1 text-sm text-ink-500">
-              Aucun element en attente de moderation.
+              {t('noModeration')}
             </p>
           </div>
         ) : (
@@ -131,12 +134,12 @@ export function ModerationQueue() {
                       )}
                     >
                       {item.type === 'temoignage'
-                        ? 'Temoignage signale'
-                        : 'Commentaire signale'}
+                        ? t('reportedComment')
+                        : t('reportedComment')}
                     </span>
                     {item.contexte && (
                       <>
-                        <span className="text-xs text-ink-500">sur</span>
+                        <span className="text-xs text-ink-500">{t('on')}</span>
                         <span className="text-xs font-medium text-forest-900">
                           {item.contexte}
                         </span>
@@ -173,10 +176,10 @@ export function ModerationQueue() {
                   {/* Reporter + Actions */}
                   <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                     <p className="text-xs text-ink-500">
-                      Signale par{' '}
+                      {t('reportedBy')}{' '}
                       <strong>{item.signaleParNom}</strong>
                       {item.autresSignalements > 0 &&
-                        ` + ${item.autresSignalements} autre${item.autresSignalements > 1 ? 's' : ''}`}
+                        ` ${t('otherReports', { count: item.autresSignalements })}`}
                     </p>
                     <div className="flex gap-2">
                       <button
@@ -187,7 +190,7 @@ export function ModerationQueue() {
                         {actionLoading === `${item.id}-approuve` ? (
                           <Loader2 className="inline h-3.5 w-3.5 animate-spin" />
                         ) : (
-                          'Approuver'
+                          t('approve')
                         )}
                       </button>
                       <button
@@ -198,7 +201,7 @@ export function ModerationQueue() {
                         {actionLoading === `${item.id}-supprime` ? (
                           <Loader2 className="inline h-3.5 w-3.5 animate-spin" />
                         ) : (
-                          'Supprimer'
+                          tc('delete')
                         )}
                       </button>
                       <button
@@ -209,7 +212,7 @@ export function ModerationQueue() {
                         {actionLoading === `${item.id}-utilisateur_suspendu` ? (
                           <Loader2 className="inline h-3.5 w-3.5 animate-spin" />
                         ) : (
-                          "Suspendre l'utilisateur"
+                          t('suspendUser')
                         )}
                       </button>
                     </div>
@@ -229,7 +232,7 @@ export function ModerationQueue() {
             className="mb-4 text-lg font-semibold text-forest-900"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            Historique de moderation
+            {t('moderationHistory')}
           </h3>
           <div className="space-y-0">
             {data.history.length > 0 ? (
@@ -237,18 +240,18 @@ export function ModerationQueue() {
                 let iconBg = 'bg-green-50';
                 let iconColor = 'text-green-500';
                 let Icon = CheckCircle;
-                let label = 'Commentaire approuve';
+                let label = t('commentApproved');
 
                 if (item.statut === 'supprime') {
                   iconBg = 'bg-red-50';
                   iconColor = 'text-red-400';
                   Icon = Trash2;
-                  label = 'Commentaire supprime';
+                  label = t('commentDeleted');
                 } else if (item.statut === 'utilisateur_suspendu') {
                   iconBg = 'bg-orange-50';
                   iconColor = 'text-orange-400';
                   Icon = UserX;
-                  label = 'Utilisateur suspendu';
+                  label = tc('suspended');
                 }
 
                 return (
@@ -280,7 +283,7 @@ export function ModerationQueue() {
               })
             ) : (
               <p className="py-4 text-sm text-ink-500">
-                Aucun historique de moderation.
+                {t('noModerationHistory')}
               </p>
             )}
           </div>
@@ -292,7 +295,7 @@ export function ModerationQueue() {
             className="mb-4 text-lg font-semibold text-forest-900"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            Statistiques de moderation
+            {t('moderationStats')}
           </h3>
           <div className="mb-6 grid grid-cols-2 gap-4">
             <div className="rounded-xl bg-cream-100 p-4 text-center">
@@ -303,7 +306,7 @@ export function ModerationQueue() {
                 {totalTraites}
               </p>
               <p className="mt-1 text-xs text-ink-500">
-                Signalements traites
+                {t('reportsProcessed')}
               </p>
             </div>
             <div className="rounded-xl bg-cream-100 p-4 text-center">
@@ -314,17 +317,17 @@ export function ModerationQueue() {
                 {data.pendingCount}
               </p>
               <p className="mt-1 text-xs text-ink-500">
-                En attente
+                {t('pending')}
               </p>
             </div>
           </div>
           <h4 className="mb-3 text-sm font-semibold text-ink-900">
-            Actions realisees
+            {t('actionsDone')}
           </h4>
           <div className="space-y-3">
             <div>
               <div className="mb-1 flex justify-between text-sm">
-                <span className="text-ink-500">Suppressions</span>
+                <span className="text-ink-500">{t('deletions')}</span>
                 <span className="font-semibold text-red-500">{suppressions}</span>
               </div>
               <div className="h-2.5 w-full rounded-full bg-red-50">
@@ -336,7 +339,7 @@ export function ModerationQueue() {
             </div>
             <div>
               <div className="mb-1 flex justify-between text-sm">
-                <span className="text-ink-500">Approbations</span>
+                <span className="text-ink-500">{t('approvals')}</span>
                 <span className="font-semibold text-green-600">{approbations}</span>
               </div>
               <div className="h-2.5 w-full rounded-full bg-green-50">
@@ -348,7 +351,7 @@ export function ModerationQueue() {
             </div>
             <div>
               <div className="mb-1 flex justify-between text-sm">
-                <span className="text-ink-500">Suspensions</span>
+                <span className="text-ink-500">{t('suspensions')}</span>
                 <span className="font-semibold text-orange-500">{suspensions}</span>
               </div>
               <div className="h-2.5 w-full rounded-full bg-orange-50">

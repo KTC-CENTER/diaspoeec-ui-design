@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Heart, Share2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { formatRelativeTime } from '@/lib/utils/format';
 import { useToastStore } from '@/stores/toast.store';
@@ -29,6 +30,7 @@ export function VideoCard({ video }: VideoCardProps) {
   const [likesCount, setLikesCount] = useState(video.likes);
   const { addToast } = useToastStore();
   const toggleLike = useToggleVideoLike();
+  const tc = useTranslations('common');
 
   return (
     <div
@@ -89,7 +91,7 @@ export function VideoCard({ video }: VideoCardProps) {
         <p className="mb-3 text-sm text-ink-500">{video.auteur}</p>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 text-xs text-ink-500">
-            <span>{video.vues} vues</span>
+            <span>{video.vues} {tc('views')}</span>
             <span className="flex items-center gap-1">
               <Heart className="h-3 w-3 text-red-400" />
               {likesCount}
@@ -127,7 +129,7 @@ export function VideoCard({ video }: VideoCardProps) {
                   }
                 } else {
                   await navigator.clipboard.writeText(url);
-                  addToast('Lien copie dans le presse-papier', 'success');
+                  addToast(tc('linkCopied'), 'success');
                 }
               }}
               className="rounded-lg p-1.5 transition-colors hover:bg-sage-100/50"

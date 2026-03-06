@@ -14,6 +14,7 @@ import {
   Lock,
   ShieldCheck,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { formatMontant } from '@/lib/utils/format';
 import { CustomSelect } from '@/components/forms/custom-select';
@@ -45,14 +46,6 @@ function getPresetAmounts(devise: string): number[] {
   });
 }
 
-const DEVISES = [
-  { value: 'EUR', label: 'EUR - Euro' },
-  { value: 'USD', label: 'USD - Dollar US' },
-  { value: 'XAF', label: 'XAF - Franc CFA' },
-  { value: 'GBP', label: 'GBP - Livre Sterling' },
-  { value: 'CHF', label: 'CHF - Franc Suisse' },
-];
-
 const campaignIcons: Record<string, React.ReactNode> = {
   default: <Heart className="w-5 h-5 text-forest-900" />,
   building: <Building className="w-5 h-5 text-ink-600" />,
@@ -61,9 +54,18 @@ const campaignIcons: Record<string, React.ReactNode> = {
 };
 
 export function DonationForm() {
+  const t = useTranslations('dons');
   const { data: campagnes, isLoading: campagnesLoading } = useCampagnes();
   const createDon = useCreateDon();
   const [success, setSuccess] = useState(false);
+
+  const DEVISES = [
+    { value: 'EUR', label: t('eurLabel') },
+    { value: 'USD', label: t('usdLabel') },
+    { value: 'XAF', label: t('xafLabel') },
+    { value: 'GBP', label: t('gbpLabel') },
+    { value: 'CHF', label: t('chfLabel') },
+  ];
 
   const {
     register,
@@ -101,22 +103,23 @@ export function DonationForm() {
           <Check className="h-8 w-8 text-white" />
         </div>
         <h2 className="font-heading text-2xl font-bold text-forest-900">
-          Merci pour votre generosite !
+          {t('thankYou')}
         </h2>
         <p className="mt-2 text-ink-600">
-          Votre don de{' '}
-          <strong>{formatMontant(watchedValues.montant, watchedValues.devise)}</strong>{' '}
-          pour la campagne &quot;{selectedCampagne?.titre}&quot; a bien ete enregistre.
+          {t('donationConfirmation', {
+            amount: formatMontant(watchedValues.montant, watchedValues.devise),
+            campaign: selectedCampagne?.titre ?? '...',
+          })}
         </p>
         {watchedValues.frequence === 'mensuel' && (
           <p className="mt-2 text-sm text-ink-500">
-            Votre don mensuel sera preleve automatiquement chaque mois.
+            {t('monthlyAutoDebit')}
           </p>
         )}
         <p className="mt-4 text-sm italic text-ink-400">
-          &laquo; Que chacun donne comme il l&apos;a resolu en son coeur, sans tristesse ni contrainte ; car Dieu aime celui qui donne avec joie. &raquo;
+          &laquo; {t('bibleQuote')} &raquo;
           <br />
-          <span className="font-medium">2 Corinthiens 9:7</span>
+          <span className="font-medium">{t('bibleRef')}</span>
         </p>
       </div>
     );
@@ -133,10 +136,10 @@ export function DonationForm() {
       >
         <div className="relative z-10">
           <p className="font-heading text-lg text-ink-900 italic leading-relaxed">
-            &laquo; Chacun donne comme il l&apos;a resolu en son coeur, sans tristesse ni contrainte ; car Dieu aime celui qui donne avec joie. &raquo;
+            &laquo; {t('bibleQuoteShort')} &raquo;
           </p>
           <p className="text-gold-600 font-semibold text-sm mt-2">
-            -- 2 Corinthiens 9:7
+            -- {t('bibleRef')}
           </p>
         </div>
       </div>
@@ -144,7 +147,7 @@ export function DonationForm() {
       {/* Campaign selection */}
       <div className="animate-[fade-up_0.5s_ease-out_0.1s_both]">
         <h2 className="font-heading text-xl font-bold text-forest-900 mb-4">
-          Choisir une campagne
+          {t('chooseCampaign')}
         </h2>
         {campagnesLoading ? (
           <div className="space-y-3">
@@ -197,7 +200,7 @@ export function DonationForm() {
                         {progress !== null && (
                           <div className="mt-2">
                             <div className="flex justify-between text-xs text-ink-600 mb-1">
-                              <span>{formatMontant(campagne.montantCollecte, 'EUR')} collectes</span>
+                              <span>{formatMontant(campagne.montantCollecte, 'EUR')} {t('collected')}</span>
                               <span className="font-medium text-forest-900">{progress}%</span>
                             </div>
                             <div className="w-full h-2 bg-ink-100 rounded-full overflow-hidden">
@@ -207,13 +210,13 @@ export function DonationForm() {
                               />
                             </div>
                             <p className="mt-1 text-xs text-ink-400">
-                              sur {formatMontant(campagne.objectifMontant, 'EUR')} objectif
+                              sur {formatMontant(campagne.objectifMontant, 'EUR')} {t('goal')}
                             </p>
                           </div>
                         )}
                         {progress === null && campagne.montantCollecte > 0 && (
                           <p className="mt-1 text-xs text-ink-500">
-                            {formatMontant(campagne.montantCollecte, 'EUR')} collectes · objectif libre
+                            {formatMontant(campagne.montantCollecte, 'EUR')} {t('collected')} · {t('freeGoal')}
                           </p>
                         )}
                       </div>
@@ -238,7 +241,7 @@ export function DonationForm() {
       {/* Amount Selection */}
       <div className="animate-[fade-up_0.5s_ease-out_0.2s_both]">
         <h2 className="font-heading text-xl font-bold text-forest-900 mb-4">
-          Montant
+          {t('amountSection')}
         </h2>
         <div className="flex flex-wrap gap-3 mb-4">
           {getPresetAmounts(watchedValues.devise || 'EUR').map((amount) => (
@@ -262,7 +265,7 @@ export function DonationForm() {
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
           <label className="text-sm font-medium text-ink-600 whitespace-nowrap">
-            Autre montant :
+            {t('otherAmount')}
           </label>
           <div className="relative flex-1 sm:max-w-[200px]">
             <input
@@ -288,7 +291,7 @@ export function DonationForm() {
       {/* Currency */}
       <div className="relative z-20 animate-[fade-up_0.5s_ease-out_0.2s_both]">
         <h2 className="font-heading text-xl font-bold text-forest-900 mb-4">
-          Devise
+          {t('currencySection')}
         </h2>
         <CustomSelect
           value={watchedValues.devise || 'EUR'}
@@ -301,7 +304,7 @@ export function DonationForm() {
       {/* Frequency */}
       <div className="animate-[fade-up_0.5s_ease-out_0.2s_both]">
         <h2 className="font-heading text-xl font-bold text-forest-900 mb-4">
-          Frequence
+          {t('frequencySection')}
         </h2>
         <div className="inline-flex bg-ink-100 rounded-xl p-1">
           <button
@@ -314,7 +317,7 @@ export function DonationForm() {
                 : 'text-ink-600'
             )}
           >
-            Don ponctuel
+            {t('oneTimeDonation')}
           </button>
           <button
             type="button"
@@ -326,13 +329,15 @@ export function DonationForm() {
                 : 'text-ink-600'
             )}
           >
-            Don mensuel
+            {t('monthlyDonation')}
           </button>
         </div>
         {watchedValues.frequence === 'mensuel' && (
           <div className="mt-3 p-3 bg-sage-200/50 rounded-xl text-sm text-forest-900">
             <Info className="w-4 h-4 inline-block mr-1" />
-            Vous serez debite de {watchedValues.montant || '...'} {watchedValues.devise || 'EUR'} chaque mois. Annulable a tout moment.
+            {t('monthlyInfo', {
+              amount: `${watchedValues.montant || '...'} ${watchedValues.devise || 'EUR'}`,
+            })}
           </div>
         )}
       </div>
@@ -340,12 +345,12 @@ export function DonationForm() {
       {/* Options */}
       <div className="animate-[fade-up_0.5s_ease-out_0.3s_both]">
         <h2 className="font-heading text-xl font-bold text-forest-900 mb-4">
-          Options
+          {t('options')}
         </h2>
         <div className="space-y-4">
           {/* Anonymous toggle */}
           <div className="flex items-center justify-between bg-white rounded-xl p-4 shadow-sm border border-sage-200/30">
-            <span className="text-sm font-medium text-ink-900">Don anonyme</span>
+            <span className="text-sm font-medium text-ink-900">{t('anonymousDonation')}</span>
             <button
               type="button"
               onClick={() =>
@@ -368,12 +373,12 @@ export function DonationForm() {
           {/* Message */}
           <div>
             <label className="text-sm font-medium text-ink-900 block mb-2">
-              Laisser un message (optionnel)
+              {t('leaveMessage')}
             </label>
             <textarea
               {...register('message')}
               rows={2}
-              placeholder="Un mot d'encouragement..."
+              placeholder={t('messagePlaceholder')}
               className="w-full px-4 py-3 rounded-xl border border-ink-200 text-sm focus:border-forest-900 focus:ring-2 focus:ring-sage-200 outline-none resize-none"
               maxLength={500}
             />
@@ -384,7 +389,7 @@ export function DonationForm() {
       {/* Payment Method */}
       <div className="animate-[fade-up_0.5s_ease-out_0.3s_both]">
         <h2 className="font-heading text-xl font-bold text-forest-900 mb-4">
-          Methode de paiement
+          {t('paymentMethod')}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Stripe / Carte bancaire */}
@@ -405,7 +410,7 @@ export function DonationForm() {
                 <img src="/logos/stripe.svg" alt="Stripe" className="h-4 w-auto" />
               </div>
               <div>
-                <p className="font-semibold text-ink-900">Carte bancaire</p>
+                <p className="font-semibold text-ink-900">{t('creditCard')}</p>
                 <div className="flex items-center gap-2 mt-1.5">
                   {/* Visa — logo local public/logos/visa.svg */}
                   <div className="h-6 w-10 bg-white border border-gray-200 rounded flex items-center justify-center px-1">
@@ -444,7 +449,7 @@ export function DonationForm() {
               </div>
               <div>
                 <p className="font-semibold text-ink-900">PayPal</p>
-                <p className="text-xs text-ink-500">Compte PayPal ou carte</p>
+                <p className="text-xs text-ink-500">{t('paypalDesc')}</p>
               </div>
             </div>
           </label>
@@ -460,32 +465,32 @@ export function DonationForm() {
       {watchedValues.campagneId && watchedValues.montant > 0 && (
         <div className="animate-[fade-up_0.5s_ease-out_0.4s_both] bg-white rounded-2xl shadow-lg border border-sage-200/50 p-6 md:sticky md:bottom-4">
           <h3 className="font-heading font-bold text-forest-900 mb-4">
-            Recapitulatif
+            {t('summary')}
           </h3>
           <div className="space-y-2 mb-5">
             <div className="flex justify-between text-sm">
-              <span className="text-ink-600">Campagne</span>
+              <span className="text-ink-600">{t('campaign')}</span>
               <span className="font-medium text-ink-900">
                 {selectedCampagne?.titre || '...'}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-ink-600">Montant</span>
+              <span className="text-ink-600">{t('amount')}</span>
               <span className="font-medium text-ink-900">
                 {formatMontant(watchedValues.montant, watchedValues.devise)}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-ink-600">Frequence</span>
+              <span className="text-ink-600">{t('frequency')}</span>
               <span className="font-medium text-ink-900">
-                {watchedValues.frequence === 'mensuel' ? 'Mensuel' : 'Ponctuel'}
+                {watchedValues.frequence === 'mensuel' ? t('monthly') : t('oneTimeLabel')}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-ink-600">Paiement</span>
+              <span className="text-ink-600">{t('payment')}</span>
               <span className="font-medium text-ink-900">
                 {watchedValues.methodePaiement === 'stripe'
-                  ? 'Carte bancaire'
+                  ? t('creditCard')
                   : 'PayPal'}
               </span>
             </div>
@@ -504,25 +509,25 @@ export function DonationForm() {
             {createDon.isPending ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                Traitement en cours...
+                {t('processing')}
               </>
             ) : (
               <>
                 <Lock className="w-5 h-5" />
-                Proceder au paiement
+                {t('proceedToPayment')}
               </>
             )}
           </button>
           <p className="text-center text-xs text-ink-600 mt-3 flex items-center justify-center gap-1">
             <ShieldCheck className="w-3.5 h-3.5" />
-            Paiement securise par Stripe
+            {t('securePayment')}
           </p>
         </div>
       )}
 
       {createDon.isError && (
         <p className="text-center text-sm text-error">
-          Une erreur est survenue. Veuillez reessayer.
+          {t('paymentError')}
         </p>
       )}
     </form>

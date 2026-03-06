@@ -1,9 +1,11 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { ModerationQueue } from '@/features/admin/components/moderation-queue';
 import { useModeration } from '@/features/admin/hooks/use-admin';
 
 export default function AdminModerationPage() {
+  const t = useTranslations('admin');
   const { data } = useModeration();
   const pendingCount = data?.pendingCount ?? 0;
 
@@ -16,16 +18,16 @@ export default function AdminModerationPage() {
             className="text-2xl font-semibold text-forest-900 md:text-3xl"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            Moderation
+            {t('moderation')}
           </h2>
           <p className="mt-1 text-sm text-ink-500">
-            Gerer les contenus signales
+            {t('moderationDesc')}
           </p>
         </div>
         {pendingCount > 0 && (
           <span className="inline-flex items-center gap-2 rounded-full bg-red-50 px-4 py-2 text-sm font-medium text-red-600">
             <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-red-500" />
-            {pendingCount} element{pendingCount > 1 ? 's' : ''} a moderer
+            {t('itemsToModerate', { count: pendingCount })}
           </span>
         )}
       </div>

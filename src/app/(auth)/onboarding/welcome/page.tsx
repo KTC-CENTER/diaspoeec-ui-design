@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { CheckCircle2, Users, Globe, Church } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 
 // ============================================================================
@@ -50,11 +51,12 @@ function ConfettiParticle({
 
 export default function OnboardingWelcomePage() {
   const router = useRouter();
+  const t = useTranslations('onboarding');
 
   const stats = [
-    { icon: Users, value: '1 250+', label: 'membres' },
-    { icon: Globe, value: '45+', label: 'pays' },
-    { icon: Church, value: '120+', label: 'paroisses' },
+    { icon: Users, value: '1 250+', label: t('members') },
+    { icon: Globe, value: '45+', label: t('countries') },
+    { icon: Church, value: '120+', label: t('parishes') },
   ];
 
   return (
@@ -104,9 +106,9 @@ export default function OnboardingWelcomePage() {
         {/* Heading */}
         <div className="space-y-3">
           <h2 className="font-heading text-2xl font-bold text-ink-900">
-            Bienvenue dans la famille DiaspoEEC !
+            {t('welcome')}
           </h2>
-          <p className="text-ink-500">Votre compte est pr&ecirc;t.</p>
+          <p className="text-ink-500">{t('accountReady')}</p>
         </div>
 
         {/* Stats */}
@@ -130,7 +132,7 @@ export default function OnboardingWelcomePage() {
             'bg-gold-600 shadow-lg shadow-gold-600/25 hover:bg-gold-700 active:scale-[0.98]'
           )}
         >
-          Explorer DiaspoEEC
+          {t('exploreDiaspoEEC')}
         </button>
       </div>
     </>

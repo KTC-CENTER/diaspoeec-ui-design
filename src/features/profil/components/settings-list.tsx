@@ -12,9 +12,11 @@ import {
   ChevronRight,
   Settings,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { useAuthStore } from '@/stores/auth.store';
 import { useUIStore } from '@/stores/ui.store';
+import { useLocaleStore } from '@/stores/locale.store';
 
 interface SettingsItem {
   icon: typeof Bell;
@@ -33,56 +35,59 @@ export function SettingsList() {
   const router = useRouter();
   const { logout } = useAuthStore();
   const { theme, setTheme } = useUIStore();
+  const locale = useLocaleStore((s) => s.locale);
   const isDarkMode = theme === 'dark';
+  const t = useTranslations('settings');
+
+  const localeLabels: Record<string, string> = { fr: 'Francais', en: 'English', de: 'Deutsch', es: 'Espanol' };
 
   const items: SettingsItem[] = [
     {
       icon: Bell,
-      label: 'Preferences de notification',
+      label: t('notificationPreferences'),
       href: '/profil/notifications',
       iconBg: 'bg-forest-900/10',
       iconColor: 'text-forest-900',
     },
     {
       icon: Globe,
-      label: 'Langue',
+      label: t('language'),
       href: '/profil/langue',
       iconBg: 'bg-forest-900/10',
       iconColor: 'text-forest-900',
-      trailingText: 'Francais',
+      trailingText: localeLabels[locale] || 'Francais',
     },
     {
       icon: Moon,
-      label: 'Mode sombre',
+      label: t('darkMode'),
       toggle: true,
       iconBg: 'bg-ink-900/5',
       iconColor: 'text-ink-900',
     },
     {
       icon: Shield,
-      label: 'Securite du compte',
+      label: t('accountSecurity'),
       href: '/profil/securite',
       iconBg: 'bg-forest-900/10',
       iconColor: 'text-forest-900',
-      trailingBadge: 'Keycloak',
     },
     {
       icon: Smartphone,
-      label: 'Appareils connectes',
+      label: t('connectedDevices'),
       href: '/profil/appareils',
       iconBg: 'bg-forest-900/10',
       iconColor: 'text-forest-900',
     },
     {
       icon: CircleHelp,
-      label: 'Aide & Support',
+      label: t('helpSupport'),
       href: '/profil/aide',
       iconBg: 'bg-gold-600/10',
       iconColor: 'text-gold-600',
     },
     {
       icon: LogOut,
-      label: 'Deconnexion',
+      label: t('logout'),
       danger: true,
       iconBg: 'bg-red-50',
       iconColor: 'text-red-500',
@@ -100,7 +105,7 @@ export function SettingsList() {
         style={{ fontFamily: 'var(--font-heading)' }}
       >
         <Settings className="h-5 w-5 text-gold-600" />
-        Parametres
+        {t('title')}
       </h2>
       <div className="divide-y divide-sage-400/10">
         {items.map((item) => {

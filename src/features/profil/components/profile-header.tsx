@@ -1,17 +1,18 @@
 'use client';
 
 import { Camera, MapPin, Globe, PenLine } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { formatDate, getInitials } from '@/lib/utils/format';
 import { useToastStore } from '@/stores/toast.store';
 import { PAYS_LIST } from '@/lib/utils/constants';
 import type { User } from '@/types';
 
-const diasporaLabels: Record<string, string> = {
-  etudiante: 'Diaspora Etudiante',
-  professionnelle: 'Diaspora Professionnelle',
-  familiale: 'Diaspora Familiale',
-  missionnaire: 'Diaspora Missionnaire',
+const diasporaKeys: Record<string, string> = {
+  etudiante: 'studentType',
+  professionnelle: 'professionalType',
+  familiale: 'familyType',
+  missionnaire: 'missionaryType',
 };
 
 interface ProfileHeaderProps {
@@ -22,6 +23,7 @@ interface ProfileHeaderProps {
 export function ProfileHeader({ user, onEdit }: ProfileHeaderProps) {
   const initials = getInitials(user.nomComplet);
   const { addToast } = useToastStore();
+  const t = useTranslations('profil');
 
   return (
     <div className="rounded-2xl border border-sage-400/10 bg-white shadow-md">
@@ -74,7 +76,7 @@ export function ProfileHeader({ user, onEdit }: ProfileHeaderProps) {
               )}
             </div>
             <button
-              onClick={() => addToast('Changement de photo bientot disponible', 'info')}
+              onClick={() => addToast(t('photoComingSoon'), 'info')}
               className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border border-sage-400/20 bg-white shadow-md transition-colors group-hover:bg-forest-900 group-hover:text-white sm:h-8 sm:w-8"
             >
               <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -92,25 +94,25 @@ export function ProfileHeader({ user, onEdit }: ProfileHeaderProps) {
             <div className="mt-1 flex flex-wrap items-center gap-2 sm:gap-3">
               <span className="inline-flex items-center gap-1 rounded-full border border-gold-600/20 bg-gold-600/10 px-2.5 py-0.5 text-[11px] font-semibold text-gold-700 sm:gap-1.5 sm:px-3 sm:py-1 sm:text-xs">
                 <Globe className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                {diasporaLabels[user.typeDiaspora] || user.typeDiaspora}
+                {diasporaKeys[user.typeDiaspora] ? t(diasporaKeys[user.typeDiaspora]) : user.typeDiaspora}
               </span>
               <span className="inline-flex items-center gap-1 text-xs text-ink-500 sm:text-sm">
                 <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 {user.ville}, {PAYS_LIST.find((p) => p.value === user.paysResidence)?.label || user.paysResidence}
               </span>
               <span className="hidden text-xs text-ink-500/70 sm:inline">
-                Membre depuis {formatDate(user.createdAt, 'MMMM yyyy')}
+                {t('memberSince', { date: formatDate(user.createdAt, 'MMMM yyyy') })}
               </span>
             </div>
           </div>
 
           {/* Edit button */}
           <button
-            onClick={onEdit ?? (() => addToast('Edition du profil bientot disponible', 'info'))}
+            onClick={onEdit ?? (() => addToast(t('editComingSoon'), 'info'))}
             className="inline-flex items-center gap-2 self-start rounded-xl border-2 border-forest-900 px-4 py-2 text-sm font-semibold text-forest-900 transition-all duration-300 hover:bg-forest-900 hover:text-white sm:self-center sm:px-5 sm:py-2.5"
           >
             <PenLine className="h-4 w-4" />
-            Modifier le profil
+            {t('editProfile')}
           </button>
         </div>
       </div>

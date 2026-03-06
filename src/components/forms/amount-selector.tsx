@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 
 interface AmountSelectorProps {
@@ -16,6 +17,7 @@ export function AmountSelector({
   onSelect,
   currency,
 }: AmountSelectorProps) {
+  const td = useTranslations('dons');
   const [customMode, setCustomMode] = useState(false);
   const [customValue, setCustomValue] = useState('');
 
@@ -67,7 +69,7 @@ export function AmountSelector({
         <input
           type="text"
           inputMode="decimal"
-          placeholder="Autre montant"
+          placeholder={td('otherAmountPlaceholder')}
           value={customValue}
           onFocus={handleCustomFocus}
           onChange={handleCustomChange}

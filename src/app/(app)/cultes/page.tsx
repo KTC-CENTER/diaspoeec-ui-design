@@ -2,6 +2,7 @@
 
 import { CalendarClock, PlayCircle, Clock, Church, MapPin, Video } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useVideos } from '@/features/cultes/hooks/use-cultes';
 import { useEvenements } from '@/features/evenements/hooks/use-evenements';
 import { LiveBanner } from '@/features/cultes/components/live-banner';
@@ -39,6 +40,7 @@ function ServiceSkeleton() {
 }
 
 function CulteEventCard({ event }: { event: Evenement }) {
+  const te = useTranslations('evenements');
   const d = new Date(event.date);
   const dateStr = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
   const heureStr = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -73,13 +75,14 @@ function CulteEventCard({ event }: { event: Evenement }) {
         href={`/evenements/${event.id}?from=cultes`}
         className="flex w-full items-center justify-center gap-2 rounded-xl border border-gold-600/30 py-2 text-sm font-semibold text-gold-600 transition-colors hover:border-terra-600/30 hover:text-terra-600"
       >
-        Voir les details
+        {te('seeDetails')}
       </Link>
     </div>
   );
 }
 
 export default function CultesPage() {
+  const t = useTranslations('cultes');
   const { data: videos, isLoading: loadingVideos } = useVideos();
   const { data: allCulteEvents, isLoading: loadingCultes } = useEvenements('culte');
 
@@ -102,9 +105,9 @@ export default function CultesPage() {
           className="mb-2 text-3xl font-bold text-forest-900 md:text-4xl"
           style={{ fontFamily: 'var(--font-heading)' }}
         >
-          Cultes & Videos
+          {t('title')}
         </h1>
-        <p className="text-lg text-ink-500">Vivez les cultes ou que vous soyez</p>
+        <p className="text-lg text-ink-500">{t('subtitle')}</p>
       </div>
 
       {/* Live Banner */}
@@ -132,7 +135,7 @@ export default function CultesPage() {
           style={{ fontFamily: 'var(--font-heading)' }}
         >
           <CalendarClock className="h-5 w-5 text-gold-600" />
-          Prochains cultes en direct
+          {t('upcomingLive')}
         </h2>
 
         {loadingCultes ? (
@@ -150,7 +153,7 @@ export default function CultesPage() {
         ) : (
           <div className="rounded-2xl border border-sage-400/10 bg-white p-8 text-center shadow-sm">
             <p className="text-sm text-ink-500">
-              Aucun culte programme pour le moment.
+              {t('noScheduled')}
             </p>
           </div>
         )}
@@ -164,7 +167,7 @@ export default function CultesPage() {
             style={{ fontFamily: 'var(--font-heading)' }}
           >
             <Clock className="h-5 w-5 text-gold-600" />
-            Lives programmes
+            {t('scheduledLives')}
           </h2>
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             {planifieVideos.map((video) => (
@@ -181,7 +184,7 @@ export default function CultesPage() {
           style={{ fontFamily: 'var(--font-heading)' }}
         >
           <PlayCircle className="h-5 w-5 text-gold-600" />
-          Videos recentes
+          {t('recentVideos')}
         </h2>
 
         {loadingVideos ? (
@@ -199,7 +202,7 @@ export default function CultesPage() {
         ) : (
           <div className="rounded-2xl border border-sage-400/10 bg-white p-8 text-center shadow-sm">
             <p className="text-sm text-ink-500">
-              Aucune video disponible pour le moment.
+              {t('noVideos')}
             </p>
           </div>
         )}

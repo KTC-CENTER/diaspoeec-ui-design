@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, Copy, Check, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { useTranslations } from 'next-intl';
 
 interface SharePopupProps {
   url: string;
@@ -62,6 +63,7 @@ const shareOptions: ShareOption[] = [
 ];
 
 export function SharePopup({ url, title, isOpen, onClose }: SharePopupProps) {
+  const tc = useTranslations('common');
   const [copied, setCopied] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
 
@@ -113,15 +115,15 @@ export function SharePopup({ url, title, isOpen, onClose }: SharePopupProps) {
         'animate-fade-up'
       )}
       role="dialog"
-      aria-label="Partager"
+      aria-label={tc('share')}
     >
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
-        <h4 className="text-sm font-semibold text-ink-900">Partager</h4>
+        <h4 className="text-sm font-semibold text-ink-900">{tc('share')}</h4>
         <button
           onClick={onClose}
           className="flex h-7 w-7 items-center justify-center rounded-lg text-ink-400 hover:bg-ink-100 transition-colors"
-          aria-label="Fermer"
+          aria-label={tc('close')}
         >
           <X className="h-4 w-4" />
         </button>
@@ -137,7 +139,7 @@ export function SharePopup({ url, title, isOpen, onClose }: SharePopupProps) {
               'flex h-10 w-10 items-center justify-center rounded-xl text-white transition-all',
               option.color
             )}
-            aria-label={`Partager sur ${option.name}`}
+            aria-label={`${tc('share')} ${option.name}`}
             title={option.name}
           >
             {option.icon}
@@ -165,12 +167,12 @@ export function SharePopup({ url, title, isOpen, onClose }: SharePopupProps) {
           {copied ? (
             <>
               <Check className="h-3.5 w-3.5" />
-              Copie!
+              {tc('copied')}
             </>
           ) : (
             <>
               <Copy className="h-3.5 w-3.5" />
-              Copier
+              {tc('copy')}
             </>
           )}
         </button>

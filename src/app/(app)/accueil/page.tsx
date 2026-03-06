@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { cn } from '@/lib/utils/cn';
 import { formatDate } from '@/lib/utils/format';
+import { useTranslations } from 'next-intl';
 import { useAuthStore } from '@/stores/auth.store';
 import { useFeed } from '@/features/feed/hooks/use-feed';
 import { FeedMeditation } from '@/features/feed/components/feed-meditation';
@@ -13,31 +14,11 @@ import { FeedLive } from '@/features/feed/components/feed-live';
 import { FeedBible } from '@/features/feed/components/feed-bible';
 import type { Meditation, Evenement, Campagne, Video } from '@/types';
 
-const quickActions = [
-  {
-    emoji: '\u{1F64F}',
-    label: 'Meditation du jour',
-    href: '/meditations',
-    bgColor: 'bg-sage-200',
-  },
-  {
-    emoji: '\u{1F4C5}',
-    label: 'Prochain evenement',
-    href: '/evenements',
-    bgColor: 'bg-gold-400/40',
-  },
-  {
-    emoji: '\u{1F49B}',
-    label: 'Faire un don',
-    href: '/dons/nouveau',
-    bgColor: 'bg-gold-400/50',
-  },
-  {
-    emoji: '\u{1F4D6}',
-    label: 'Lecture du jour',
-    href: '/bible',
-    bgColor: 'bg-sage-200',
-  },
+const quickActionKeys = [
+  { key: 'dailyMeditation' as const, emoji: '\u{1F64F}', href: '/meditations', bgColor: 'bg-sage-200' },
+  { key: 'nextEvent' as const, emoji: '\u{1F4C5}', href: '/evenements', bgColor: 'bg-gold-400/40' },
+  { key: 'donate' as const, emoji: '\u{1F49B}', href: '/dons/nouveau', bgColor: 'bg-gold-400/50' },
+  { key: 'dailyReading' as const, emoji: '\u{1F4D6}', href: '/bible', bgColor: 'bg-sage-200' },
 ];
 
 function FeedSkeleton() {
@@ -68,6 +49,7 @@ function FeedSkeleton() {
 export default function AccueilPage() {
   const { user } = useAuthStore();
   const { data: feedItems, isLoading } = useFeed();
+  const t = useTranslations('accueil');
 
   const today = formatDate(new Date().toISOString(), 'EEEE dd MMMM yyyy');
   const userName = user?.nomComplet || 'Fidele';
@@ -77,10 +59,10 @@ export default function AccueilPage() {
       {/* Welcome */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-ink-900 md:text-4xl">
-          Bonjour, {userName} <span className="inline-block">{'\u{1F44B}'}</span>
+          {t('greeting', { name: userName })} <span className="inline-block">{'\u{1F44B}'}</span>
         </h1>
         <p className="text-base text-ink-600">
-          Que la paix du Seigneur soit avec vous
+          {t('blessing')}
         </p>
         <p className="mt-1 text-sm font-medium text-gold-600 capitalize">{today}</p>
       </div>
@@ -88,7 +70,7 @@ export default function AccueilPage() {
       {/* Quick Actions */}
       <div className="mb-8">
         <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar md:grid md:grid-cols-4 md:overflow-visible">
-          {quickActions.map((action) => (
+          {quickActionKeys.map((action) => (
             <Link
               key={action.href}
               href={action.href}
@@ -101,7 +83,7 @@ export default function AccueilPage() {
                 <span className="text-xl">{action.emoji}</span>
               </div>
               <p className="text-sm font-semibold text-ink-900">
-                {action.label}
+                {t(action.key)}
               </p>
             </Link>
           ))}
@@ -113,7 +95,7 @@ export default function AccueilPage() {
 
       {/* Community Feed */}
       <h2 className="text-xl font-bold text-ink-900 mb-5">
-        Fil d&apos;actualite
+        {t('communityFeed')}
       </h2>
 
       {isLoading ? (

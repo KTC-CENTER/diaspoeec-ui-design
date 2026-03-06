@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Plus,
   FileText,
@@ -22,6 +23,10 @@ import type { Campagne } from '@/types';
 type TabValue = 'overview' | 'campaigns' | 'history';
 
 export default function AdminDonsPage() {
+  const t = useTranslations('admin');
+  const tc = useTranslations('common');
+  const td = useTranslations('dons');
+
   const [activeTab, setActiveTab] = useState<TabValue>('overview');
   const [showCampagneForm, setShowCampagneForm] = useState(false);
   const [editingCampagne, setEditingCampagne] = useState<Campagne | null>(null);
@@ -38,20 +43,20 @@ export default function AdminDonsPage() {
         { id: editingCampagne.id, data: formData },
         {
           onSuccess: () => {
-            addToast('Campagne mise a jour', 'success');
+            addToast(t('campaignUpdated'), 'success');
             setShowCampagneForm(false);
             setEditingCampagne(null);
           },
-          onError: () => addToast('Erreur lors de la mise a jour', 'error'),
+          onError: () => addToast(t('campaignUpdateError'), 'error'),
         }
       );
     } else {
       createCampagneMutation.mutate(formData, {
         onSuccess: () => {
-          addToast('Campagne creee avec succes', 'success');
+          addToast(t('campaignCreated'), 'success');
           setShowCampagneForm(false);
         },
-        onError: () => addToast('Erreur lors de la creation', 'error'),
+        onError: () => addToast(t('campaignCreateError'), 'error'),
       });
     }
   };
@@ -67,9 +72,9 @@ export default function AdminDonsPage() {
   };
 
   const tabs: { value: TabValue; label: string }[] = [
-    { value: 'overview', label: "Vue d'ensemble" },
-    { value: 'campaigns', label: 'Campagnes' },
-    { value: 'history', label: 'Historique des dons' },
+    { value: 'overview', label: t('donationsAndCampaigns') },
+    { value: 'campaigns', label: t('activeCampaigns') },
+    { value: 'history', label: td('donationHistory') },
   ];
 
   if (isLoading) {
@@ -80,7 +85,7 @@ export default function AdminDonsPage() {
             className="text-2xl font-semibold text-forest-900 md:text-3xl"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            Dons &amp; Campagnes
+            {t('donationsAndCampaigns')}
           </h2>
         </div>
         <div className="flex items-center justify-center py-20">
@@ -101,10 +106,10 @@ export default function AdminDonsPage() {
           className="text-2xl font-semibold text-forest-900 md:text-3xl"
           style={{ fontFamily: 'var(--font-heading)' }}
         >
-          Dons &amp; Campagnes
+          {t('donationsAndCampaigns')}
         </h2>
         <p className="mt-1 text-sm text-ink-500">
-          Suivi des dons et gestion des campagnes de collecte
+          {t('donationsSubtitle')}
         </p>
       </div>
 
@@ -132,32 +137,32 @@ export default function AdminDonsPage() {
           {/* Stats with border-l-4 */}
           <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-2xl border-l-4 border-forest-900 bg-white p-5 shadow-sm">
-              <p className="text-xs uppercase tracking-wide text-ink-500">Total collecte</p>
+              <p className="text-xs uppercase tracking-wide text-ink-500">{t('totalCollected')}</p>
               <p className="mt-1 text-2xl font-bold text-forest-900" style={{ fontFamily: 'var(--font-heading)' }}>
                 {formatMontant(data.totalCollecte, 'EUR')}
               </p>
-              <p className="mt-1 text-xs text-ink-500">Depuis le lancement</p>
+              <p className="mt-1 text-xs text-ink-500">{t('sinceLaunch')}</p>
             </div>
             <div className="rounded-2xl border-l-4 border-gold-600 bg-white p-5 shadow-sm">
-              <p className="text-xs uppercase tracking-wide text-ink-500">Ce mois</p>
+              <p className="text-xs uppercase tracking-wide text-ink-500">{t('currentMonthDonations')}</p>
               <p className="mt-1 text-2xl font-bold text-gold-600" style={{ fontFamily: 'var(--font-heading)' }}>
                 {formatMontant(data.donsMoisEnCours, 'EUR')}
               </p>
-              <p className="mt-1 text-xs text-ink-500">Dons du mois en cours</p>
+              <p className="mt-1 text-xs text-ink-500">{t('currentMonthDonations')}</p>
             </div>
             <div className="rounded-2xl border-l-4 border-forest-700 bg-white p-5 shadow-sm">
-              <p className="text-xs uppercase tracking-wide text-ink-500">Donateurs uniques</p>
+              <p className="text-xs uppercase tracking-wide text-ink-500">{t('uniqueDonors')}</p>
               <p className="mt-1 text-2xl font-bold text-forest-700" style={{ fontFamily: 'var(--font-heading)' }}>
                 {data.totalDonateurs.toLocaleString('fr-FR')}
               </p>
-              <p className="mt-1 text-xs text-ink-500">Total tous dons</p>
+              <p className="mt-1 text-xs text-ink-500">{t('totalAllDonations')}</p>
             </div>
             <div className="rounded-2xl border-l-4 border-terra-600 bg-white p-5 shadow-sm">
-              <p className="text-xs uppercase tracking-wide text-ink-500">Don moyen</p>
+              <p className="text-xs uppercase tracking-wide text-ink-500">{t('averageDonation')}</p>
               <p className="mt-1 text-2xl font-bold text-terra-600" style={{ fontFamily: 'var(--font-heading)' }}>
                 {formatMontant(data.donMoyen, 'EUR')}
               </p>
-              <p className="mt-1 text-xs text-ink-500">Par transaction</p>
+              <p className="mt-1 text-xs text-ink-500">{t('perTransaction')}</p>
             </div>
           </div>
 
@@ -165,7 +170,7 @@ export default function AdminDonsPage() {
           <div className="mb-8">
             <BarChart
               data={data.monthlyData}
-              title="Evolution des dons mensuels"
+              title={t('monthlyDonationsTrend')}
               color="gold"
             />
           </div>
@@ -174,10 +179,10 @@ export default function AdminDonsPage() {
             {/* Top Donors */}
             <div className="rounded-2xl border border-forest-900/5 bg-white p-6 shadow-sm">
               <h3 className="mb-4 text-lg font-semibold text-forest-900" style={{ fontFamily: 'var(--font-heading)' }}>
-                Top donateurs ce mois
+                {t('topDonorsMonth')}
               </h3>
               {data.topDonateurs.length === 0 ? (
-                <p className="py-8 text-center text-sm text-ink-400">Aucun don ce mois</p>
+                <p className="py-8 text-center text-sm text-ink-400">{t('noDonationsThisMonth')}</p>
               ) : (
                 <div className="space-y-3">
                   {data.topDonateurs.map((donor, i) => {
@@ -193,8 +198,8 @@ export default function AdminDonsPage() {
                           {i + 1}
                         </span>
                         <div className="flex-1">
-                          <p className="text-sm font-medium">{donor.nom || 'Anonyme'}</p>
-                          <p className="text-xs text-ink-500">{donor.nbDons} don{donor.nbDons > 1 ? 's' : ''}</p>
+                          <p className="text-sm font-medium">{donor.nom || tc('anonymous')}</p>
+                          <p className="text-xs text-ink-500">{t('donationCountLabel', { count: donor.nbDons })}</p>
                         </div>
                         <span className={style.amountClass} style={{ fontFamily: 'var(--font-heading)' }}>
                           {formatMontant(donor.montant, 'EUR')}
@@ -209,10 +214,10 @@ export default function AdminDonsPage() {
             {/* Payment Methods */}
             <div className="rounded-2xl border border-forest-900/5 bg-white p-6 shadow-sm">
               <h3 className="mb-4 text-lg font-semibold text-forest-900" style={{ fontFamily: 'var(--font-heading)' }}>
-                Par methode de paiement
+                {t('byPaymentMethod')}
               </h3>
               {data.methodePaiement.length === 0 ? (
-                <p className="py-8 text-center text-sm text-ink-400">Aucune donnee</p>
+                <p className="py-8 text-center text-sm text-ink-400">{tc('noData')}</p>
               ) : (
                 <div className="mt-2 space-y-5">
                   {data.methodePaiement.map((mp, i) => {
@@ -243,9 +248,9 @@ export default function AdminDonsPage() {
                 </div>
               )}
               <div className="mt-8 rounded-xl bg-cream-100 p-4">
-                <p className="text-xs text-ink-500">Total des transactions</p>
+                <p className="text-xs text-ink-500">{t('totalTransactions')}</p>
                 <p className="mt-1 text-xl font-bold text-forest-900" style={{ fontFamily: 'var(--font-heading)' }}>
-                  {data.dons.length.toLocaleString('fr-FR')} transactions
+                  {t('transactionsCount', { count: data.dons.length })}
                 </p>
               </div>
             </div>
@@ -265,8 +270,9 @@ export default function AdminDonsPage() {
           ) : campagnes && campagnes.length > 0 ? (
             <div className="mb-6 space-y-4">
               {campagnes.map((campagne) => {
-                const pct = campagne.objectifMontant > 0
-                  ? Math.min(Math.round((campagne.montantCollecte / campagne.objectifMontant) * 100), 100)
+                const obj = campagne.objectifMontant ?? 0;
+                const pct = obj > 0
+                  ? Math.min(Math.round((campagne.montantCollecte / obj) * 100), 100)
                   : 0;
                 const isTerminee = campagne.statut === 'terminee';
                 const isPausee = campagne.statut === 'pausee';
@@ -288,13 +294,13 @@ export default function AdminDonsPage() {
                             {campagne.titre}
                           </h4>
                           {campagne.statut === 'active' && (
-                            <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Active</span>
+                            <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">{t('statusActive')}</span>
                           )}
                           {isPausee && (
-                            <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700">En pause</span>
+                            <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700">{t('statusPaused')}</span>
                           )}
                           {isTerminee && (
-                            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">Terminee</span>
+                            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">{t('statusCompleted')}</span>
                           )}
                         </div>
                         {campagne.objectifMontant != null && (
@@ -311,8 +317,8 @@ export default function AdminDonsPage() {
                               {formatMontant(campagne.montantCollecte, 'EUR')}
                             </strong>{' '}
                             {campagne.objectifMontant != null
-                              ? `collectes sur ${formatMontant(campagne.objectifMontant, 'EUR')}`
-                              : 'collectes (objectif libre)'}
+                              ? t('collectedOf', { amount: formatMontant(campagne.objectifMontant, 'EUR') })
+                              : t('freeObjective')}
                           </span>
                           {campagne.objectifMontant != null && (
                             <span className="font-semibold text-forest-900">{pct}%</span>
@@ -324,7 +330,7 @@ export default function AdminDonsPage() {
                         className="flex items-center gap-1.5 rounded-xl border border-forest-900/20 px-4 py-2 text-sm text-forest-900 transition hover:bg-sage-200"
                       >
                         <Edit2 className="h-3.5 w-3.5" />
-                        Modifier
+                        {tc('edit')}
                       </button>
                     </div>
                   </div>
@@ -333,7 +339,7 @@ export default function AdminDonsPage() {
             </div>
           ) : (
             <div className="mb-6 rounded-2xl border border-dashed border-ink-200 bg-cream-50 py-16 text-center">
-              <p className="text-sm text-ink-400">Aucune campagne. Creez la premiere !</p>
+              <p className="text-sm text-ink-400">{t('noCampaigns')}</p>
             </div>
           )}
 
@@ -342,7 +348,7 @@ export default function AdminDonsPage() {
             className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-3 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
           >
             <Plus className="h-4 w-4" />
-            Nouvelle campagne
+            {t('newCampaign')}
           </button>
         </div>
       )}
@@ -352,7 +358,7 @@ export default function AdminDonsPage() {
         <div>
           {data.dons.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-ink-200 bg-cream-50 py-16 text-center">
-              <p className="text-sm text-ink-400">Aucun don enregistre</p>
+              <p className="text-sm text-ink-400">{t('noDonations')}</p>
             </div>
           ) : (
             <div className="mb-4 overflow-hidden rounded-2xl border border-forest-900/5 bg-white shadow-sm">
@@ -360,12 +366,12 @@ export default function AdminDonsPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-forest-900/5 bg-forest-900/[0.03]">
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-ink-500">Date</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-ink-500">Donateur</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-ink-500">Campagne</th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-ink-500">Montant</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-ink-500">Methode</th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-ink-500">Recu</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-ink-500">{td('date')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-ink-500">{td('donorName')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-ink-500">{td('campaign')}</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-ink-500">{td('amount')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-ink-500">{td('method')}</th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-ink-500">{td('currency')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -378,7 +384,7 @@ export default function AdminDonsPage() {
                       return (
                         <tr key={don.id} className={cn('tbl-row border-b border-gray-50 transition-colors', i % 2 === 1 && 'bg-cream-50/30')}>
                           <td className="px-4 py-3 text-ink-500">{formatDate(don.createdAt, 'dd/MM/yyyy')}</td>
-                          <td className="px-4 py-3 font-medium">{don.estAnonyme || !don.donateurNom ? 'Anonyme' : don.donateurNom}</td>
+                          <td className="px-4 py-3 font-medium">{don.estAnonyme || !don.donateurNom ? tc('anonymous') : don.donateurNom}</td>
                           <td className="px-4 py-3">{don.campagneNom}</td>
                           <td className="px-4 py-3 text-right font-semibold text-forest-900">
                             {formatMontant(don.montant, don.devise || 'EUR')}
@@ -390,7 +396,7 @@ export default function AdminDonsPage() {
                           </td>
                           <td className="px-4 py-3 text-center">
                             <button
-                              onClick={() => addToast('Recu disponible', 'success')}
+                              onClick={() => addToast(t('receiptAvailable'), 'success')}
                               className="text-ink-500 transition hover:text-forest-900"
                             >
                               <FileText className="h-4 w-4" />
@@ -409,47 +415,47 @@ export default function AdminDonsPage() {
               onClick={() => {
                 const rows = data.dons.map((d) => ({
                   date: formatDate(d.createdAt, 'dd/MM/yyyy'),
-                  donor: d.estAnonyme || !d.donateurNom ? 'Anonyme' : d.donateurNom,
+                  donor: d.estAnonyme || !d.donateurNom ? tc('anonymous') : d.donateurNom,
                   campaign: d.campagneNom,
                   amount: formatMontant(d.montant, d.devise || 'EUR'),
                   method: d.methodePaiement,
                 }));
                 exportToCSV(rows, [
-                  { header: 'Date', accessor: (r) => r.date },
-                  { header: 'Donateur', accessor: (r) => r.donor },
-                  { header: 'Campagne', accessor: (r) => r.campaign },
-                  { header: 'Montant', accessor: (r) => r.amount },
-                  { header: 'Methode', accessor: (r) => r.method },
+                  { header: td('date'), accessor: (r) => r.date },
+                  { header: td('donorName'), accessor: (r) => r.donor },
+                  { header: td('campaign'), accessor: (r) => r.campaign },
+                  { header: td('amount'), accessor: (r) => r.amount },
+                  { header: td('method'), accessor: (r) => r.method },
                 ], 'dons');
-                addToast('Export CSV des dons telecharge', 'success');
+                addToast(t('csvDonationsExported'), 'success');
               }}
               className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm transition hover:bg-white"
             >
               <FileText className="h-3.5 w-3.5" />
-              Exporter CSV
+              {td('exportCsv')}
             </button>
             <button
               onClick={() => {
                 const rows = data.dons.map((d) => ({
                   date: formatDate(d.createdAt, 'dd/MM/yyyy'),
-                  donor: d.estAnonyme || !d.donateurNom ? 'Anonyme' : d.donateurNom,
+                  donor: d.estAnonyme || !d.donateurNom ? tc('anonymous') : d.donateurNom,
                   campaign: d.campagneNom,
                   amount: formatMontant(d.montant, d.devise || 'EUR'),
                   method: d.methodePaiement,
                 }));
                 exportToExcel(rows, [
-                  { header: 'Date', accessor: (r) => r.date },
-                  { header: 'Donateur', accessor: (r) => r.donor },
-                  { header: 'Campagne', accessor: (r) => r.campaign },
-                  { header: 'Montant', accessor: (r) => r.amount },
-                  { header: 'Methode', accessor: (r) => r.method },
+                  { header: td('date'), accessor: (r) => r.date },
+                  { header: td('donorName'), accessor: (r) => r.donor },
+                  { header: td('campaign'), accessor: (r) => r.campaign },
+                  { header: td('amount'), accessor: (r) => r.amount },
+                  { header: td('method'), accessor: (r) => r.method },
                 ], 'dons');
-                addToast('Export Excel des dons telecharge', 'success');
+                addToast(t('excelDonationsExported'), 'success');
               }}
               className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm transition hover:bg-white"
             >
               <FileSpreadsheet className="h-3.5 w-3.5" />
-              Exporter Excel
+              {td('exportExcel')}
             </button>
           </div>
         </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import {
   BookHeart,
   CalendarDays,
@@ -98,17 +99,17 @@ const typeConfig: Record<
   },
 };
 
-function groupNotificationsByPeriod(notifications: Notification[]) {
+function groupNotificationsByPeriod(notifications: Notification[], labels: { today: string; yesterday: string; thisWeek: string; older: string }) {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const yesterday = new Date(today.getTime() - 86400000);
   const weekAgo = new Date(today.getTime() - 7 * 86400000);
 
   const groups: { label: string; items: Notification[] }[] = [
-    { label: "Aujourd'hui", items: [] },
-    { label: 'Hier', items: [] },
-    { label: 'Cette semaine', items: [] },
-    { label: 'Plus ancien', items: [] },
+    { label: labels.today, items: [] },
+    { label: labels.yesterday, items: [] },
+    { label: labels.thisWeek, items: [] },
+    { label: labels.older, items: [] },
   ];
 
   for (const notif of notifications) {
@@ -127,7 +128,7 @@ function groupNotificationsByPeriod(notifications: Notification[]) {
   return groups.filter((g) => g.items.length > 0);
 }
 
-function NotificationItem({ notification }: { notification: Notification }) {
+function NotificationItem({ notification, markAsReadLabel }: { notification: Notification; markAsReadLabel: string }) {
   const config = typeConfig[notification.type] || {
     icon: BookOpen,
     iconColor: 'text-ink-500',
@@ -184,7 +185,7 @@ function NotificationItem({ notification }: { notification: Notification }) {
             markAsRead.mutate(notification.id);
           }}
           className="flex-shrink-0 rounded-lg p-1.5 transition-colors hover:bg-sage-100/50"
-          title="Marquer comme lu"
+          title={markAsReadLabel}
         >
           <Check className="h-4 w-4 text-ink-500" />
         </button>
@@ -208,6 +209,8 @@ function NotificationItem({ notification }: { notification: Notification }) {
 }
 
 export function NotificationList({ notifications, filter }: NotificationListProps) {
+  const t = useTranslations('notifications');
+
   const filteredNotifications =
     filter === 'unread'
       ? notifications.filter((n) => !n.lu)
@@ -221,14 +224,19 @@ export function NotificationList({ notifications, filter }: NotificationListProp
         </div>
         <p className="text-sm text-ink-500">
           {filter === 'unread'
-            ? 'Aucune notification non lue'
-            : 'Aucune notification'}
+            ? t('noUnreadNotifications')
+            : t('noNotifications')}
         </p>
       </div>
     );
   }
 
-  const groups = groupNotificationsByPeriod(filteredNotifications);
+  const groups = groupNotificationsByPeriod(filteredNotifications, {
+    today: t('today'),
+    yesterday: t('yesterday'),
+    thisWeek: t('thisWeek'),
+    older: t('older'),
+  });
 
   return (
     <div className="space-y-6">
@@ -242,6 +250,7 @@ export function NotificationList({ notifications, filter }: NotificationListProp
               <NotificationItem
                 key={notification.id}
                 notification={notification}
+                markAsReadLabel={t('markAsRead')}
               />
             ))}
           </div>

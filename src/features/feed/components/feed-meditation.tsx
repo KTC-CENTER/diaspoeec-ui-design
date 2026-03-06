@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Heart, MessageCircle, Share2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { formatRelativeTime } from '@/lib/utils/format';
 import { useToastStore } from '@/stores/toast.store';
@@ -14,13 +15,13 @@ interface FeedMeditationProps {
   meditation: Meditation;
 }
 
-const categorieLabels: Record<string, string> = {
-  foi: 'Foi',
-  priere: 'Priere',
-  famille: 'Famille',
-  esperance: 'Esperance',
-  grace: 'Grace',
-  perseverance: 'Perseverance',
+const categorieKeys: Record<string, string> = {
+  foi: 'faith',
+  priere: 'prayer',
+  famille: 'family',
+  esperance: 'hope',
+  grace: 'grace',
+  perseverance: 'perseverance',
 };
 
 const gradientMap: Record<string, string> = {
@@ -33,6 +34,8 @@ const gradientMap: Record<string, string> = {
 };
 
 export function FeedMeditation({ meditation }: FeedMeditationProps) {
+  const tc = useTranslations('common');
+  const tm = useTranslations('meditations');
   const [liked, setLiked] = useState(meditation.userLiked ?? false);
   const [likeCount, setLikeCount] = useState(meditation.likes);
   const { addToast } = useToastStore();
@@ -72,7 +75,7 @@ export function FeedMeditation({ meditation }: FeedMeditationProps) {
         <div className="absolute top-4 left-4">
           <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs font-medium">
             <Heart className="w-3 h-3 mr-1" />
-            {categorieLabels[meditation.categorie] || meditation.categorie}
+            {categorieKeys[meditation.categorie] ? tm(categorieKeys[meditation.categorie]) : meditation.categorie}
           </span>
         </div>
 
@@ -105,7 +108,7 @@ export function FeedMeditation({ meditation }: FeedMeditationProps) {
                   ? 'text-red-500'
                   : 'text-ink-400 hover:text-red-500'
               )}
-              aria-label={liked ? 'Retirer le jaime' : 'Aimer'}
+              aria-label={liked ? tc('unlike') : tc('like')}
             >
               <Heart
                 className={cn('h-4 w-4', liked && 'fill-current')}
@@ -124,10 +127,10 @@ export function FeedMeditation({ meditation }: FeedMeditationProps) {
             <button
               onClick={() => {
                 navigator.clipboard.writeText(`${window.location.origin}/meditations/${meditation.id}`);
-                addToast('Lien copie dans le presse-papier', 'success');
+                addToast(tc('linkCopied'), 'success');
               }}
               className="flex items-center gap-1.5 text-sm text-ink-400 hover:text-forest-900 transition-colors"
-              aria-label="Partager"
+              aria-label={tc('share')}
             >
               <Share2 className="h-4 w-4" />
             </button>

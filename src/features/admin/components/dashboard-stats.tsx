@@ -1,11 +1,13 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Users, Heart, Calendar, BookOpen, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { formatMontant } from '@/lib/utils/format';
 import { useAdminStats } from '@/features/admin/hooks/use-admin';
 
 export function DashboardStats() {
+  const t = useTranslations('admin');
   const { data: stats, isLoading } = useAdminStats();
 
   if (isLoading) {
@@ -22,7 +24,7 @@ export function DashboardStats() {
 
   const cards = [
     {
-      label: 'Fideles inscrits',
+      label: t('registeredMembers'),
       value: stats.totalMembres.toLocaleString('fr-FR'),
       sub: `+${stats.nouveauxMembres}`,
       subLabel: 'ce mois',
@@ -34,7 +36,7 @@ export function DashboardStats() {
       delay: 'fade-in-d1',
     },
     {
-      label: 'Dons du mois',
+      label: t('monthlyDonations'),
       value: formatMontant(stats.donsMoisEnCours, 'EUR'),
       sub: `${stats.donsMoisCount}`,
       subLabel: 'transactions ce mois',

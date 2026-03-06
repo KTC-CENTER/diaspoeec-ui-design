@@ -15,6 +15,7 @@ import {
   User,
   CreditCard,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { useToastStore } from '@/stores/toast.store';
 
@@ -25,52 +26,49 @@ interface FAQItem {
   iconColor: string;
 }
 
-const faqItems: FAQItem[] = [
-  {
-    question: 'Comment acceder aux meditations quotidiennes ?',
-    answer:
-      "Rendez-vous dans l'onglet Meditations depuis le menu principal. Vous y trouverez les meditations du jour classees par categorie (Foi, Priere, Famille, etc.). Vous pouvez lire, ecouter et partager chaque meditation.",
-    icon: BookOpen,
-    iconColor: 'text-forest-900',
-  },
-  {
-    question: "Comment faire un don a l'eglise ?",
-    answer:
-      "Allez dans l'onglet Dons > Nouveau don. Choisissez une campagne, un montant et une methode de paiement (carte bancaire, mobile money, virement). Vous recevrez un recu par email apres votre don.",
-    icon: Heart,
-    iconColor: 'text-terra-600',
-  },
-  {
-    question: 'Comment suivre les cultes en direct ?',
-    answer:
-      "L'onglet Cultes affiche les prochains cultes et retransmissions en direct. Cliquez sur un culte pour rejoindre le live, voir le programme ou acceder aux replays des cultes passes.",
-    icon: Church,
-    iconColor: 'text-gold-600',
-  },
-  {
-    question: 'Comment gerer mes notifications ?',
-    answer:
-      "Depuis votre Profil > Preferences de notification, vous pouvez activer/desactiver les notifications par canal (email, push, SMS) et par type (meditations, evenements, anniversaires, etc.).",
-    icon: Bell,
-    iconColor: 'text-forest-700',
-  },
-  {
-    question: 'Comment modifier mes informations personnelles ?',
-    answer:
-      "Sur votre page Profil, cliquez sur \"Modifier le profil\" ou sur le bouton \"Modifier\" dans chaque section (Personnel, Diaspora, Paroisse). Vos modifications sont enregistrees immediatement.",
-    icon: User,
-    iconColor: 'text-forest-900',
-  },
-  {
-    question: 'Quels moyens de paiement sont acceptes ?',
-    answer:
-      'Nous acceptons les cartes bancaires (Visa, Mastercard), le Mobile Money (MTN, Orange), les virements bancaires et PayPal. Les dons sont securises et vous recevez un recu fiscal.',
-    icon: CreditCard,
-    iconColor: 'text-gold-600',
-  },
-];
-
 export default function AidePage() {
+  const t = useTranslations('aide');
+  const tp = useTranslations('profil');
+
+  const faqItems: FAQItem[] = [
+    {
+      question: t('faq1q'),
+      answer: t('faq1a'),
+      icon: BookOpen,
+      iconColor: 'text-forest-900',
+    },
+    {
+      question: t('faq2q'),
+      answer: t('faq2a'),
+      icon: Heart,
+      iconColor: 'text-terra-600',
+    },
+    {
+      question: t('faq3q'),
+      answer: t('faq3a'),
+      icon: Church,
+      iconColor: 'text-gold-600',
+    },
+    {
+      question: t('faq4q'),
+      answer: t('faq4a'),
+      icon: Bell,
+      iconColor: 'text-forest-700',
+    },
+    {
+      question: t('faq5q'),
+      answer: t('faq5a'),
+      icon: User,
+      iconColor: 'text-forest-900',
+    },
+    {
+      question: t('faq6q'),
+      answer: t('faq6a'),
+      icon: CreditCard,
+      iconColor: 'text-gold-600',
+    },
+  ];
+
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   const { addToast } = useToastStore();
   const [contactMessage, setContactMessage] = useState('');
@@ -78,14 +76,14 @@ export default function AidePage() {
 
   const handleSendMessage = async () => {
     if (!contactMessage.trim()) {
-      addToast('Veuillez saisir votre message', 'error');
+      addToast(t('enterMessage'), 'error');
       return;
     }
     setSending(true);
     await new Promise((r) => setTimeout(r, 1000));
     setSending(false);
     setContactMessage('');
-    addToast('Message envoye ! Nous vous repondrons sous 48h.', 'success');
+    addToast(t('messageSent'), 'success');
   };
 
   return (
@@ -96,15 +94,15 @@ export default function AidePage() {
           className="group mb-4 inline-flex items-center gap-2 text-sm font-medium text-forest-700 transition-colors hover:text-forest-900"
         >
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-          Retour au profil
+          {tp('backToProfile')}
         </Link>
         <h1
           className="mb-1 text-3xl font-bold text-forest-900 md:text-4xl"
           style={{ fontFamily: 'var(--font-heading)' }}
         >
-          Aide & Support
+          {t('title')}
         </h1>
-        <p className="text-ink-500">Trouvez des reponses a vos questions</p>
+        <p className="text-ink-500">{t('subtitle')}</p>
       </div>
 
       {/* FAQ */}
@@ -114,7 +112,7 @@ export default function AidePage() {
           style={{ fontFamily: 'var(--font-heading)' }}
         >
           <CircleHelp className="h-5 w-5 text-gold-600" />
-          Questions frequentes
+          {t('faq')}
         </h2>
         <div className="space-y-2">
           {faqItems.map((item, i) => {
@@ -153,7 +151,7 @@ export default function AidePage() {
           style={{ fontFamily: 'var(--font-heading)' }}
         >
           <MessageCircle className="h-5 w-5 text-gold-600" />
-          Nous contacter
+          {t('contactUs')}
         </h2>
 
         <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -162,7 +160,7 @@ export default function AidePage() {
               <Mail className="h-4 w-4 text-forest-900" />
             </div>
             <div>
-              <p className="text-xs text-ink-500">Email</p>
+              <p className="text-xs text-ink-500">{t('emailLabel')}</p>
               <p className="text-sm font-medium text-ink-900">support@diaspoeec.org</p>
             </div>
           </div>
@@ -171,8 +169,8 @@ export default function AidePage() {
               <MessageCircle className="h-4 w-4 text-forest-900" />
             </div>
             <div>
-              <p className="text-xs text-ink-500">Reponse sous</p>
-              <p className="text-sm font-medium text-ink-900">48 heures</p>
+              <p className="text-xs text-ink-500">{t('responseTime')}</p>
+              <p className="text-sm font-medium text-ink-900">{t('responseDelay')}</p>
             </div>
           </div>
         </div>
@@ -183,7 +181,7 @@ export default function AidePage() {
             onChange={(e) => setContactMessage(e.target.value)}
             rows={4}
             className="w-full rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm text-ink-900 placeholder:text-ink-400 outline-none transition-all focus:border-forest-500 focus:ring-2 focus:ring-forest-500/10 resize-none"
-            placeholder="Decrivez votre probleme ou posez votre question..."
+            placeholder={t('messagePlaceholder')}
           />
           <button
             onClick={handleSendMessage}
@@ -193,7 +191,7 @@ export default function AidePage() {
               'disabled:opacity-60'
             )}
           >
-            {sending ? 'Envoi en cours...' : 'Envoyer le message'}
+            {sending ? t('sending') : t('sendMessage')}
           </button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { FeedCard } from './feed-card';
 
 interface FeedBibleProps {
@@ -10,6 +11,7 @@ interface FeedBibleProps {
 }
 
 export function FeedBible({ reference, titre, texte }: FeedBibleProps) {
+  const t = useTranslations('bible');
   return (
     <FeedCard>
       <div className="p-5">
@@ -17,7 +19,7 @@ export function FeedBible({ reference, titre, texte }: FeedBibleProps) {
         <div className="flex items-center gap-2 mb-3">
           <span className="text-lg">{'\u{1F4D6}'}</span>
           <span className="text-xs font-semibold text-forest-900 uppercase tracking-wider">
-            Lecture du jour
+            {t('dailyReading')}
           </span>
         </div>
 
@@ -41,7 +43,7 @@ export function FeedBible({ reference, titre, texte }: FeedBibleProps) {
           href="/bible"
           className="block w-full py-2.5 bg-forest-900 text-white text-sm font-semibold rounded-xl hover:bg-forest-700 transition-colors shadow-sm text-center"
         >
-          Lire dans la Bible
+          {t('readInBible')}
         </Link>
       </div>
     </FeedCard>

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Heart } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { formatMontant } from '@/lib/utils/format';
 import type { Campagne } from '@/types';
@@ -11,22 +12,25 @@ interface CampaignProgressProps {
 }
 
 export function CampaignProgress({ campagne }: CampaignProgressProps) {
-  const progress = Math.round(
-    (campagne.montantCollecte / campagne.objectifMontant) * 100
-  );
-  const remaining = campagne.objectifMontant - campagne.montantCollecte;
+  const t = useTranslations('dons');
+  const tc = useTranslations('common');
+  const objectif = campagne.objectifMontant ?? 0;
+  const progress = objectif > 0
+    ? Math.round((campagne.montantCollecte / objectif) * 100)
+    : 0;
+  const remaining = objectif - campagne.montantCollecte;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-sage-200/40 p-6 md:p-8">
       {/* Top section: amount + stats */}
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
         <div>
-          <p className="text-ink-600 text-sm mb-1">Montant recolte</p>
+          <p className="text-ink-600 text-sm mb-1">{t('amountCollected')}</p>
           <p className="font-heading text-4xl md:text-5xl font-bold text-forest-900">
             {formatMontant(campagne.montantCollecte, 'EUR')}
           </p>
           <p className="text-ink-600 text-sm">
-            sur {formatMontant(campagne.objectifMontant, 'EUR')}
+            sur {formatMontant(objectif, 'EUR')}
           </p>
         </div>
         <div className="text-right">
@@ -35,13 +39,13 @@ export function CampaignProgress({ campagne }: CampaignProgressProps) {
               <p className="font-heading text-2xl font-bold text-gold-600">
                 {campagne.nombreDonateurs}
               </p>
-              <p className="text-xs text-ink-600">donateurs</p>
+              <p className="text-xs text-ink-600">{tc('donors')}</p>
             </div>
             <div>
               <p className="font-heading text-2xl font-bold text-terra-600">
                 {formatMontant(remaining > 0 ? remaining : 0, 'EUR')}
               </p>
-              <p className="text-xs text-ink-600">restants</p>
+              <p className="text-xs text-ink-600">{t('remaining')}</p>
             </div>
           </div>
         </div>
@@ -70,7 +74,7 @@ export function CampaignProgress({ campagne }: CampaignProgressProps) {
       <div className="flex justify-between text-sm">
         <span className="text-ink-600">0 EUR</span>
         <span className="font-bold text-forest-900">{progress}%</span>
-        <span className="text-ink-600">{formatMontant(campagne.objectifMontant, 'EUR')}</span>
+        <span className="text-ink-600">{formatMontant(objectif, 'EUR')}</span>
       </div>
 
       {/* CTA */}
@@ -85,7 +89,7 @@ export function CampaignProgress({ campagne }: CampaignProgressProps) {
             )}
           >
             <Heart className="w-5 h-5" />
-            Faire un don
+            {tc('donate')}
           </Link>
         </div>
       )}

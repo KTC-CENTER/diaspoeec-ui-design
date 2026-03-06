@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, Loader2, Check, User, Globe, Church } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { InputField } from '@/components/forms/input-field';
 import { SelectField } from '@/components/forms/select-field';
@@ -13,10 +14,10 @@ import type { User as UserType, Ministere } from '@/types';
 
 type TabKey = 'personnel' | 'diaspora' | 'paroisse';
 
-const tabs: { key: TabKey; label: string; icon: typeof User }[] = [
-  { key: 'personnel', label: 'Personnel', icon: User },
-  { key: 'diaspora', label: 'Diaspora', icon: Globe },
-  { key: 'paroisse', label: 'Paroisse', icon: Church },
+const tabs: { key: TabKey; labelKey: string; icon: typeof User }[] = [
+  { key: 'personnel', labelKey: 'personalTab', icon: User },
+  { key: 'diaspora', labelKey: 'diasporaTab', icon: Globe },
+  { key: 'paroisse', labelKey: 'parishTab', icon: Church },
 ];
 
 interface ProfileEditModalProps {
@@ -30,6 +31,8 @@ export function ProfileEditModal({ open, user, initialTab = 'personnel', onClose
   const { mutate: updateProfile, isPending } = useUpdateProfile();
   const { data: paroissesData } = useParoisses();
   const { addToast } = useToastStore();
+  const t = useTranslations('profil');
+  const tc = useTranslations('common');
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
 
   // Form state
@@ -69,11 +72,11 @@ export function ProfileEditModal({ open, user, initialTab = 'personnel', onClose
 
   const handleSave = () => {
     if (!nomComplet.trim()) {
-      addToast('Le nom complet est obligatoire', 'error');
+      addToast(t('nameRequired'), 'error');
       return;
     }
     if (!email.trim()) {
-      addToast("L'email est obligatoire", 'error');
+      addToast(t('emailRequired'), 'error');
       return;
     }
 
@@ -92,11 +95,11 @@ export function ProfileEditModal({ open, user, initialTab = 'personnel', onClose
       },
       {
         onSuccess: () => {
-          addToast('Profil mis a jour avec succes', 'success');
+          addToast(t('profileUpdated'), 'success');
           onClose();
         },
         onError: () => {
-          addToast('Erreur lors de la mise a jour', 'error');
+          addToast(t('profileUpdateError'), 'error');
         },
       }
     );
@@ -108,8 +111,8 @@ export function ProfileEditModal({ open, user, initialTab = 'personnel', onClose
   const paroisseOptions = (paroissesData ?? []).map((p) => ({ value: p.slug, label: p.label }));
   const diasporaOptions = DIASPORA_TYPES.map((d) => ({ value: d.value, label: d.label }));
   const sexeOptions = [
-    { value: 'homme', label: 'Homme' },
-    { value: 'femme', label: 'Femme' },
+    { value: 'homme', label: t('maleLabel') },
+    { value: 'femme', label: t('femaleLabel') },
   ];
 
   return (
@@ -122,7 +125,7 @@ export function ProfileEditModal({ open, user, initialTab = 'personnel', onClose
             className="text-lg font-bold text-forest-900"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            Modifier le profil
+            {t('editProfile')}
           </h2>
           <button
             onClick={onClose}
@@ -148,7 +151,7 @@ export function ProfileEditModal({ open, user, initialTab = 'personnel', onClose
                 )}
               >
                 <Icon className="h-4 w-4" />
-                {tab.label}
+                {t(tab.labelKey)}
               </button>
             );
           })}
@@ -160,32 +163,32 @@ export function ProfileEditModal({ open, user, initialTab = 'personnel', onClose
           {activeTab === 'personnel' && (
             <div className="space-y-4">
               <InputField
-                label="Nom complet"
+                label={t('fullName')}
                 value={nomComplet}
                 onChange={(e) => setNomComplet(e.target.value)}
                 placeholder="Jean-Paul Mbarga"
               />
               <InputField
-                label="Adresse email"
+                label={t('emailAddress')}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="email@exemple.com"
               />
               <InputField
-                label="Telephone"
+                label={t('phoneLabel')}
                 value={telephone}
                 onChange={(e) => setTelephone(e.target.value)}
                 placeholder="+33 6 12 34 56 78"
               />
               <InputField
-                label="Date de naissance"
+                label={t('birthDate')}
                 type="date"
                 value={dateNaissance}
                 onChange={(e) => setDateNaissance(e.target.value)}
               />
               <SelectField
-                label="Sexe"
+                label={t('genderLabel')}
                 value={sexe}
                 onChange={(value) => setSexe(value as 'homme' | 'femme')}
                 options={sexeOptions}
@@ -197,19 +200,19 @@ export function ProfileEditModal({ open, user, initialTab = 'personnel', onClose
           {activeTab === 'diaspora' && (
             <div className="space-y-4">
               <SelectField
-                label="Type de diaspora"
+                label={t('diasporaTypeLabel')}
                 value={typeDiaspora}
                 onChange={(value) => setTypeDiaspora(value as UserType['typeDiaspora'])}
                 options={diasporaOptions}
               />
               <SelectField
-                label="Pays de residence"
+                label={t('residenceCountryLabel')}
                 value={paysResidence}
                 onChange={(value) => setPaysResidence(value)}
                 options={paysOptions}
               />
               <InputField
-                label="Ville"
+                label={t('cityInputLabel')}
                 value={ville}
                 onChange={(e) => setVille(e.target.value)}
                 placeholder="Paris"
@@ -221,13 +224,13 @@ export function ProfileEditModal({ open, user, initialTab = 'personnel', onClose
           {activeTab === 'paroisse' && (
             <div className="space-y-5">
               <SelectField
-                label="Paroisse d'origine"
+                label={t('originParishLabel')}
                 value={paroisseOrigine}
                 onChange={(value) => setParoisseOrigine(value)}
                 options={paroisseOptions}
               />
               <div>
-                <p className="mb-2 text-sm font-medium text-ink-700">Ministeres</p>
+                <p className="mb-2 text-sm font-medium text-ink-700">{t('ministriesLabel')}</p>
                 <div className="flex flex-wrap gap-2">
                   {MINISTERES_OPTIONS.map((m) => {
                     const selected = ministeres.includes(m.value as Ministere);
@@ -263,7 +266,7 @@ export function ProfileEditModal({ open, user, initialTab = 'personnel', onClose
             disabled={isPending}
             className="rounded-xl border border-ink-200 px-5 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
           >
-            Annuler
+            {tc('cancel')}
           </button>
           <button
             onClick={handleSave}
@@ -276,12 +279,12 @@ export function ProfileEditModal({ open, user, initialTab = 'personnel', onClose
             {isPending ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Enregistrement...
+                {tc('saving')}
               </>
             ) : (
               <>
                 <Check className="h-4 w-4" />
-                Enregistrer
+                {tc('save')}
               </>
             )}
           </button>

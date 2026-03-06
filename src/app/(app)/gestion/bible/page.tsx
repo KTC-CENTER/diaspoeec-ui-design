@@ -25,15 +25,18 @@ import type { AdminPlanSummary } from '@/lib/api/bible.api';
 import { useToastStore } from '@/stores/toast.store';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { RoleGuard } from '@/features/gestion/components/role-guard';
+import { useTranslations } from 'next-intl';
 
 const PLAN_EMOJIS = [
-  '📖', '✝️', '🙏', '✨', '💡', '🌿', '🕊️', '🌅',
-  '❤️', '🎵', '🌍', '🔥', '💎', '🌺', '⭐', '🦅',
+  '\u{1F4D6}', '\u{271D}\u{FE0F}', '\u{1F64F}', '\u{2728}', '\u{1F4A1}', '\u{1F33F}', '\u{1F54A}\u{FE0F}', '\u{1F305}',
+  '\u{2764}\u{FE0F}', '\u{1F3B5}', '\u{1F30D}', '\u{1F525}', '\u{1F48E}', '\u{1F33A}', '\u{2B50}', '\u{1F985}',
 ];
 
 // ── Plan list view ────────────────────────────────────────────────────────────
 
 function PlanListView({ onSelectPlan }: { onSelectPlan: (plan: AdminPlanSummary) => void }) {
+  const t = useTranslations('gestionBible');
+  const tc = useTranslations('common');
   const { data: plans = [], isLoading, isError } = useAdminAllPlans();
 
   const createMutation = useAdminCreatePlan();
@@ -48,23 +51,23 @@ function PlanListView({ onSelectPlan }: { onSelectPlan: (plan: AdminPlanSummary)
   // Create form
   const [createTitre, setCreateTitre] = useState('');
   const [createDuree, setCreateDuree] = useState('7');
-  const [createIcone, setCreateIcone] = useState('📖');
+  const [createIcone, setCreateIcone] = useState('\u{1F4D6}');
 
   // Edit form
   const [editTitre, setEditTitre] = useState('');
-  const [editIcone, setEditIcone] = useState('📖');
+  const [editIcone, setEditIcone] = useState('\u{1F4D6}');
 
   const handleOpenEdit = (plan: AdminPlanSummary, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditTitre(plan.titre);
-    setEditIcone(plan.icone ?? '📖');
+    setEditIcone(plan.icone ?? '\u{1F4D6}');
     setEditPlan(plan);
   };
 
   const handleEditSubmit = () => {
     if (!editPlan) return;
     if (!editTitre.trim()) {
-      addToast('Veuillez saisir un titre', 'error');
+      addToast(t('errorTitleRequired'), 'error');
       return;
     }
     updateMutation.mutate(
@@ -72,21 +75,21 @@ function PlanListView({ onSelectPlan }: { onSelectPlan: (plan: AdminPlanSummary)
       {
         onSuccess: () => {
           setEditPlan(null);
-          addToast('Plan modifie', 'success');
+          addToast(t('planUpdated'), 'success');
         },
-        onError: () => addToast('Erreur lors de la modification', 'error'),
+        onError: () => addToast(t('errorUpdate'), 'error'),
       }
     );
   };
 
   const handleCreateSubmit = () => {
     if (!createTitre.trim()) {
-      addToast('Veuillez saisir un titre', 'error');
+      addToast(t('errorTitleRequired'), 'error');
       return;
     }
     const dureeJours = parseInt(createDuree, 10);
     if (!dureeJours || dureeJours < 1) {
-      addToast('Duree invalide', 'error');
+      addToast(t('errorDurationInvalid'), 'error');
       return;
     }
     createMutation.mutate(
@@ -96,10 +99,10 @@ function PlanListView({ onSelectPlan }: { onSelectPlan: (plan: AdminPlanSummary)
           setShowCreateModal(false);
           setCreateTitre('');
           setCreateDuree('7');
-          setCreateIcone('📖');
-          addToast('Plan cree avec succes', 'success');
+          setCreateIcone('\u{1F4D6}');
+          addToast(t('planCreated'), 'success');
         },
-        onError: () => addToast('Erreur lors de la creation', 'error'),
+        onError: () => addToast(t('errorCreate'), 'error'),
       }
     );
   };
@@ -109,9 +112,9 @@ function PlanListView({ onSelectPlan }: { onSelectPlan: (plan: AdminPlanSummary)
     deleteMutation.mutate(deletePlan.id, {
       onSuccess: () => {
         setDeletePlan(null);
-        addToast('Plan supprime', 'success');
+        addToast(t('planDeleted'), 'success');
       },
-      onError: () => addToast('Erreur lors de la suppression', 'error'),
+      onError: () => addToast(t('errorDelete'), 'error'),
     });
   };
 
@@ -124,10 +127,10 @@ function PlanListView({ onSelectPlan }: { onSelectPlan: (plan: AdminPlanSummary)
             className="text-2xl font-semibold text-forest-900 md:text-3xl"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            Plans de lecture
+            {t('pageTitle')}
           </h1>
           <p className="mt-1 text-sm text-ink-500">
-            Creez et gerez les plans de lecture biblique
+            {t('pageSubtitle')}
           </p>
         </div>
         <button
@@ -135,14 +138,14 @@ function PlanListView({ onSelectPlan }: { onSelectPlan: (plan: AdminPlanSummary)
           className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-3 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
         >
           <Plus className="h-4 w-4" />
-          Nouveau plan
+          {t('newPlan')}
         </button>
       </div>
 
       {/* Stats */}
       <div className="mb-6">
         <span className="rounded-full border border-forest-900/10 bg-sage-200 px-3 py-1 text-xs font-medium text-forest-900">
-          {plans.length} plan{plans.length > 1 ? 's' : ''}
+          {t('planCount', { count: plans.length })}
         </span>
       </div>
 
@@ -150,23 +153,23 @@ function PlanListView({ onSelectPlan }: { onSelectPlan: (plan: AdminPlanSummary)
       {isLoading ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-200 py-16">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-forest-900/20 border-t-forest-900" />
-          <p className="mt-4 text-sm text-ink-400">Chargement des plans...</p>
+          <p className="mt-4 text-sm text-ink-400">{t('loadingPlans')}</p>
         </div>
       ) : isError ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-red-200 bg-red-50/50 py-16">
-          <p className="text-ink-500 mb-2">Erreur lors du chargement</p>
-          <p className="text-sm text-ink-400">Verifiez que le serveur est en ligne</p>
+          <p className="text-ink-500 mb-2">{t('loadingError')}</p>
+          <p className="text-sm text-ink-400">{t('checkServer')}</p>
         </div>
       ) : plans.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-200 py-16">
           <BookMarked className="h-10 w-10 text-ink-200 mb-4" />
-          <p className="text-ink-400 mb-4">Aucun plan de lecture</p>
+          <p className="text-ink-400 mb-4">{t('noPlans')}</p>
           <button
             onClick={() => setShowCreateModal(true)}
             className="inline-flex items-center gap-2 rounded-xl bg-forest-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-forest-800"
           >
             <Plus className="h-4 w-4" />
-            Creer le premier plan
+            {t('createFirstPlan')}
           </button>
         </div>
       ) : (
@@ -177,7 +180,7 @@ function PlanListView({ onSelectPlan }: { onSelectPlan: (plan: AdminPlanSummary)
               className="group relative flex flex-col rounded-2xl border border-forest-900/5 bg-white p-5 shadow-sm transition hover:shadow-md"
             >
               <div className="mb-3 flex items-start justify-between gap-2">
-                <span className="text-3xl">{plan.icone ?? '📖'}</span>
+                <span className="text-3xl">{plan.icone ?? '\u{1F4D6}'}</span>
                 <div className="flex gap-1 opacity-0 transition group-hover:opacity-100">
                   <button
                     onClick={(e) => handleOpenEdit(plan, e)}
@@ -195,14 +198,14 @@ function PlanListView({ onSelectPlan }: { onSelectPlan: (plan: AdminPlanSummary)
               </div>
               <h3 className="mb-1 font-semibold text-ink-900 leading-snug">{plan.titre}</h3>
               <div className="mb-4 flex items-center gap-2">
-                <p className="text-xs text-ink-500">{plan.dureeJours} jours</p>
+                <p className="text-xs text-ink-500">{t('durationDays', { count: plan.dureeJours })}</p>
                 {plan.estComplet ? (
                   <span className="rounded-full bg-green-50 border border-green-200 px-2 py-0.5 text-xs font-medium text-green-700">
-                    Complet
+                    {t('complete')}
                   </span>
                 ) : (
                   <span className="rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-xs font-medium text-amber-700">
-                    {plan.lecturesConfigurees}/{plan.dureeJours} jours
+                    {t('lecturesConfigured', { configured: plan.lecturesConfigurees, total: plan.dureeJours })}
                   </span>
                 )}
               </div>
@@ -210,7 +213,7 @@ function PlanListView({ onSelectPlan }: { onSelectPlan: (plan: AdminPlanSummary)
                 onClick={() => onSelectPlan(plan)}
                 className="mt-auto inline-flex items-center gap-1.5 self-start rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2 text-sm font-medium text-forest-900 transition hover:bg-sage-200"
               >
-                Gerer les lectures
+                {t('manageReadings')}
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
@@ -233,21 +236,21 @@ function PlanListView({ onSelectPlan }: { onSelectPlan: (plan: AdminPlanSummary)
               className="mb-5 text-lg font-semibold text-ink-900"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
-              Nouveau plan de lecture
+              {t('newReadingPlan')}
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink-700">Titre</label>
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('titleLabel')}</label>
                 <input
                   type="text"
                   value={createTitre}
                   onChange={(e) => setCreateTitre(e.target.value)}
-                  placeholder="ex: Les 40 jours avec Dieu"
+                  placeholder={t('titlePlaceholder')}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink-700">Duree (jours)</label>
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('durationLabel')}</label>
                 <input
                   type="number"
                   min="1"
@@ -257,7 +260,7 @@ function PlanListView({ onSelectPlan }: { onSelectPlan: (plan: AdminPlanSummary)
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink-700">Icone</label>
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('iconLabel')}</label>
                 <div className="grid grid-cols-8 gap-1.5 rounded-xl border border-forest-900/10 bg-cream-50 p-2">
                   {PLAN_EMOJIS.map((emoji) => (
                     <button
@@ -281,14 +284,14 @@ function PlanListView({ onSelectPlan }: { onSelectPlan: (plan: AdminPlanSummary)
                 onClick={() => setShowCreateModal(false)}
                 className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
               >
-                Annuler
+                {tc('cancel')}
               </button>
               <button
                 onClick={handleCreateSubmit}
                 disabled={createMutation.isPending}
                 className="rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg disabled:opacity-50"
               >
-                {createMutation.isPending ? 'Creation...' : 'Creer le plan'}
+                {createMutation.isPending ? tc('creating') : t('createPlan')}
               </button>
             </div>
           </div>
@@ -310,11 +313,11 @@ function PlanListView({ onSelectPlan }: { onSelectPlan: (plan: AdminPlanSummary)
               className="mb-5 text-lg font-semibold text-ink-900"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
-              Modifier le plan
+              {t('editPlan')}
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink-700">Titre</label>
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('titleLabel')}</label>
                 <input
                   type="text"
                   value={editTitre}
@@ -323,7 +326,7 @@ function PlanListView({ onSelectPlan }: { onSelectPlan: (plan: AdminPlanSummary)
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink-700">Icone</label>
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('iconLabel')}</label>
                 <div className="grid grid-cols-8 gap-1.5 rounded-xl border border-forest-900/10 bg-cream-50 p-2">
                   {PLAN_EMOJIS.map((emoji) => (
                     <button
@@ -347,14 +350,14 @@ function PlanListView({ onSelectPlan }: { onSelectPlan: (plan: AdminPlanSummary)
                 onClick={() => setEditPlan(null)}
                 className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
               >
-                Annuler
+                {tc('cancel')}
               </button>
               <button
                 onClick={handleEditSubmit}
                 disabled={updateMutation.isPending}
                 className="rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg disabled:opacity-50"
               >
-                {updateMutation.isPending ? 'Enregistrement...' : 'Enregistrer'}
+                {updateMutation.isPending ? tc('saving') : tc('save')}
               </button>
             </div>
           </div>
@@ -364,10 +367,10 @@ function PlanListView({ onSelectPlan }: { onSelectPlan: (plan: AdminPlanSummary)
       {/* Delete Confirm */}
       <ConfirmDialog
         open={!!deletePlan}
-        title="Supprimer ce plan ?"
-        message={`Etes-vous sur de vouloir supprimer "${deletePlan?.titre ?? ''}" et toutes ses lectures ? Cette action est irreversible.`}
-        confirmLabel="Supprimer"
-        cancelLabel="Annuler"
+        title={t('deletePlanTitle')}
+        message={t('deletePlanConfirm', { title: deletePlan?.titre ?? '' })}
+        confirmLabel={tc('delete')}
+        cancelLabel={tc('cancel')}
         variant="danger"
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeletePlan(null)}
@@ -379,6 +382,8 @@ function PlanListView({ onSelectPlan }: { onSelectPlan: (plan: AdminPlanSummary)
 // ── Plan detail view ──────────────────────────────────────────────────────────
 
 function PlanDetailView({ plan, onBack }: { plan: AdminPlanSummary; onBack: () => void }) {
+  const t = useTranslations('gestionBible');
+  const tc = useTranslations('common');
   const { data: detail, isLoading } = useAdminPlanDetail(plan.id);
   const addLectureMutation = useAdminAddLecture(plan.id);
   const updateLectureMutation = useAdminUpdateLecture(plan.id);
@@ -411,7 +416,7 @@ function PlanDetailView({ plan, onBack }: { plan: AdminPlanSummary; onBack: () =
   const handleEditLectureSubmit = () => {
     if (!editLecture) return;
     if (!editRef.trim() || !editTitre.trim()) {
-      addToast('Reference et titre requis', 'error');
+      addToast(t('errorRefTitleRequired'), 'error');
       return;
     }
     updateLectureMutation.mutate(
@@ -426,9 +431,9 @@ function PlanDetailView({ plan, onBack }: { plan: AdminPlanSummary; onBack: () =
       {
         onSuccess: () => {
           setEditLecture(null);
-          addToast('Lecture modifiee', 'success');
+          addToast(t('readingUpdated'), 'success');
         },
-        onError: () => addToast('Erreur lors de la modification', 'error'),
+        onError: () => addToast(t('errorUpdate'), 'error'),
       }
     );
   };
@@ -438,11 +443,11 @@ function PlanDetailView({ plan, onBack }: { plan: AdminPlanSummary; onBack: () =
   const handleAddSubmit = () => {
     const jourNumero = parseInt(addJour, 10);
     if (!jourNumero || jourNumero < 1) {
-      addToast('Numero de jour invalide', 'error');
+      addToast(t('errorDayInvalid'), 'error');
       return;
     }
     if (!addReference.trim() || !addTitre.trim()) {
-      addToast('Reference et titre requis', 'error');
+      addToast(t('errorRefTitleRequired'), 'error');
       return;
     }
     addLectureMutation.mutate(
@@ -459,9 +464,9 @@ function PlanDetailView({ plan, onBack }: { plan: AdminPlanSummary; onBack: () =
           setAddReference('');
           setAddTitre('');
           setAddTexte('');
-          addToast('Lecture ajoutee', 'success');
+          addToast(t('readingAdded'), 'success');
         },
-        onError: () => addToast('Erreur lors de l\'ajout', 'error'),
+        onError: () => addToast(t('errorAddReading'), 'error'),
       }
     );
   };
@@ -471,9 +476,9 @@ function PlanDetailView({ plan, onBack }: { plan: AdminPlanSummary; onBack: () =
     deleteLectureMutation.mutate(deleteLectureId, {
       onSuccess: () => {
         setDeleteLectureId(null);
-        addToast('Lecture supprimee', 'success');
+        addToast(t('readingDeleted'), 'success');
       },
-      onError: () => addToast('Erreur lors de la suppression', 'error'),
+      onError: () => addToast(t('errorDelete'), 'error'),
     });
   };
 
@@ -498,12 +503,12 @@ function PlanDetailView({ plan, onBack }: { plan: AdminPlanSummary; onBack: () =
           className="mb-4 inline-flex items-center gap-1.5 text-sm text-ink-500 transition hover:text-forest-900"
         >
           <ChevronLeft className="h-4 w-4" />
-          Tous les plans
+          {t('allPlans')}
         </button>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <span className="text-3xl">{plan.icone ?? '📖'}</span>
+              <span className="text-3xl">{plan.icone ?? '\u{1F4D6}'}</span>
               <div>
                 <h1
                   className="text-2xl font-semibold text-forest-900 md:text-3xl"
@@ -511,7 +516,7 @@ function PlanDetailView({ plan, onBack }: { plan: AdminPlanSummary; onBack: () =
                 >
                   {plan.titre}
                 </h1>
-                <p className="text-sm text-ink-500">{plan.dureeJours} jours · {lectures.length} lecture{lectures.length > 1 ? 's' : ''} configuree{lectures.length > 1 ? 's' : ''}</p>
+                <p className="text-sm text-ink-500">{t('readingsConfigured', { days: plan.dureeJours, readings: lectures.length })}</p>
               </div>
             </div>
           </div>
@@ -520,7 +525,7 @@ function PlanDetailView({ plan, onBack }: { plan: AdminPlanSummary; onBack: () =
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-3 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
           >
             <Plus className="h-4 w-4" />
-            Ajouter une lecture
+            {t('addReading')}
           </button>
         </div>
       </div>
@@ -529,18 +534,18 @@ function PlanDetailView({ plan, onBack }: { plan: AdminPlanSummary; onBack: () =
       {isLoading ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-200 py-16">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-forest-900/20 border-t-forest-900" />
-          <p className="mt-4 text-sm text-ink-400">Chargement des lectures...</p>
+          <p className="mt-4 text-sm text-ink-400">{t('loadingReadings')}</p>
         </div>
       ) : lectures.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-200 py-16">
           <BookOpen className="h-10 w-10 text-ink-200 mb-4" />
-          <p className="text-ink-400 mb-4">Aucune lecture configuree</p>
+          <p className="text-ink-400 mb-4">{t('noReadings')}</p>
           <button
             onClick={handleOpenAddModal}
             className="inline-flex items-center gap-2 rounded-xl bg-forest-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-forest-800"
           >
             <Plus className="h-4 w-4" />
-            Ajouter la premiere lecture
+            {t('addFirstReading')}
           </button>
         </div>
       ) : (
@@ -549,11 +554,11 @@ function PlanDetailView({ plan, onBack }: { plan: AdminPlanSummary; onBack: () =
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-cream-50/50">
-                  <th className="px-4 py-3 text-left font-medium text-ink-500 w-16">Jour</th>
-                  <th className="px-4 py-3 text-left font-medium text-ink-500 w-36">Reference</th>
-                  <th className="px-4 py-3 text-left font-medium text-ink-500">Titre</th>
-                  <th className="px-4 py-3 text-center font-medium text-ink-500 w-24">Texte</th>
-                  <th className="px-4 py-3 text-right font-medium text-ink-500 w-20">Action</th>
+                  <th className="px-4 py-3 text-left font-medium text-ink-500 w-16">{t('day')}</th>
+                  <th className="px-4 py-3 text-left font-medium text-ink-500 w-36">{t('reference')}</th>
+                  <th className="px-4 py-3 text-left font-medium text-ink-500">{tc('title')}</th>
+                  <th className="px-4 py-3 text-center font-medium text-ink-500 w-24">{t('text')}</th>
+                  <th className="px-4 py-3 text-right font-medium text-ink-500 w-20">{t('action')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -582,11 +587,11 @@ function PlanDetailView({ plan, onBack }: { plan: AdminPlanSummary; onBack: () =
                       <td className="px-4 py-3 text-center">
                         {lecture.texte ? (
                           <span className="inline-block rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 border border-green-200">
-                            Auto
+                            {t('auto')}
                           </span>
                         ) : (
                           <span className="inline-block rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-500 border border-red-200">
-                            Manquant
+                            {t('missing')}
                           </span>
                         )}
                       </td>
@@ -621,8 +626,8 @@ function PlanDetailView({ plan, onBack }: { plan: AdminPlanSummary; onBack: () =
       {lectures.length > 0 && (
         <div className="mt-4 rounded-xl border border-forest-900/5 bg-sage-200/30 p-4">
           <div className="mb-2 flex items-center justify-between text-sm">
-            <span className="text-ink-600">Progression du plan</span>
-            <span className="font-medium text-forest-900">{lectures.length} / {plan.dureeJours} jours</span>
+            <span className="text-ink-600">{t('planProgress')}</span>
+            <span className="font-medium text-forest-900">{t('readingsCount', { count: lectures.length, total: plan.dureeJours })}</span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-white">
             <div
@@ -632,11 +637,11 @@ function PlanDetailView({ plan, onBack }: { plan: AdminPlanSummary; onBack: () =
           </div>
           {lectures.length < plan.dureeJours && (
             <p className="mt-2 text-xs text-ink-500">
-              {plan.dureeJours - lectures.length} lecture{plan.dureeJours - lectures.length > 1 ? 's' : ''} restante{plan.dureeJours - lectures.length > 1 ? 's' : ''} a configurer
+              {t('remainingReadings', { count: plan.dureeJours - lectures.length })}
             </p>
           )}
           {lectures.length >= plan.dureeJours && (
-            <p className="mt-2 text-xs font-medium text-green-700">Plan complet !</p>
+            <p className="mt-2 text-xs font-medium text-green-700">{t('planComplete')}</p>
           )}
         </div>
       )}
@@ -656,11 +661,11 @@ function PlanDetailView({ plan, onBack }: { plan: AdminPlanSummary; onBack: () =
               className="mb-5 text-lg font-semibold text-ink-900"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
-              Ajouter une lecture
+              {t('addReading')}
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink-700">Jour numero</label>
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('dayNumber')}</label>
                 <input
                   type="number"
                   min="1"
@@ -671,39 +676,39 @@ function PlanDetailView({ plan, onBack }: { plan: AdminPlanSummary; onBack: () =
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-ink-700">
-                  Reference biblique
+                  {t('bibleReference')}
                 </label>
                 <input
                   type="text"
                   value={addReference}
                   onChange={(e) => setAddReference(e.target.value)}
-                  placeholder="ex: Jean 3:16-21"
+                  placeholder={t('referencePlaceholder')}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
                 <p className="mt-1 text-xs text-ink-400">
-                  Le texte sera recupere automatiquement depuis la Bible Louis Segond
+                  {t('autoTextNote')}
                 </p>
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink-700">Titre de la lecture</label>
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('readingTitle')}</label>
                 <input
                   type="text"
                   value={addTitre}
                   onChange={(e) => setAddTitre(e.target.value)}
-                  placeholder="ex: L'amour de Dieu pour le monde"
+                  placeholder={t('readingTitlePlaceholder')}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-ink-700">
-                  Texte personnalise{' '}
-                  <span className="text-xs font-normal text-ink-400">(optionnel)</span>
+                  {t('customText')}{' '}
+                  <span className="text-xs font-normal text-ink-400">({t('optional')})</span>
                 </label>
                 <textarea
                   value={addTexte}
                   onChange={(e) => setAddTexte(e.target.value)}
                   rows={5}
-                  placeholder="Meditation complementaire redigee par le pasteur... (laissez vide pour utiliser le texte biblique automatique)"
+                  placeholder={t('customTextPlaceholder')}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
@@ -713,14 +718,14 @@ function PlanDetailView({ plan, onBack }: { plan: AdminPlanSummary; onBack: () =
                 onClick={() => setShowAddModal(false)}
                 className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
               >
-                Annuler
+                {tc('cancel')}
               </button>
               <button
                 onClick={handleAddSubmit}
                 disabled={addLectureMutation.isPending}
                 className="rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg disabled:opacity-50"
               >
-                {addLectureMutation.isPending ? 'Ajout...' : 'Ajouter'}
+                {addLectureMutation.isPending ? tc('adding') : tc('add')}
               </button>
             </div>
           </div>
@@ -742,39 +747,39 @@ function PlanDetailView({ plan, onBack }: { plan: AdminPlanSummary; onBack: () =
               className="mb-5 text-lg font-semibold text-ink-900"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
-              Modifier la lecture
+              {t('editReading')}
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink-700">Reference biblique</label>
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('bibleReference')}</label>
                 <input
                   type="text"
                   value={editRef}
                   onChange={(e) => setEditRef(e.target.value)}
-                  placeholder="ex: Jean 3:16-21"
+                  placeholder={t('referencePlaceholder')}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink-700">Titre de la lecture</label>
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('readingTitle')}</label>
                 <input
                   type="text"
                   value={editTitre}
                   onChange={(e) => setEditTitre(e.target.value)}
-                  placeholder="ex: L'amour de Dieu pour le monde"
+                  placeholder={t('readingTitlePlaceholder')}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-ink-700">
-                  Texte personnalise{' '}
-                  <span className="text-xs font-normal text-ink-400">(optionnel)</span>
+                  {t('customText')}{' '}
+                  <span className="text-xs font-normal text-ink-400">({t('optional')})</span>
                 </label>
                 <textarea
                   value={editTexte}
                   onChange={(e) => setEditTexte(e.target.value)}
                   rows={5}
-                  placeholder="Laissez vide pour utiliser le texte biblique automatique"
+                  placeholder={t('customTextEditPlaceholder')}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
@@ -784,14 +789,14 @@ function PlanDetailView({ plan, onBack }: { plan: AdminPlanSummary; onBack: () =
                 onClick={() => setEditLecture(null)}
                 className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
               >
-                Annuler
+                {tc('cancel')}
               </button>
               <button
                 onClick={handleEditLectureSubmit}
                 disabled={updateLectureMutation.isPending}
                 className="rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg disabled:opacity-50"
               >
-                {updateLectureMutation.isPending ? 'Enregistrement...' : 'Enregistrer'}
+                {updateLectureMutation.isPending ? tc('saving') : tc('save')}
               </button>
             </div>
           </div>
@@ -801,10 +806,10 @@ function PlanDetailView({ plan, onBack }: { plan: AdminPlanSummary; onBack: () =
       {/* Delete Lecture Confirm */}
       <ConfirmDialog
         open={!!deleteLectureId}
-        title="Supprimer cette lecture ?"
-        message={`Etes-vous sur de vouloir supprimer "${deleteLectureTitre}" du plan ? Cette action est irreversible.`}
-        confirmLabel="Supprimer"
-        cancelLabel="Annuler"
+        title={t('deleteReadingTitle')}
+        message={t('deleteReadingConfirm', { title: deleteLectureTitre })}
+        confirmLabel={tc('delete')}
+        cancelLabel={tc('cancel')}
         variant="danger"
         onConfirm={handleDeleteLecture}
         onCancel={() => setDeleteLectureId(null)}

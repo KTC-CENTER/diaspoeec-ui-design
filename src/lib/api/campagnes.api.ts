@@ -5,7 +5,7 @@ import { ENDPOINTS } from './endpoints';
 export interface CreateCampagnePayload {
   titre: string;
   description: string;
-  objectifMontant: number;
+  objectifMontant: number | null;
   affectationFonds: string[];
   dateDebut: string;
   dateFin?: string;

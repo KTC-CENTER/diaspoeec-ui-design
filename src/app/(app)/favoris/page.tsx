@@ -3,22 +3,17 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Star, BookOpen, Heart, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { useFavoris } from '@/features/favoris/hooks/use-favoris';
 import { MeditationCard } from '@/features/meditations/components/meditation-card';
 import { VideoCard } from '@/features/cultes/components/video-card';
 import type { FavoriteItem, Meditation, Video } from '@/types';
 
-const tabs = [
-  { key: 'tout', label: 'Tout' },
-  { key: 'meditation', label: 'Meditations' },
-  { key: 'video', label: 'Cultes' },
-  { key: 'lecture', label: 'Lectures' },
-] as const;
-
-type TabKey = (typeof tabs)[number]['key'];
+type TabKey = 'tout' | 'meditation' | 'video' | 'lecture';
 
 function LectureCard({ item }: { item: FavoriteItem }) {
+  const t = useTranslations('favoris');
   const lecture = item.lecture;
   if (!lecture) return null;
 
@@ -41,7 +36,7 @@ function LectureCard({ item }: { item: FavoriteItem }) {
             <Heart className="h-3 w-3" />
             <span>{lecture.likeCount ?? 0}</span>
             <span>&middot;</span>
-            <span>Lecture du jour</span>
+            <span>{t('dailyReading')}</span>
           </div>
         </div>
       </div>
@@ -50,14 +45,15 @@ function LectureCard({ item }: { item: FavoriteItem }) {
 }
 
 function EmptyState() {
+  const t = useTranslations('favoris');
   return (
     <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-forest-900/5 mb-4">
         <Star className="h-8 w-8 text-forest-700" />
       </div>
-      <h3 className="text-lg font-bold text-ink-900 mb-2">Aucun favori</h3>
+      <h3 className="text-lg font-bold text-ink-900 mb-2">{t('noFavorites')}</h3>
       <p className="text-sm text-ink-500 max-w-xs">
-        Likez des meditations, videos ou lectures pour les retrouver ici.
+        {t('noFavoritesDesc')}
       </p>
     </div>
   );
@@ -76,8 +72,16 @@ function SkeletonCard() {
 }
 
 export default function FavorisPage() {
+  const t = useTranslations('favoris');
   const [activeTab, setActiveTab] = useState<TabKey>('tout');
   const { data: favorites, isLoading } = useFavoris();
+
+  const tabs = [
+    { key: 'tout' as TabKey, label: t('all') },
+    { key: 'meditation' as TabKey, label: t('meditations') },
+    { key: 'video' as TabKey, label: t('services') },
+    { key: 'lecture' as TabKey, label: t('readings') },
+  ];
 
   const filtered = favorites?.filter(
     (f) => activeTab === 'tout' || f.type === activeTab,
@@ -100,10 +104,10 @@ export default function FavorisPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-ink-900" style={{ fontFamily: 'var(--font-heading)' }}>
-              Mes Favoris
+              {t('title')}
             </h1>
             <p className="text-sm text-ink-500">
-              {counts.tout} contenu{counts.tout !== 1 ? 's' : ''} sauvegarde{counts.tout !== 1 ? 's' : ''}
+              {t('savedCount', { count: counts.tout })}
             </p>
           </div>
         </div>

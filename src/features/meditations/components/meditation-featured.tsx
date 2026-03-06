@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { getInitials } from '@/lib/utils/format';
 import type { Meditation } from '@/types';
@@ -10,6 +11,7 @@ interface MeditationFeaturedProps {
 }
 
 export function MeditationFeatured({ meditation }: MeditationFeaturedProps) {
+  const t = useTranslations('accueil');
   return (
     <Link
       href={`/meditations/${meditation.id}`}
@@ -20,7 +22,7 @@ export function MeditationFeatured({ meditation }: MeditationFeaturedProps) {
         {/* Featured Badge */}
         <div className="absolute top-4 left-4">
           <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-gold-600 text-white text-xs font-bold shadow-md">
-            {'\u{2728}'} Meditation du jour
+            {'\u{2728}'} {t('dailyMeditation')}
           </span>
         </div>
 

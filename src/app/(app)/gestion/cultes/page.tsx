@@ -4,6 +4,7 @@ import { useState } from 'react';
 import {
   Plus, Search, Edit3, Trash2, Eye, Play, Heart, Clock, Radio, Calendar, X, Video,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useVideos, useCreateVideo, useUpdateVideo, useDeleteVideo } from '@/features/cultes/hooks/use-cultes';
 import { useToastStore } from '@/stores/toast.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -14,25 +15,7 @@ import type { Video as VideoType } from '@/types';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const TYPE_OPTIONS = [
-  { value: 'enregistre', label: 'Enregistre' },
-  { value: 'planifie', label: 'Live planifie' },
-];
-
-const GRADIENT_OPTIONS = [
-  { value: 'from-forest-700 to-forest-500', label: 'Vert foret' },
-  { value: 'from-forest-900 to-sage-400', label: 'Foret profond' },
-  { value: 'from-gold-600 to-terra-600', label: 'Or et terre' },
-  { value: 'from-terra-600 to-gold-500', label: 'Terre chaude' },
-  { value: 'from-forest-900 to-ink-800', label: 'Nuit profonde' },
-  { value: 'from-ink-900 via-[#2a1a3e] to-forest-900', label: 'Mystique' },
-];
-
-const BADGE_OPTIONS = [
-  { value: '', label: 'Aucun badge' },
-  { value: 'POPULAIRE', label: 'Populaire' },
-  { value: 'NOEL', label: 'Noel' },
-];
+// Constants initialized inside component to use translations
 
 function formatDuration(seconds?: number) {
   if (!seconds) return '';
@@ -44,6 +27,29 @@ function formatDuration(seconds?: number) {
 // ─── Inner component ─────────────────────────────────────────────────────────
 
 function GestionCultesContent() {
+  const t = useTranslations('gestionCultes');
+  const tc = useTranslations('common');
+
+  const TYPE_OPTIONS = [
+    { value: 'enregistre', label: t('typeRecorded') },
+    { value: 'planifie', label: t('typePlanned') },
+  ];
+
+  const GRADIENT_OPTIONS = [
+    { value: 'from-forest-700 to-forest-500', label: t('gradientForest') },
+    { value: 'from-forest-900 to-sage-400', label: t('gradientDeepForest') },
+    { value: 'from-gold-600 to-terra-600', label: t('gradientGoldEarth') },
+    { value: 'from-terra-600 to-gold-500', label: t('gradientWarmEarth') },
+    { value: 'from-forest-900 to-ink-800', label: t('gradientDeepNight') },
+    { value: 'from-ink-900 via-[#2a1a3e] to-forest-900', label: t('gradientMystic') },
+  ];
+
+  const BADGE_OPTIONS = [
+    { value: '', label: tc('noBadge') },
+    { value: 'POPULAIRE', label: tc('popular') },
+    { value: 'NOEL', label: t('badgeChristmas') },
+  ];
+
   const { data: videosData, isLoading } = useVideos();
   const user = useAuthStore((s) => s.user);
   const createMutation = useCreateVideo();
@@ -111,8 +117,8 @@ function GestionCultesContent() {
     updateMutation.mutate(
       { id: editItem.id, data: { titre: editTitre, auteur: editAuteur, youtubeId: editYoutubeId, type: editType, scheduledAt, thumbnailGradient: editGradient, badge: editBadge || undefined, dureeSeconds: editDuree ? Number(editDuree) : undefined } },
       {
-        onSuccess: () => { setEditItem(null); addToast('Video mise a jour', 'success'); },
-        onError: () => addToast('Erreur lors de la mise a jour', 'error'),
+        onSuccess: () => { setEditItem(null); addToast(t('videoUpdated'), 'success'); },
+        onError: () => addToast(t('errorUpdate'), 'error'),
       }
     );
   };
@@ -132,7 +138,7 @@ function GestionCultesContent() {
 
   const handleCreateSubmit = () => {
     if (!createTitre.trim() || !createYoutubeId.trim() || !createAuteur.trim()) {
-      addToast('Veuillez remplir le titre, l\'auteur et l\'ID YouTube', 'error');
+      addToast(t('errorFieldsRequired'), 'error');
       return;
     }
     const scheduledAt = createType === 'planifie' && createScheduledDate
@@ -141,8 +147,8 @@ function GestionCultesContent() {
     createMutation.mutate(
       { titre: createTitre, auteur: createAuteur, youtubeId: createYoutubeId, type: createType, scheduledAt, thumbnailGradient: createGradient, badge: createBadge || undefined, dureeSeconds: createDuree ? Number(createDuree) : undefined },
       {
-        onSuccess: () => { setShowCreate(false); addToast('Video ajoutee', 'success'); },
-        onError: () => addToast('Erreur lors de la creation', 'error'),
+        onSuccess: () => { setShowCreate(false); addToast(t('videoAdded'), 'success'); },
+        onError: () => addToast(t('errorCreate'), 'error'),
       }
     );
   };
@@ -150,8 +156,8 @@ function GestionCultesContent() {
   const handleDeleteConfirm = () => {
     if (!deleteItem) return;
     deleteMutation.mutate(deleteItem.id, {
-      onSuccess: () => { setDeleteItem(null); addToast('Video supprimee', 'success'); },
-      onError: () => addToast('Erreur lors de la suppression', 'error'),
+      onSuccess: () => { setDeleteItem(null); addToast(t('videoDeleted'), 'success'); },
+      onError: () => addToast(t('errorDelete'), 'error'),
     });
   };
 
@@ -166,10 +172,10 @@ function GestionCultesContent() {
             className="text-2xl font-semibold text-forest-900 md:text-3xl"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            Mes videos & cultes
+            {t('pageTitle')}
           </h1>
           <p className="mt-1 text-sm text-ink-500">
-            Publiez vos sermons et planifiez vos lives
+            {t('pageSubtitle')}
           </p>
         </div>
         <button
@@ -177,23 +183,23 @@ function GestionCultesContent() {
           className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-red-500 px-5 py-3 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
         >
           <Plus className="h-4 w-4" />
-          Ajouter une video
+          {t('addVideo')}
         </button>
       </div>
 
       {/* Stats */}
       <div className="mb-6 flex flex-wrap gap-3">
         <span className="rounded-full border border-forest-900/10 bg-sage-200 px-3 py-1 text-xs font-medium text-forest-900">
-          {videos.length} video{videos.length > 1 ? 's' : ''}
+          {t('videoCount', { count: videos.length })}
         </span>
         <span className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-medium text-red-700">
-          {videos.filter((v) => v.type === 'live').length} en direct
+          {t('liveCount', { count: videos.filter((v) => v.type === 'live').length })}
         </span>
         <span className="rounded-full border border-gold-200 bg-gold-100/50 px-3 py-1 text-xs font-medium text-gold-700">
-          {videos.filter((v) => v.type === 'planifie').length} planifie{videos.filter((v) => v.type === 'planifie').length > 1 ? 's' : ''}
+          {t('scheduledCount', { count: videos.filter((v) => v.type === 'planifie').length })}
         </span>
         <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
-          {videos.filter((v) => v.type === 'enregistre').length} enregistre{videos.filter((v) => v.type === 'enregistre').length > 1 ? 's' : ''}
+          {t('recordedCount', { count: videos.filter((v) => v.type === 'enregistre').length })}
         </span>
       </div>
 
@@ -203,7 +209,7 @@ function GestionCultesContent() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
           <input
             type="text"
-            placeholder="Rechercher une video..."
+            placeholder={t('searchVideo')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-xl border border-forest-900/10 bg-cream-50 py-2.5 pl-10 pr-4 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
@@ -227,13 +233,13 @@ function GestionCultesContent() {
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-200 py-16">
           <Video className="mb-3 h-10 w-10 text-ink-300" />
-          <p className="text-ink-400 mb-4">Aucune video trouvee</p>
+          <p className="text-ink-400 mb-4">{t('noVideoFound')}</p>
           <button
             onClick={handleCreateOpen}
             className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-red-700"
           >
             <Plus className="h-4 w-4" />
-            Ajouter une video
+            {t('addVideo')}
           </button>
         </div>
       ) : (
@@ -262,7 +268,7 @@ function GestionCultesContent() {
                 )}
                 {video.type === 'planifie' && (
                   <span className="absolute left-2 top-2 flex items-center gap-1 rounded bg-gold-600/90 px-2 py-0.5 text-[10px] font-bold text-white uppercase">
-                    <Calendar className="h-3 w-3" /> PLANIFIE
+                    <Calendar className="h-3 w-3" /> {t('scheduledBadge')}
                   </span>
                 )}
                 {video.badge && video.type !== 'live' && video.type !== 'planifie' && (
@@ -278,7 +284,7 @@ function GestionCultesContent() {
                 <p className="mt-0.5 text-xs text-ink-400">{video.auteur}</p>
                 <div className="mt-2 flex items-center gap-4 text-xs text-ink-500">
                   <span className="flex items-center gap-1">
-                    <Eye className="h-3.5 w-3.5" /> {video.vues.toLocaleString('fr-FR')}
+                    <Eye className="h-3.5 w-3.5" /> {video.vues.toLocaleString()}
                   </span>
                   <span className="flex items-center gap-1">
                     <Heart className="h-3.5 w-3.5" /> {video.likes}
@@ -286,13 +292,13 @@ function GestionCultesContent() {
                   {video.type === 'planifie' && video.scheduledAt && (
                     <span className="flex items-center gap-1 text-gold-600">
                       <Radio className="h-3.5 w-3.5" />
-                      {new Date(video.scheduledAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                      {new Date(video.scheduledAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
                     </span>
                   )}
                   {video.type === 'enregistre' && (
                     <span className="flex items-center gap-1">
                       <Clock className="h-3.5 w-3.5" />
-                      {new Date(video.publishedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                      {new Date(video.publishedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
                     </span>
                   )}
                 </div>
@@ -323,7 +329,7 @@ function GestionCultesContent() {
               <X className="h-4 w-4" />
             </button>
             <h3 className="mb-5 text-lg font-semibold text-ink-900" style={{ fontFamily: 'var(--font-heading)' }}>
-              Details de la video
+              {t('videoDetails')}
             </h3>
             <div className={`mb-4 aspect-video overflow-hidden rounded-xl`}>
               <iframe
@@ -335,17 +341,17 @@ function GestionCultesContent() {
               />
             </div>
             <div className="space-y-3">
-              <div><p className="text-xs font-medium text-ink-400 uppercase">Titre</p><p className="text-sm text-ink-900">{viewItem.titre}</p></div>
-              <div><p className="text-xs font-medium text-ink-400 uppercase">Auteur</p><p className="text-sm text-ink-900">{viewItem.auteur}</p></div>
+              <div><p className="text-xs font-medium text-ink-400 uppercase">{tc('title')}</p><p className="text-sm text-ink-900">{viewItem.titre}</p></div>
+              <div><p className="text-xs font-medium text-ink-400 uppercase">{t('authorLabel')}</p><p className="text-sm text-ink-900">{viewItem.auteur}</p></div>
               <div><p className="text-xs font-medium text-ink-400 uppercase">YouTube ID</p><p className="text-sm font-mono text-ink-700">{viewItem.youtubeId}</p></div>
               <div className="grid grid-cols-3 gap-4 pt-1">
-                <div><p className="text-xs text-ink-400">Vues</p><p className="text-lg font-bold text-forest-900">{viewItem.vues.toLocaleString('fr-FR')}</p></div>
-                <div><p className="text-xs text-ink-400">Likes</p><p className="text-lg font-bold text-gold-600">{viewItem.likes}</p></div>
-                <div><p className="text-xs text-ink-400">Duree</p><p className="text-lg font-bold text-ink-700">{viewItem.dureeSeconds ? formatDuration(viewItem.dureeSeconds) : '—'}</p></div>
+                <div><p className="text-xs text-ink-400">{tc('views')}</p><p className="text-lg font-bold text-forest-900">{viewItem.vues.toLocaleString()}</p></div>
+                <div><p className="text-xs text-ink-400">{t('likes')}</p><p className="text-lg font-bold text-gold-600">{viewItem.likes}</p></div>
+                <div><p className="text-xs text-ink-400">{t('duration')}</p><p className="text-lg font-bold text-ink-700">{viewItem.dureeSeconds ? formatDuration(viewItem.dureeSeconds) : '—'}</p></div>
               </div>
             </div>
             <div className="mt-6 flex justify-end">
-              <button onClick={() => setViewItem(null)} className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50">Fermer</button>
+              <button onClick={() => setViewItem(null)} className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50">{tc('close')}</button>
             </div>
           </div>
         </div>
@@ -357,15 +363,15 @@ function GestionCultesContent() {
           <div className="fixed inset-0 bg-black/50" onClick={() => setEditItem(null)} />
           <div className="relative max-h-[85vh] w-full max-w-[600px] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
             <button onClick={() => setEditItem(null)} className="absolute right-4 top-4 rounded-lg p-1 text-ink-400 transition hover:bg-ink-50"><X className="h-4 w-4" /></button>
-            <h3 className="mb-5 text-lg font-semibold text-ink-900" style={{ fontFamily: 'var(--font-heading)' }}>Modifier la video</h3>
+            <h3 className="mb-5 text-lg font-semibold text-ink-900" style={{ fontFamily: 'var(--font-heading)' }}>{t('editVideo')}</h3>
             <div className="space-y-4">
-              <div><label className="block text-sm font-medium text-ink-700 mb-1.5">Titre</label><input type="text" value={editTitre} onChange={(e) => setEditTitre(e.target.value)} className={inputCls} /></div>
-              <div><label className="block text-sm font-medium text-ink-700 mb-1.5">Auteur</label><input type="text" value={editAuteur} onChange={(e) => setEditAuteur(e.target.value)} className={inputCls} /></div>
-              <div><label className="block text-sm font-medium text-ink-700 mb-1.5">YouTube ID</label><input type="text" value={editYoutubeId} onChange={(e) => setEditYoutubeId(e.target.value)} placeholder="ex: dQw4w9WgXcQ" className={inputCls} /></div>
-              <div><label className="block text-sm font-medium text-ink-700 mb-1.5">Type</label><CustomSelect value={editType} onChange={(v) => setEditType(v as 'enregistre' | 'planifie')} options={TYPE_OPTIONS} /></div>
+              <div><label className="block text-sm font-medium text-ink-700 mb-1.5">{tc('title')}</label><input type="text" value={editTitre} onChange={(e) => setEditTitre(e.target.value)} className={inputCls} /></div>
+              <div><label className="block text-sm font-medium text-ink-700 mb-1.5">{t('authorLabel')}</label><input type="text" value={editAuteur} onChange={(e) => setEditAuteur(e.target.value)} className={inputCls} /></div>
+              <div><label className="block text-sm font-medium text-ink-700 mb-1.5">YouTube ID</label><input type="text" value={editYoutubeId} onChange={(e) => setEditYoutubeId(e.target.value)} placeholder={t('youtubeIdPlaceholder')} className={inputCls} /></div>
+              <div><label className="block text-sm font-medium text-ink-700 mb-1.5">{t('typeLabel')}</label><CustomSelect value={editType} onChange={(v) => setEditType(v as 'enregistre' | 'planifie')} options={TYPE_OPTIONS} /></div>
               {editType === 'planifie' && (
                 <div>
-                  <label className="block text-sm font-medium text-ink-700 mb-1.5">Date et heure du live <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-ink-700 mb-1.5">{t('liveDateTime')} <span className="text-red-500">*</span></label>
                   <div className="grid grid-cols-2 gap-3">
                     <input type="date" value={editScheduledDate} onChange={(e) => setEditScheduledDate(e.target.value)} className={inputCls} />
                     <input type="time" value={editScheduledTime} onChange={(e) => setEditScheduledTime(e.target.value)} className={inputCls} />
@@ -373,19 +379,19 @@ function GestionCultesContent() {
                 </div>
               )}
               {editType === 'enregistre' && (
-                <div><label className="block text-sm font-medium text-ink-700 mb-1.5">Duree (secondes, optionnel)</label><input type="number" min="0" value={editDuree} onChange={(e) => setEditDuree(e.target.value)} placeholder="ex: 3600 pour 1h" className={inputCls} /></div>
+                <div><label className="block text-sm font-medium text-ink-700 mb-1.5">{t('durationLabel')}</label><input type="number" min="0" value={editDuree} onChange={(e) => setEditDuree(e.target.value)} placeholder={t('durationPlaceholder')} className={inputCls} /></div>
               )}
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Couleur de vignette</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{t('thumbnailColor')}</label>
                 <CustomSelect value={editGradient} onChange={setEditGradient} options={GRADIENT_OPTIONS} />
                 <div className={`mt-2 h-10 rounded-xl bg-gradient-to-r ${editGradient}`} />
               </div>
-              <div><label className="block text-sm font-medium text-ink-700 mb-1.5">Badge</label><CustomSelect value={editBadge} onChange={setEditBadge} options={BADGE_OPTIONS} /></div>
+              <div><label className="block text-sm font-medium text-ink-700 mb-1.5">{t('badgeLabel')}</label><CustomSelect value={editBadge} onChange={setEditBadge} options={BADGE_OPTIONS} /></div>
             </div>
             <div className="mt-6 flex justify-end gap-3">
-              <button onClick={() => setEditItem(null)} className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50">Annuler</button>
+              <button onClick={() => setEditItem(null)} className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50">{tc('cancel')}</button>
               <button onClick={handleEditSave} disabled={updateMutation.isPending} className="rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg disabled:opacity-50">
-                {updateMutation.isPending ? 'Enregistrement...' : 'Enregistrer'}
+                {updateMutation.isPending ? tc('saving') : tc('save')}
               </button>
             </div>
           </div>
@@ -398,19 +404,19 @@ function GestionCultesContent() {
           <div className="fixed inset-0 bg-black/50" onClick={() => setShowCreate(false)} />
           <div className="relative max-h-[85vh] w-full max-w-[600px] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
             <button onClick={() => setShowCreate(false)} className="absolute right-4 top-4 rounded-lg p-1 text-ink-400 transition hover:bg-ink-50"><X className="h-4 w-4" /></button>
-            <h3 className="mb-5 text-lg font-semibold text-ink-900" style={{ fontFamily: 'var(--font-heading)' }}>Ajouter une video</h3>
+            <h3 className="mb-5 text-lg font-semibold text-ink-900" style={{ fontFamily: 'var(--font-heading)' }}>{t('addVideo')}</h3>
             <div className="space-y-4">
-              <div><label className="block text-sm font-medium text-ink-700 mb-1.5">Titre <span className="text-red-500">*</span></label><input type="text" value={createTitre} onChange={(e) => setCreateTitre(e.target.value)} placeholder="Titre de la video" className={inputCls} /></div>
-              <div><label className="block text-sm font-medium text-ink-700 mb-1.5">Auteur <span className="text-red-500">*</span></label><input type="text" value={createAuteur} onChange={(e) => setCreateAuteur(e.target.value)} placeholder="Nom du predicateur" className={inputCls} /></div>
+              <div><label className="block text-sm font-medium text-ink-700 mb-1.5">{tc('title')} <span className="text-red-500">*</span></label><input type="text" value={createTitre} onChange={(e) => setCreateTitre(e.target.value)} placeholder={t('titlePlaceholder')} className={inputCls} /></div>
+              <div><label className="block text-sm font-medium text-ink-700 mb-1.5">{t('authorLabel')} <span className="text-red-500">*</span></label><input type="text" value={createAuteur} onChange={(e) => setCreateAuteur(e.target.value)} placeholder={t('authorPlaceholder')} className={inputCls} /></div>
               <div>
                 <label className="block text-sm font-medium text-ink-700 mb-1.5">YouTube ID <span className="text-red-500">*</span></label>
-                <input type="text" value={createYoutubeId} onChange={(e) => setCreateYoutubeId(e.target.value)} placeholder="ex: dQw4w9WgXcQ" className={inputCls} />
-                <p className="mt-1 text-xs text-ink-400">L&apos;ID se trouve dans l&apos;URL : youtube.com/watch?v=<strong>ID</strong></p>
+                <input type="text" value={createYoutubeId} onChange={(e) => setCreateYoutubeId(e.target.value)} placeholder={t('youtubeIdPlaceholder')} className={inputCls} />
+                <p className="mt-1 text-xs text-ink-400">{t('youtubeIdHint')}</p>
               </div>
-              <div><label className="block text-sm font-medium text-ink-700 mb-1.5">Type</label><CustomSelect value={createType} onChange={(v) => setCreateType(v as 'enregistre' | 'planifie')} options={TYPE_OPTIONS} /></div>
+              <div><label className="block text-sm font-medium text-ink-700 mb-1.5">{t('typeLabel')}</label><CustomSelect value={createType} onChange={(v) => setCreateType(v as 'enregistre' | 'planifie')} options={TYPE_OPTIONS} /></div>
               {createType === 'planifie' && (
                 <div>
-                  <label className="block text-sm font-medium text-ink-700 mb-1.5">Date et heure du live <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-ink-700 mb-1.5">{t('liveDateTime')} <span className="text-red-500">*</span></label>
                   <div className="grid grid-cols-2 gap-3">
                     <input type="date" value={createScheduledDate} onChange={(e) => setCreateScheduledDate(e.target.value)} className={inputCls} />
                     <input type="time" value={createScheduledTime} onChange={(e) => setCreateScheduledTime(e.target.value)} className={inputCls} />
@@ -418,19 +424,19 @@ function GestionCultesContent() {
                 </div>
               )}
               {createType === 'enregistre' && (
-                <div><label className="block text-sm font-medium text-ink-700 mb-1.5">Duree (secondes, optionnel)</label><input type="number" min="0" value={createDuree} onChange={(e) => setCreateDuree(e.target.value)} placeholder="ex: 3600 pour 1h" className={inputCls} /></div>
+                <div><label className="block text-sm font-medium text-ink-700 mb-1.5">{t('durationLabel')}</label><input type="number" min="0" value={createDuree} onChange={(e) => setCreateDuree(e.target.value)} placeholder={t('durationPlaceholder')} className={inputCls} /></div>
               )}
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Couleur de vignette</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{t('thumbnailColor')}</label>
                 <CustomSelect value={createGradient} onChange={setCreateGradient} options={GRADIENT_OPTIONS} />
                 <div className={`mt-2 h-10 rounded-xl bg-gradient-to-r ${createGradient}`} />
               </div>
-              <div><label className="block text-sm font-medium text-ink-700 mb-1.5">Badge</label><CustomSelect value={createBadge} onChange={setCreateBadge} options={BADGE_OPTIONS} /></div>
+              <div><label className="block text-sm font-medium text-ink-700 mb-1.5">{t('badgeLabel')}</label><CustomSelect value={createBadge} onChange={setCreateBadge} options={BADGE_OPTIONS} /></div>
             </div>
             <div className="mt-6 flex justify-end gap-3">
-              <button onClick={() => setShowCreate(false)} className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50">Annuler</button>
+              <button onClick={() => setShowCreate(false)} className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50">{tc('cancel')}</button>
               <button onClick={handleCreateSubmit} disabled={createMutation.isPending} className="rounded-xl bg-gradient-to-r from-red-600 to-red-500 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg disabled:opacity-50">
-                {createMutation.isPending ? 'Ajout...' : 'Ajouter'}
+                {createMutation.isPending ? tc('adding') : tc('add')}
               </button>
             </div>
           </div>
@@ -440,10 +446,10 @@ function GestionCultesContent() {
       {/* ── Delete Dialog ── */}
       <ConfirmDialog
         open={!!deleteItem}
-        title="Supprimer la video ?"
-        message={`Etes-vous sur de vouloir supprimer "${deleteItem?.titre ?? ''}" ? Cette action est irreversible.`}
-        confirmLabel="Supprimer"
-        cancelLabel="Annuler"
+        title={t('deleteVideo')}
+        message={t('deleteVideoConfirm', { title: deleteItem?.titre ?? '' })}
+        confirmLabel={tc('delete')}
+        cancelLabel={tc('cancel')}
         variant="danger"
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteItem(null)}

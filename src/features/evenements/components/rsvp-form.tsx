@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { CheckCircle, Loader2, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { useRSVP } from '@/features/evenements/hooks/use-evenements';
 import { CustomSelect } from '@/components/forms/custom-select';
@@ -16,6 +17,7 @@ export function RSVPForm({ eventId, userParticipe }: RSVPFormProps) {
   const [nombrePersonnes, setNombrePersonnes] = useState(1);
   const [justConfirmed, setJustConfirmed] = useState(false);
   const rsvpMutation = useRSVP();
+  const t = useTranslations('evenements');
 
   // Reset the "just confirmed" flash when API data refreshes with the new state
   useEffect(() => {
@@ -63,10 +65,10 @@ export function RSVPForm({ eventId, userParticipe }: RSVPFormProps) {
           </div>
           <div className="flex-1">
             <p className="font-heading text-lg font-semibold text-forest-900">
-              Vous etes inscrit !
+              {t('youAreRegistered')}
             </p>
             <p className="mt-1 text-sm text-ink-500">
-              Votre participation a cet evenement est confirmee.
+              {t('participationConfirmed')}
             </p>
             <button
               onClick={handleCancel}
@@ -78,7 +80,7 @@ export function RSVPForm({ eventId, userParticipe }: RSVPFormProps) {
               ) : (
                 <X className="h-3 w-3" />
               )}
-              Annuler mon inscription
+              {t('cancelRegistration')}
             </button>
           </div>
         </div>
@@ -94,10 +96,10 @@ export function RSVPForm({ eventId, userParticipe }: RSVPFormProps) {
           <CheckCircle className="h-6 w-6 text-white" />
         </div>
         <p className="font-heading text-lg font-semibold text-forest-900">
-          Reponse enregistree !
+          {t('responseRecorded')}
         </p>
         <p className="mt-1 text-sm text-ink-500">
-          Votre participation a bien ete prise en compte.
+          {t('participationRecorded')}
         </p>
       </div>
     );
@@ -106,7 +108,7 @@ export function RSVPForm({ eventId, userParticipe }: RSVPFormProps) {
   return (
     <div className="rounded-2xl border border-sage-200/30 bg-white p-6 shadow-sm">
       <h2 className="font-heading text-xl font-bold text-forest-900 mb-4">
-        Votre participation
+        {t('yourParticipation')}
       </h2>
 
       {/* Toggle buttons */}
@@ -123,7 +125,7 @@ export function RSVPForm({ eventId, userParticipe }: RSVPFormProps) {
           )}
         >
           <CheckCircle className="w-5 h-5" />
-          Je participe
+          {t('iParticipate')}
         </button>
         <button
           onClick={() => setParticipe(false)}
@@ -135,7 +137,7 @@ export function RSVPForm({ eventId, userParticipe }: RSVPFormProps) {
               : 'border-ink-200 text-ink-600 hover:border-terra-600 hover:text-terra-600'
           )}
         >
-          Je ne peux pas
+          {t('iCannotAttend')}
         </button>
       </div>
 
@@ -143,7 +145,7 @@ export function RSVPForm({ eventId, userParticipe }: RSVPFormProps) {
       {participe === true && (
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
           <label className="text-sm text-ink-600 font-medium">
-            Nombre de personnes :
+            {t('numberOfPeople')}
           </label>
           <CustomSelect
             value={String(nombrePersonnes)}
@@ -167,10 +169,10 @@ export function RSVPForm({ eventId, userParticipe }: RSVPFormProps) {
           {rsvpMutation.isPending ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Envoi en cours...
+              {t('sending')}
             </>
           ) : (
-            'Confirmer'
+            t('confirmBtn')
           )}
         </button>
       )}

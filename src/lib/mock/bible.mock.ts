@@ -32,8 +32,11 @@ export const mockPlansLecture: PlanLecture[] = [
 ];
 
 export const mockLectureJour: LectureJour = {
+  id: 'lecture_001',
   reference: 'Psaume 23:1-6',
   titre: "L'Eternel est mon berger",
+  likeCount: 12,
+  userLiked: false,
   texte:
     "L'Eternel est mon berger : je ne manquerai de rien.\n\nIl me fait reposer dans de verts paturages, il me dirige pres des eaux paisibles.\n\nIl restaure mon ame, il me conduit dans les sentiers de la justice, a cause de son nom.\n\nQuand je marche dans la vallee de l'ombre de la mort, je ne crains aucun mal, car tu es avec moi : ta houlette et ton baton me rassurent.\n\nTu dresses devant moi une table, en face de mes adversaires ; tu oins d'huile ma tete, et ma coupe deborde.\n\nOui, le bonheur et la grace m'accompagneront tous les jours de ma vie, et j'habiterai dans la maison de l'Eternel jusqu'a la fin de mes jours.",
 };

@@ -1,17 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Lock, Eye, EyeOff, Loader2, CheckCircle2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { apiClient, ApiError } from '@/lib/api/client';
 import { ENDPOINTS } from '@/lib/api/endpoints';
 
 export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-forest-700" /></div>}>
+      <ResetPasswordContent />
+    </Suspense>
+  );
+}
+
+function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get('token');
+  const t = useTranslations('auth');
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -25,11 +35,11 @@ export default function ResetPasswordPage() {
     setError('');
 
     if (password.length < 8) {
-      setError('Le mot de passe doit contenir au moins 8 caracteres');
+      setError(t('passwordMinLength'));
       return;
     }
     if (password !== confirmPassword) {
-      setError('Les mots de passe ne correspondent pas');
+      setError(t('passwordMismatch'));
       return;
     }
 
@@ -38,7 +48,7 @@ export default function ResetPasswordPage() {
       await apiClient.post(ENDPOINTS.AUTH.RESET_PASSWORD, { token, password });
       setIsSuccess(true);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur lors de la reinitialisation');
+      setError(err instanceof ApiError ? err.message : t('resetError'));
     }
     setIsLoading(false);
   };
@@ -46,7 +56,7 @@ export default function ResetPasswordPage() {
   if (!token) {
     return (
       <div className="flex flex-col items-center space-y-6 text-center">
-        <p className="text-sm text-ink-500">Lien de reinitialisation invalide.</p>
+        <p className="text-sm text-ink-500">{t('invalidResetLink')}</p>
         <Link
           href="/forgot-password"
           className={cn(
@@ -54,7 +64,7 @@ export default function ResetPasswordPage() {
             'bg-forest-900 text-white hover:bg-forest-700 active:scale-[0.98]'
           )}
         >
-          Demander un nouveau lien
+          {t('requestNewLink')}
         </Link>
       </div>
     );
@@ -68,10 +78,10 @@ export default function ResetPasswordPage() {
         </div>
         <div className="space-y-2">
           <h3 className="font-heading text-xl font-semibold text-ink-900">
-            Mot de passe reinitialise !
+            {t('passwordReset')}
           </h3>
           <p className="text-sm text-ink-500">
-            Votre mot de passe a ete modifie avec succes. Vous pouvez maintenant vous connecter.
+            {t('passwordResetSuccess')}
           </p>
         </div>
         <Link
@@ -82,7 +92,7 @@ export default function ResetPasswordPage() {
           )}
         >
           <ArrowLeft className="h-4 w-4" />
-          Se connecter
+          {t('signIn')}
         </Link>
       </div>
     );
@@ -95,15 +105,15 @@ export default function ResetPasswordPage() {
         className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-500 transition-colors hover:text-forest-700"
       >
         <ArrowLeft className="h-4 w-4" />
-        Retour a la connexion
+        {t('backToLogin')}
       </Link>
 
       <div className="space-y-2">
         <h2 className="font-heading text-2xl font-bold text-ink-900">
-          Nouveau mot de passe
+          {t('newPassword')}
         </h2>
         <p className="text-sm text-ink-500">
-          Choisissez un nouveau mot de passe pour votre compte.
+          {t('newPasswordDescription')}
         </p>
       </div>
 
@@ -116,7 +126,7 @@ export default function ResetPasswordPage() {
 
         <div className="space-y-1.5">
           <label htmlFor="password" className="block text-sm font-medium text-ink-700">
-            Nouveau mot de passe
+            {t('newPasswordLabel')}
           </label>
           <div className="relative">
             <input
@@ -124,7 +134,7 @@ export default function ResetPasswordPage() {
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Minimum 8 caracteres"
+              placeholder={t('minimum8Chars')}
               className={cn(
                 'w-full rounded-xl border bg-white px-4 py-3 pr-11 text-sm transition-colors',
                 'placeholder:text-ink-400 focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20',
@@ -143,14 +153,14 @@ export default function ResetPasswordPage() {
 
         <div className="space-y-1.5">
           <label htmlFor="confirmPassword" className="block text-sm font-medium text-ink-700">
-            Confirmer le mot de passe
+            {t('confirmPasswordLabel')}
           </label>
           <input
             id="confirmPassword"
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Retapez le mot de passe"
+            placeholder={t('retypePassword')}
             className={cn(
               'w-full rounded-xl border bg-white px-4 py-3 text-sm transition-colors',
               'placeholder:text-ink-400 focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20',
@@ -171,12 +181,12 @@ export default function ResetPasswordPage() {
           {isLoading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Reinitialisation...
+              {t('resetting')}
             </>
           ) : (
             <>
               <Lock className="h-4 w-4" />
-              Reinitialiser le mot de passe
+              {t('resetPassword')}
             </>
           )}
         </button>

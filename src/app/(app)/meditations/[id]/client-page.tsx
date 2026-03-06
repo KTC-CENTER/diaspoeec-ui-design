@@ -15,6 +15,7 @@ import {
   X,
   Loader2,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { formatDate, formatRelativeTime, getInitials } from '@/lib/utils/format';
 import {
@@ -32,29 +33,12 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useReportComment } from '@/hooks/use-report-comment';
 import type { Comment } from '@/types';
 
-const categorieLabels: Record<string, string> = {
-  foi: 'Foi',
-  priere: 'Priere',
-  famille: 'Famille',
-  esperance: 'Esperance',
-  grace: 'Grace',
-  perseverance: 'Perseverance',
-};
-
 const commentAvatarColors = [
   'bg-terra-600',
   'bg-gold-600',
   'bg-forest-700',
   'bg-forest-900',
   'bg-sage-400',
-];
-
-const REPORT_REASONS = [
-  'Contenu inapproprie',
-  'Spam ou publicite',
-  'Langage offensant',
-  'Harcelement',
-  'Fausse information',
 ];
 
 function ReportModal({
@@ -68,7 +52,18 @@ function ReportModal({
   onSubmit: (raison: string) => void;
   isPending: boolean;
 }) {
+  const tco = useTranslations('comments');
+  const tc = useTranslations('common');
   const [selected, setSelected] = useState<string | null>(null);
+
+  const REPORT_REASONS = [
+    tco('inappropriate'),
+    tco('spam'),
+    tco('offensive'),
+    tco('harassment'),
+    tco('misinformation'),
+  ];
+
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
@@ -76,13 +71,13 @@ function ReportModal({
       <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-ink-900" style={{ fontFamily: 'var(--font-heading)' }}>
-            Signaler ce commentaire
+            {tco('reportTitle')}
           </h3>
           <button onClick={onClose} className="rounded-lg p-1 text-ink-400 transition hover:bg-ink-50">
             <X className="h-5 w-5" />
           </button>
         </div>
-        <p className="mb-4 text-sm text-ink-500">Pourquoi signalez-vous ce commentaire ?</p>
+        <p className="mb-4 text-sm text-ink-500">{tco('reportWhy')}</p>
         <div className="space-y-2">
           {REPORT_REASONS.map((reason) => (
             <button
@@ -101,7 +96,7 @@ function ReportModal({
         </div>
         <div className="mt-5 flex gap-2">
           <button onClick={onClose} className="flex-1 rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50">
-            Annuler
+            {tc('cancel')}
           </button>
           <button
             onClick={() => selected && onSubmit(selected)}
@@ -109,7 +104,7 @@ function ReportModal({
             className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-orange-600 disabled:opacity-60"
           >
             {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Flag className="h-4 w-4" />}
-            Signaler
+            {tc('report')}
           </button>
         </div>
       </div>
@@ -118,6 +113,7 @@ function ReportModal({
 }
 
 function ReplyItem({ reply }: { reply: Comment & { userLiked?: boolean } }) {
+  const tm = useTranslations('meditations');
   const [liked, setLiked] = useState(reply.userLiked ?? false);
   const [likeCount, setLikeCount] = useState(reply.likes);
   const likeComment = useLikeComment();
@@ -149,7 +145,7 @@ function ReplyItem({ reply }: { reply: Comment & { userLiked?: boolean } }) {
             <h4 className="text-sm font-semibold text-ink-900">{reply.auteurNom}</h4>
             {reply.auteurRole && (
               <span className="px-1.5 py-0.5 rounded-full bg-forest-900/10 text-forest-900 text-[10px] font-medium">
-                Auteur
+                {tm('author')}
               </span>
             )}
           </div>
@@ -176,6 +172,8 @@ function ReplyItem({ reply }: { reply: Comment & { userLiked?: boolean } }) {
 }
 
 function CommentItem({ comment, index = 0, meditationId, onReport }: { comment: Comment & { userLiked?: boolean }; index?: number; meditationId: string; onReport: (id: string) => void }) {
+  const tc = useTranslations('common');
+  const tco = useTranslations('comments');
   const [liked, setLiked] = useState(comment.userLiked ?? false);
   const [likeCount, setLikeCount] = useState(comment.likes);
   const [replyOpen, setReplyOpen] = useState(false);
@@ -206,12 +204,12 @@ function CommentItem({ comment, index = 0, meditationId, onReport }: { comment: 
       { targetType: 'meditation', targetId: meditationId, contenu: replyText.trim(), parentId: comment.id },
       {
         onSuccess: () => {
-          addToast(`Reponse envoyee a ${comment.auteurNom}`, 'success');
+          addToast(tco('replySent', { name: comment.auteurNom }), 'success');
           setReplyText('');
           setReplyOpen(false);
         },
         onError: () => {
-          addToast('Erreur lors de l\'envoi', 'error');
+          addToast(tco('sendError'), 'error');
         },
       }
     );
@@ -263,12 +261,12 @@ function CommentItem({ comment, index = 0, meditationId, onReport }: { comment: 
                 replyOpen ? 'text-forest-900 font-medium' : 'text-ink-400 hover:text-forest-900'
               )}
             >
-              Repondre
+              {tc('reply')}
             </button>
             <button
               onClick={() => onReport(comment.id)}
               className="inline-flex items-center gap-1 text-xs text-ink-300 transition-colors hover:text-orange-500 active:text-orange-500"
-              title="Signaler"
+              title={tc('report')}
             >
               <Flag className="h-3 w-3" />
             </button>
@@ -281,7 +279,7 @@ function CommentItem({ comment, index = 0, meditationId, onReport }: { comment: 
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleReply(); } }}
-                placeholder={`Repondre a ${comment.auteurNom}...`}
+                placeholder={tco('replyTo', { name: comment.auteurNom })}
                 className="w-full resize-none border border-forest-900/10 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-900/20 h-10 focus:h-20 transition-all"
                 rows={1}
               />
@@ -312,6 +310,7 @@ function CommentItem({ comment, index = 0, meditationId, onReport }: { comment: 
 }
 
 function CommentSection({ meditationId }: { meditationId: string }) {
+  const tco = useTranslations('comments');
   const { data: comments, isLoading } = useComments(meditationId);
   const [newComment, setNewComment] = useState('');
   const [reportTarget, setReportTarget] = useState<string | null>(null);
@@ -324,9 +323,9 @@ function CommentSection({ meditationId }: { meditationId: string }) {
     if (!reportTarget) return;
     try {
       await reportMutation.mutateAsync({ commentId: reportTarget, raison });
-      addToast('Commentaire signale. Merci pour votre vigilance.', 'success');
+      addToast(tco('reported'), 'success');
     } catch {
-      addToast('Vous avez deja signale ce commentaire', 'error');
+      addToast(tco('alreadyReported'), 'error');
     }
     setReportTarget(null);
   };
@@ -338,11 +337,11 @@ function CommentSection({ meditationId }: { meditationId: string }) {
       { targetType: 'meditation', targetId: meditationId, contenu: newComment.trim() },
       {
         onSuccess: () => {
-          addToast('Commentaire publie !', 'success');
+          addToast(tco('published'), 'success');
           setNewComment('');
         },
         onError: () => {
-          addToast('Erreur lors de la publication', 'error');
+          addToast(tco('publishError'), 'error');
         },
       }
     );
@@ -365,7 +364,7 @@ function CommentSection({ meditationId }: { meditationId: string }) {
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
-              placeholder="Ecrire un commentaire..."
+              placeholder={tco('placeholder')}
               className="w-full resize-none border border-forest-900/10 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest-900/20 focus:border-forest-900/30 transition-all h-12 focus:h-24"
               rows={1}
             />
@@ -405,7 +404,7 @@ function CommentSection({ meditationId }: { meditationId: string }) {
           ))}
           {comments?.length === 0 && (
             <p className="py-8 text-center text-sm text-ink-400">
-              Soyez le premier a commenter cette meditation.
+              {tco('beFirst')}
             </p>
           )}
         </div>
@@ -432,6 +431,18 @@ function DetailSkeleton() {
 }
 
 export default function MeditationDetailPage() {
+  const tm = useTranslations('meditations');
+  const tc = useTranslations('common');
+
+  const categorieLabels: Record<string, string> = {
+    foi: tm('faith'),
+    priere: tm('prayer'),
+    famille: tm('family'),
+    esperance: tm('hope'),
+    grace: tm('grace'),
+    perseverance: tm('perseverance'),
+  };
+
   const params = useParams();
   const id = useDynamicId(params.id as string);
   const { data: meditation, isLoading, error } = useMeditation(id);
@@ -477,13 +488,13 @@ export default function MeditationDetailPage() {
     return (
       <div className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-16 text-center">
         <p className="mb-4 text-lg text-ink-500">
-          Meditation introuvable
+          {tm('notFound')}
         </p>
         <Link
           href="/meditations"
           className="text-sm font-semibold text-forest-900 hover:text-forest-700"
         >
-          Retour aux meditations
+          {tm('backToMeditations')}
         </Link>
       </div>
     );
@@ -497,7 +508,7 @@ export default function MeditationDetailPage() {
         className="group flex items-center gap-2 text-forest-900 font-medium text-sm mb-6 hover:text-forest-700 transition-colors"
       >
         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-        Meditations
+        {tm('title')}
       </Link>
 
       {/* Hero */}
@@ -533,7 +544,7 @@ export default function MeditationDetailPage() {
           </h3>
           <p className="text-sm text-ink-400">{meditation.auteurRole}</p>
           <p className="text-xs text-ink-400 mt-0.5">
-            {formatDate(meditation.publishedAt, 'dd MMMM yyyy')} &middot; {meditation.tempsLecture} min de lecture
+            {formatDate(meditation.publishedAt, 'dd MMMM yyyy')} &middot; {tm('readingTime', { minutes: meditation.tempsLecture })}
           </p>
         </div>
         <button
@@ -546,7 +557,12 @@ export default function MeditationDetailPage() {
               {
                 onSuccess: (result) => {
                   setFollowing(result.following);
-                  addToast(result.following ? `Vous suivez ${meditation.auteurNom}` : `Vous ne suivez plus ${meditation.auteurNom}`, 'success');
+                  addToast(
+                    result.following
+                      ? tm('followToast', { name: meditation.auteurNom })
+                      : tm('unfollowToast', { name: meditation.auteurNom }),
+                    'success'
+                  );
                 },
                 onError: () => {
                   setFollowing(wasFollowing);
@@ -560,10 +576,10 @@ export default function MeditationDetailPage() {
               ? 'bg-forest-900 text-white'
               : 'hover:bg-cream-100 text-forest-900'
           )}
-          title={following ? 'Ne plus suivre' : 'Suivre'}
+          title={following ? tm('unfollow') : tm('follow')}
         >
           <UserPlus className="w-4 h-4" />
-          {following ? 'Suivi' : 'Suivre'}
+          {following ? tm('following') : tm('follow')}
         </button>
       </div>
 
@@ -607,7 +623,7 @@ export default function MeditationDetailPage() {
         <div className="afro-divider my-8" />
 
         <p className="text-ink-900 leading-relaxed text-[15px] font-medium">
-          Que cette meditation vous accompagne tout au long de la semaine. Que votre foi grandisse et que la paix de Dieu remplisse votre coeur. Amen.
+          {tm('closingPrayer')}
         </p>
       </article>
 
@@ -636,13 +652,13 @@ export default function MeditationDetailPage() {
           <button
             onClick={() => {
               navigator.clipboard.writeText(window.location.href);
-              addToast('Lien copie dans le presse-papier', 'success');
+              addToast(tc('linkCopied'), 'success');
             }}
             className="flex flex-col items-center gap-1 text-ink-400 hover:text-forest-900 transition-colors"
-            aria-label="Partager"
+            aria-label={tc('share')}
           >
             <Share2 className="w-5 h-5" />
-            <span className="text-xs">Partager</span>
+            <span className="text-xs">{tc('share')}</span>
           </button>
 
         </div>

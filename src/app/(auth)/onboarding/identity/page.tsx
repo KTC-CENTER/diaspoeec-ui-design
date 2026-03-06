@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowRight, User, Phone, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { OnboardingSteps } from '@/features/auth/components/onboarding-steps';
 import { useAuthStore } from '@/stores/auth.store';
@@ -16,6 +17,8 @@ import {
 
 export default function OnboardingIdentityPage() {
   const router = useRouter();
+  const t = useTranslations('onboarding');
+  const tc = useTranslations('common');
   const { user, updateUser } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -58,11 +61,10 @@ export default function OnboardingIdentityPage() {
 
       <div className="space-y-2 text-center">
         <h2 className="font-heading text-xl font-bold text-ink-900">
-          Parlons un peu de vous
+          {t('aboutYou')}
         </h2>
         <p className="text-sm text-ink-500">
-          Ces informations nous aident &agrave; personnaliser votre
-          exp&eacute;rience.
+          {t('personalizeExperience')}
         </p>
       </div>
 
@@ -73,7 +75,7 @@ export default function OnboardingIdentityPage() {
             htmlFor="dateNaissance"
             className="block text-sm font-medium text-ink-700"
           >
-            Date de naissance
+            {t('birthDate')}
           </label>
           <input
             id="dateNaissance"

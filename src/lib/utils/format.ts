@@ -1,5 +1,21 @@
 import { format as fnsFormat, parseISO, formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { fr } from 'date-fns/locale/fr';
+import { enUS } from 'date-fns/locale/en-US';
+import { de } from 'date-fns/locale/de';
+import { es } from 'date-fns/locale/es';
+import type { Locale } from 'date-fns';
+
+const dateFnsLocales: Record<string, Locale> = { fr, en: enUS, de, es };
+
+function getDateLocale(): Locale {
+  if (typeof window === 'undefined') return fr;
+  try {
+    const stored = JSON.parse(localStorage.getItem('diaspoeec-locale') || '{}');
+    return dateFnsLocales[stored?.state?.locale] || fr;
+  } catch {
+    return fr;
+  }
+}
 
 /**
  * Formate une date ISO en format lisible.
@@ -10,7 +26,7 @@ import { fr } from 'date-fns/locale';
 export function formatDate(date: string, formatStr: string = 'dd MMMM yyyy'): string {
   try {
     const parsed = parseISO(date);
-    return fnsFormat(parsed, formatStr, { locale: fr });
+    return fnsFormat(parsed, formatStr, { locale: getDateLocale() });
   } catch {
     return date;
   }
@@ -56,7 +72,7 @@ export function formatMontant(amount: number | string | null | undefined, devise
 export function formatRelativeTime(date: string): string {
   try {
     const parsed = parseISO(date);
-    return formatDistanceToNow(parsed, { addSuffix: true, locale: fr });
+    return formatDistanceToNow(parsed, { addSuffix: true, locale: getDateLocale() });
   } catch {
     return date;
   }

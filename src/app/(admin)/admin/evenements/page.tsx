@@ -13,19 +13,12 @@ import {
   X,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { getEvenements } from '@/lib/api/evenements.api';
 import { useToastStore } from '@/stores/toast.store';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { CustomSelect } from '@/components/forms/custom-select';
 import type { Evenement, EventType } from '@/types';
-
-const typeLabels: Record<string, string> = {
-  culte: 'Culte',
-  conference: 'Conference',
-  retraite: 'Retraite',
-  formation: 'Formation',
-  jeunesse: 'Jeunesse',
-};
 
 const typeBadgeColors: Record<string, string> = {
   culte: 'bg-sage-200 text-forest-900',
@@ -35,10 +28,23 @@ const typeBadgeColors: Record<string, string> = {
   jeunesse: 'bg-purple-50 text-purple-700',
 };
 
-const types = ['Tous', 'culte', 'conference', 'retraite', 'formation', 'jeunesse'];
+const typeKeys = ['culte', 'conference', 'retraite', 'formation', 'jeunesse'] as const;
 const typeOptions: EventType[] = ['culte', 'conference', 'retraite', 'formation', 'jeunesse'];
 
 export default function AdminEvenementsPage() {
+  const te = useTranslations('evenements');
+  const tc = useTranslations('common');
+  const t = useTranslations('admin');
+  const tge = useTranslations('gestionEvenements');
+
+  const typeLabels: Record<string, string> = {
+    culte: te('typeCulte'),
+    conference: te('typeConference'),
+    retraite: te('typeRetraite'),
+    formation: te('typeFormation'),
+    jeunesse: te('typeJeunesse'),
+  };
+
   const { data: evenementsData } = useQuery({ queryKey: ['admin-evenements'], queryFn: () => getEvenements() });
   const [activeType, setActiveType] = useState('Tous');
   const [search, setSearch] = useState('');
@@ -103,14 +109,14 @@ export default function AdminEvenementsPage() {
       )
     );
     setEditItem(null);
-    addToast('Evenement mis a jour', 'success');
+    addToast(tge('eventUpdated'), 'success');
   };
 
   const handleDeleteConfirm = () => {
     if (!deleteItem) return;
     setItems((prev) => prev.filter((e) => e.id !== deleteItem.id));
     setDeleteItem(null);
-    addToast('Evenement supprime', 'success');
+    addToast(tge('eventDeleted'), 'success');
   };
 
   const handleCreateOpen = () => {
@@ -138,7 +144,7 @@ export default function AdminEvenementsPage() {
     };
     setItems((prev) => [newEvenement, ...prev]);
     setShowCreateModal(false);
-    addToast('Evenement cree', 'success');
+    addToast(tge('eventCreated'), 'success');
   };
 
   return (
@@ -150,10 +156,10 @@ export default function AdminEvenementsPage() {
             className="text-2xl font-semibold text-forest-900 md:text-3xl"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            Evenements
+            {te('title')}
           </h2>
           <p className="mt-1 text-sm text-ink-500">
-            Gerez les evenements de la communaute
+            {t('adminEventsSubtitle')}
           </p>
         </div>
         <button
@@ -161,7 +167,7 @@ export default function AdminEvenementsPage() {
           className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-terra-600 to-orange-400 px-5 py-3 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
         >
           <Plus className="h-4 w-4" />
-          Nouvel evenement
+          {tge('newEvent')}
         </button>
       </div>
 
@@ -171,14 +177,24 @@ export default function AdminEvenementsPage() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
           <input
             type="text"
-            placeholder="Rechercher un evenement..."
+            placeholder={tc('searchEvent')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-xl border border-forest-900/10 bg-cream-50 py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
           />
         </div>
         <div className="flex flex-wrap gap-2">
-          {types.map((type) => (
+          <button
+            onClick={() => setActiveType('Tous')}
+            className={`rounded-full px-4 py-1.5 text-sm font-medium capitalize transition-all ${
+              activeType === 'Tous'
+                ? 'bg-forest-900 text-white shadow-md'
+                : 'bg-white text-ink-600 border border-ink-200 hover:bg-sage-200'
+            }`}
+          >
+            {te('all')}
+          </button>
+          {typeKeys.map((type) => (
             <button
               key={type}
               onClick={() => setActiveType(type)}
@@ -188,7 +204,7 @@ export default function AdminEvenementsPage() {
                   : 'bg-white text-ink-600 border border-ink-200 hover:bg-sage-200'
               }`}
             >
-              {type === 'Tous' ? 'Tous' : typeLabels[type] || type}
+              {typeLabels[type] || type}
             </button>
           ))}
         </div>
@@ -197,13 +213,13 @@ export default function AdminEvenementsPage() {
       {/* Stats bar */}
       <div className="mb-6 flex flex-wrap gap-3">
         <span className="rounded-full border border-forest-900/10 bg-sage-200 px-3 py-1 text-xs font-medium text-forest-900">
-          {items.length} evenements
+          {tge('eventCount', { count: items.length })}
         </span>
         <span className="rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-medium text-green-700">
-          {items.filter((e) => e.actif).length} actifs
+          {tge('activeCount', { count: items.filter((e) => e.actif).length })}
         </span>
         <span className="rounded-full border border-yellow-200 bg-yellow-50 px-3 py-1 text-xs font-medium text-yellow-700">
-          {items.filter((e) => new Date(e.date) > new Date()).length} a venir
+          {tge('upcomingCount', { count: items.filter((e) => new Date(e.date) > new Date()).length })}
         </span>
       </div>
 
@@ -213,12 +229,12 @@ export default function AdminEvenementsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-cream-50/50">
-                <th className="px-4 py-3 text-left font-medium text-ink-500">Evenement</th>
-                <th className="hidden px-4 py-3 text-left font-medium text-ink-500 sm:table-cell">Type</th>
-                <th className="hidden px-4 py-3 text-left font-medium text-ink-500 md:table-cell">Lieu</th>
-                <th className="hidden px-4 py-3 text-center font-medium text-ink-500 lg:table-cell">Participants</th>
-                <th className="px-4 py-3 text-left font-medium text-ink-500">Date</th>
-                <th className="px-4 py-3 text-right font-medium text-ink-500">Actions</th>
+                <th className="px-4 py-3 text-left font-medium text-ink-500">{tge('event')}</th>
+                <th className="hidden px-4 py-3 text-left font-medium text-ink-500 sm:table-cell">{tge('type')}</th>
+                <th className="hidden px-4 py-3 text-left font-medium text-ink-500 md:table-cell">{tge('location')}</th>
+                <th className="hidden px-4 py-3 text-center font-medium text-ink-500 lg:table-cell">{tge('participantsCol')}</th>
+                <th className="px-4 py-3 text-left font-medium text-ink-500">{tge('date')}</th>
+                <th className="px-4 py-3 text-right font-medium text-ink-500">{tc('actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -318,22 +334,22 @@ export default function AdminEvenementsPage() {
               className="mb-4 text-lg font-semibold text-ink-900"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
-              Detail de l&apos;evenement
+              {tge('eventDetail')}
             </h3>
 
             <div className="space-y-4">
               <div>
-                <p className="text-sm font-medium text-ink-500">Titre</p>
+                <p className="text-sm font-medium text-ink-500">{tc('title')}</p>
                 <p className="text-sm text-ink-900">{viewItem.titre}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-ink-500">Type</p>
+                <p className="text-sm font-medium text-ink-500">{tge('type')}</p>
                 <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${typeBadgeColors[viewItem.type] || 'bg-gray-100 text-gray-600'}`}>
                   {typeLabels[viewItem.type] || viewItem.type}
                 </span>
               </div>
               <div>
-                <p className="text-sm font-medium text-ink-500">Date</p>
+                <p className="text-sm font-medium text-ink-500">{tge('date')}</p>
                 <p className="text-sm text-ink-900">
                   {new Date(viewItem.date).toLocaleDateString('fr-FR', {
                     weekday: 'long',
@@ -358,24 +374,24 @@ export default function AdminEvenementsPage() {
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-ink-500">Lieu</p>
+                <p className="text-sm font-medium text-ink-500">{tge('location')}</p>
                 <p className="flex items-center gap-1 text-sm text-ink-900">
                   <MapPin className="h-3.5 w-3.5 shrink-0 text-ink-400" />
                   {viewItem.lieu}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-ink-500">Description</p>
+                <p className="text-sm font-medium text-ink-500">{tc('description')}</p>
                 <p className="whitespace-pre-line text-sm leading-relaxed text-ink-700">
                   {viewItem.description}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-ink-500">Participants</p>
+                <p className="text-sm font-medium text-ink-500">{tge('participantsCol')}</p>
                 <p className="flex items-center gap-1 text-sm text-ink-900">
                   <Users className="h-3.5 w-3.5 text-ink-400" />
-                  {viewItem.participantsInscrits} inscrits
-                  {viewItem.maxParticipants ? ` / ${viewItem.maxParticipants} places` : ''}
+                  {te('participantsRegistered', { count: viewItem.participantsInscrits })}
+                  {viewItem.maxParticipants ? ` / ${viewItem.maxParticipants}` : ''}
                 </p>
               </div>
             </div>
@@ -385,7 +401,7 @@ export default function AdminEvenementsPage() {
                 onClick={() => setViewItem(null)}
                 className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
               >
-                Fermer
+                {tc('close')}
               </button>
             </div>
           </div>
@@ -408,12 +424,12 @@ export default function AdminEvenementsPage() {
               className="mb-4 text-lg font-semibold text-ink-900"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
-              Modifier l&apos;evenement
+              {tge('editEvent')}
             </h3>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Titre</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{tc('title')}</label>
                 <input
                   type="text"
                   value={editTitre}
@@ -422,15 +438,15 @@ export default function AdminEvenementsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Type</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{tge('type')}</label>
                 <CustomSelect
                   value={editType}
                   onChange={(value) => setEditType(value as EventType)}
-                  options={typeOptions.map((t) => ({ value: t, label: typeLabels[t] }))}
+                  options={typeOptions.map((tp) => ({ value: tp, label: typeLabels[tp] }))}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Date</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{tge('dateTime')}</label>
                 <input
                   type="datetime-local"
                   value={editDate}
@@ -439,7 +455,7 @@ export default function AdminEvenementsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Lieu</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{tge('location')}</label>
                 <input
                   type="text"
                   value={editLieu}
@@ -448,18 +464,18 @@ export default function AdminEvenementsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Nombre de places (optionnel)</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{tge('maxParticipants')}</label>
                 <input
                   type="number"
                   min="1"
                   value={editMaxParticipants}
                   onChange={(e) => setEditMaxParticipants(e.target.value)}
-                  placeholder="Illimite si vide"
+                  placeholder={tge('unlimitedIfEmpty')}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Description</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{tc('description')}</label>
                 <textarea
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
@@ -474,13 +490,13 @@ export default function AdminEvenementsPage() {
                 onClick={() => setEditItem(null)}
                 className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
               >
-                Annuler
+                {tc('cancel')}
               </button>
               <button
                 onClick={handleEditSave}
                 className="rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg"
               >
-                Enregistrer
+                {tc('save')}
               </button>
             </div>
           </div>
@@ -503,56 +519,56 @@ export default function AdminEvenementsPage() {
               className="mb-4 text-lg font-semibold text-ink-900"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
-              Nouvel evenement
+              {tge('newEvent')}
             </h3>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Titre</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{tc('title')}</label>
                 <input
                   type="text"
                   value={createTitre}
                   onChange={(e) => setCreateTitre(e.target.value)}
-                  placeholder="Titre de l'evenement"
+                  placeholder={t('eventTitlePlaceholder')}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Type</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{tge('type')}</label>
                 <CustomSelect
                   value={createType}
                   onChange={(value) => setCreateType(value as EventType)}
-                  options={typeOptions.map((t) => ({ value: t, label: typeLabels[t] }))}
+                  options={typeOptions.map((tp) => ({ value: tp, label: typeLabels[tp] }))}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Lieu</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{tge('location')}</label>
                 <input
                   type="text"
                   value={createLieu}
                   onChange={(e) => setCreateLieu(e.target.value)}
-                  placeholder="Lieu de l'evenement"
+                  placeholder={t('eventLocationPlaceholder')}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Nombre de places (optionnel)</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{tge('maxParticipants')}</label>
                 <input
                   type="number"
                   min="1"
                   value={createMaxParticipants}
                   onChange={(e) => setCreateMaxParticipants(e.target.value)}
-                  placeholder="Illimite si vide"
+                  placeholder={tge('unlimitedIfEmpty')}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">Description</label>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">{tc('description')}</label>
                 <textarea
                   value={createDescription}
                   onChange={(e) => setCreateDescription(e.target.value)}
                   rows={5}
-                  placeholder="Description de l'evenement"
+                  placeholder={t('eventDescriptionPlaceholder')}
                   className="w-full rounded-xl border border-forest-900/10 bg-cream-50 px-4 py-2.5 text-sm outline-none focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
                 />
               </div>
@@ -563,13 +579,13 @@ export default function AdminEvenementsPage() {
                 onClick={() => setShowCreateModal(false)}
                 className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
               >
-                Annuler
+                {tc('cancel')}
               </button>
               <button
                 onClick={handleCreateSubmit}
                 className="rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 px-5 py-2.5 text-sm font-medium text-white transition hover:shadow-lg"
               >
-                Creer
+                {tc('create')}
               </button>
             </div>
           </div>
@@ -579,10 +595,10 @@ export default function AdminEvenementsPage() {
       {/* Delete Confirm Dialog */}
       <ConfirmDialog
         open={!!deleteItem}
-        title="Supprimer cet evenement ?"
-        message={`Etes-vous sur de vouloir supprimer "${deleteItem?.titre ?? ''}" ? Cette action est irreversible.`}
-        confirmLabel="Supprimer"
-        cancelLabel="Annuler"
+        title={tge('deleteEvent')}
+        message={tge('deleteEventConfirm', { title: deleteItem?.titre ?? '' })}
+        confirmLabel={tc('delete')}
+        cancelLabel={tc('cancel')}
         variant="danger"
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteItem(null)}

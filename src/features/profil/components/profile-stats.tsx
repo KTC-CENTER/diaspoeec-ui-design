@@ -1,4 +1,5 @@
 import { Heart, CalendarCheck, ThumbsUp } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { User } from '@/types';
 
 interface ProfileStatsProps {
@@ -6,23 +7,24 @@ interface ProfileStatsProps {
 }
 
 export function ProfileStats({ user }: ProfileStatsProps) {
+  const t = useTranslations('profil');
   const stats = [
     {
-      label: 'Dons effectues',
+      label: t('donationsMade'),
       value: user.donsEffectues,
       icon: Heart,
       iconColor: 'text-red-400',
       bgColor: 'bg-red-50',
     },
     {
-      label: 'Evenements suivis',
+      label: t('eventsFollowed'),
       value: user.evenementsSuivis,
       icon: CalendarCheck,
       iconColor: 'text-gold-600',
       bgColor: 'bg-gold-600/10',
     },
     {
-      label: "J'aime donnes",
+      label: t('likesGiven'),
       value: user.jaimesTotal,
       icon: ThumbsUp,
       iconColor: 'text-forest-900',

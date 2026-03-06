@@ -2,35 +2,37 @@
 
 import { useState } from 'react';
 import { Calendar } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { useEvenements } from '@/features/evenements/hooks/use-evenements';
 import { EventCard } from '@/features/evenements/components/event-card';
 import { MiniCalendar } from '@/features/evenements/components/mini-calendar';
 import type { EventType } from '@/types';
 
-const FILTERS: { value: EventType | 'tous'; label: string }[] = [
-  { value: 'tous', label: 'Tous' },
-  { value: 'culte', label: 'Cultes' },
-  { value: 'conference', label: 'Conferences' },
-  { value: 'retraite', label: 'Retraites' },
-  { value: 'formation', label: 'Formations' },
-  { value: 'jeunesse', label: 'Jeunesse' },
-];
-
 export default function EvenementsPage() {
+  const t = useTranslations('evenements');
   const [activeFilter, setActiveFilter] = useState<EventType | 'tous'>('tous');
   const typeFilter = activeFilter === 'tous' ? undefined : activeFilter;
   const { data: evenements, isLoading } = useEvenements(typeFilter);
+
+  const FILTERS: { value: EventType | 'tous'; label: string }[] = [
+    { value: 'tous', label: t('all') },
+    { value: 'culte', label: t('cultes') },
+    { value: 'conference', label: t('conferences') },
+    { value: 'retraite', label: t('retreats') },
+    { value: 'formation', label: t('trainings') },
+    { value: 'jeunesse', label: t('youth') },
+  ];
 
   return (
     <div className="px-4 md:px-8 py-6 md:py-8 max-w-5xl">
       {/* Header */}
       <div className="mb-8 animate-[fade-up_0.5s_ease-out_both]">
         <h1 className="font-heading text-3xl md:text-4xl font-bold text-forest-900 mb-2">
-          Evenements
+          {t('title')}
         </h1>
         <p className="text-ink-600 text-lg">
-          Decouvrez les activites de la communaute
+          {t('subtitle')}
         </p>
       </div>
 
@@ -59,7 +61,7 @@ export default function EvenementsPage() {
 
       {/* Section Title */}
       <h2 className="font-heading text-xl font-bold text-forest-900 mb-5 animate-[fade-up_0.5s_ease-out_0.2s_both]">
-        Prochains evenements
+        {t('upcoming')}
       </h2>
 
       {/* Event Cards */}
@@ -94,11 +96,10 @@ export default function EvenementsPage() {
               <Calendar className="h-8 w-8 text-forest-700" />
             </div>
             <h3 className="font-heading text-lg font-semibold text-ink-900">
-              Aucun evenement
+              {t('noEvents')}
             </h3>
             <p className="mt-1 max-w-sm text-sm text-ink-500">
-              Il n&apos;y a pas d&apos;evenement prevu dans cette categorie pour le moment.
-              Revenez bientot !
+              {t('noEventsDescription')}
             </p>
           </div>
         )}

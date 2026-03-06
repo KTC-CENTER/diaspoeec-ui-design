@@ -1,6 +1,7 @@
 'use client';
 
 import { StickyNote } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { formatDate } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/cn';
 import type { NoteBible } from '@/types';
@@ -18,12 +19,14 @@ const badgeColors = [
 ];
 
 export function BibleNotes({ notes }: BibleNotesProps) {
+  const t = useTranslations('bible');
+
   if (notes.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl bg-white border border-forest-900/6 py-10 text-center shadow-sm">
         <StickyNote className="mb-3 h-10 w-10 text-ink-300" />
         <p className="text-sm text-ink-400">
-          Aucune note pour le moment. Commencez a annoter vos lectures !
+          {t('noNotes')}
         </p>
       </div>
     );

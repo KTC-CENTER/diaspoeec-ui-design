@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { MapPin, Clock, Calendar } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { formatDate } from '@/lib/utils/format';
 import type { Evenement } from '@/types';
@@ -21,6 +22,8 @@ const avatarColors = [
 const avatarInitials = ['MC', 'SB', 'JE', 'EN'];
 
 export function FeedEvent({ evenement }: FeedEventProps) {
+  const t = useTranslations('feed');
+  const te = useTranslations('evenements');
   const eventDate = new Date(evenement.date);
   const dayNum = eventDate.getDate().toString().padStart(2, '0');
   const monthShort = formatDate(evenement.date, 'MMM').toUpperCase();
@@ -45,7 +48,7 @@ export function FeedEvent({ evenement }: FeedEventProps) {
             {/* Event Tag */}
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-gold-400/40 text-gold-600 text-[11px] font-semibold mb-2">
               <Calendar className="w-3 h-3 mr-1" />
-              Evenement
+              {t('event')}
             </span>
 
             <h3 className="text-lg font-bold text-ink-900 mb-1.5">
@@ -91,7 +94,7 @@ export function FeedEvent({ evenement }: FeedEventProps) {
                 href={`/evenements/${evenement.id}`}
                 className="flex-shrink-0 whitespace-nowrap px-3 py-1.5 bg-forest-900 text-white text-sm font-semibold rounded-xl hover:bg-forest-700 transition-colors shadow-sm"
               >
-                S&apos;inscrire
+                {te('register')}
               </Link>
             </div>
           </div>

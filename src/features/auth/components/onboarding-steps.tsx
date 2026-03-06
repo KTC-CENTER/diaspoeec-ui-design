@@ -1,19 +1,22 @@
 'use client';
 
 import { Check } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 
 interface OnboardingStepsProps {
   currentStep: 1 | 2 | 3;
 }
 
-const STEPS = [
-  { number: 1, label: 'Identit\u00e9' },
-  { number: 2, label: 'Diaspora' },
-  { number: 3, label: '\u00c9glise' },
-] as const;
-
 export function OnboardingSteps({ currentStep }: OnboardingStepsProps) {
+  const t = useTranslations('onboarding');
+
+  const STEPS = [
+    { number: 1, label: t('identity') },
+    { number: 2, label: t('diaspora') },
+    { number: 3, label: t('church') },
+  ];
+
   return (
     <div className="flex items-center justify-center">
       {STEPS.map((step, index) => {

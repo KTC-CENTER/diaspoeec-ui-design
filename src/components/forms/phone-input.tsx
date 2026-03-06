@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { useTranslations } from 'next-intl';
 
 interface CountryOption {
   code: string;
@@ -46,6 +47,7 @@ export function PhoneInput({
   onCountryCodeChange,
   error,
 }: PhoneInputProps) {
+  const tc = useTranslations('common');
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -151,7 +153,7 @@ export function PhoneInput({
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Rechercher un pays..."
+                  placeholder={tc('searchCountry')}
                   className="w-full rounded-lg bg-cream-50 px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 outline-none"
                   autoFocus
                 />
@@ -186,7 +188,7 @@ export function PhoneInput({
                 ))}
                 {filteredCountries.length === 0 && (
                   <li className="px-3 py-4 text-center text-sm text-ink-400">
-                    Aucun pays trouve
+                    {tc('noCountryFound')}
                   </li>
                 )}
               </ul>

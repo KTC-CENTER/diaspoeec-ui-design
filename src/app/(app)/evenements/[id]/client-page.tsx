@@ -20,6 +20,7 @@ import {
   Flag,
   X,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { formatDate, formatRelativeTime, getInitials } from '@/lib/utils/format';
 import { useEvenement, useEventComments, useCreateEventComment, useLikeComment } from '@/features/evenements/hooks/use-evenements';
@@ -37,14 +38,6 @@ const typeGradients: Record<string, string> = {
   retraite: 'from-sage-400 to-forest-700',
   formation: 'from-terra-600 to-gold-500',
   jeunesse: 'from-forest-700 via-sage-400 to-forest-900',
-};
-
-const typeLabels: Record<string, string> = {
-  culte: 'Culte',
-  conference: 'Conference',
-  retraite: 'Retraite',
-  formation: 'Formation',
-  jeunesse: 'Jeunesse',
 };
 
 /* Brand SVG icons for share buttons */
@@ -75,14 +68,6 @@ const commentAvatarColors = [
   'bg-sage-400',
 ];
 
-const REPORT_REASONS = [
-  'Contenu inapproprie',
-  'Spam ou publicite',
-  'Langage offensant',
-  'Harcelement',
-  'Fausse information',
-];
-
 function ReportModal({
   open,
   onClose,
@@ -94,7 +79,18 @@ function ReportModal({
   onSubmit: (raison: string) => void;
   isPending: boolean;
 }) {
+  const tco = useTranslations('comments');
+  const tc = useTranslations('common');
   const [selected, setSelected] = useState<string | null>(null);
+
+  const REPORT_REASONS = [
+    tco('inappropriate'),
+    tco('spam'),
+    tco('offensive'),
+    tco('harassment'),
+    tco('misinformation'),
+  ];
+
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
@@ -102,13 +98,13 @@ function ReportModal({
       <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-ink-900" style={{ fontFamily: 'var(--font-heading)' }}>
-            Signaler ce commentaire
+            {tco('reportTitle')}
           </h3>
           <button onClick={onClose} className="rounded-lg p-1 text-ink-400 transition hover:bg-ink-50">
             <X className="h-5 w-5" />
           </button>
         </div>
-        <p className="mb-4 text-sm text-ink-500">Pourquoi signalez-vous ce commentaire ?</p>
+        <p className="mb-4 text-sm text-ink-500">{tco('reportWhy')}</p>
         <div className="space-y-2">
           {REPORT_REASONS.map((reason) => (
             <button
@@ -127,7 +123,7 @@ function ReportModal({
         </div>
         <div className="mt-5 flex gap-2">
           <button onClick={onClose} className="flex-1 rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50">
-            Annuler
+            {tc('cancel')}
           </button>
           <button
             onClick={() => selected && onSubmit(selected)}
@@ -135,7 +131,7 @@ function ReportModal({
             className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-orange-600 disabled:opacity-60"
           >
             {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Flag className="h-4 w-4" />}
-            Signaler
+            {tc('report')}
           </button>
         </div>
       </div>
@@ -197,6 +193,8 @@ function ReplyItem({ reply }: { reply: Comment & { userLiked?: boolean } }) {
 }
 
 function EventCommentItem({ comment, index = 0, evenementId, onReport }: { comment: Comment & { userLiked?: boolean }; index?: number; evenementId: string; onReport: (id: string) => void }) {
+  const tc = useTranslations('common');
+  const tco = useTranslations('comments');
   const [liked, setLiked] = useState(comment.userLiked ?? false);
   const [likeCount, setLikeCount] = useState(comment.likes);
   const [replyOpen, setReplyOpen] = useState(false);
@@ -227,12 +225,12 @@ function EventCommentItem({ comment, index = 0, evenementId, onReport }: { comme
       { targetType: 'evenement', targetId: evenementId, contenu: replyText.trim(), parentId: comment.id },
       {
         onSuccess: () => {
-          addToast(`Reponse envoyee a ${comment.auteurNom}`, 'success');
+          addToast(tco('replySent', { name: comment.auteurNom }), 'success');
           setReplyText('');
           setReplyOpen(false);
         },
         onError: () => {
-          addToast('Erreur lors de l\'envoi', 'error');
+          addToast(tco('sendError'), 'error');
         },
       }
     );
@@ -284,12 +282,12 @@ function EventCommentItem({ comment, index = 0, evenementId, onReport }: { comme
                 replyOpen ? 'text-forest-900 font-medium' : 'text-ink-400 hover:text-forest-900'
               )}
             >
-              Repondre
+              {tc('reply')}
             </button>
             <button
               onClick={() => onReport(comment.id)}
               className="inline-flex items-center gap-1 text-xs text-ink-300 transition-colors hover:text-orange-500 active:text-orange-500"
-              title="Signaler"
+              title={tc('report')}
             >
               <Flag className="h-3 w-3" />
             </button>
@@ -301,7 +299,7 @@ function EventCommentItem({ comment, index = 0, evenementId, onReport }: { comme
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleReply(); } }}
-                placeholder={`Repondre a ${comment.auteurNom}...`}
+                placeholder={tco('replyTo', { name: comment.auteurNom })}
                 className="w-full resize-none border border-forest-900/10 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-900/20 h-10 focus:h-20 transition-all"
                 rows={1}
               />
@@ -331,6 +329,7 @@ function EventCommentItem({ comment, index = 0, evenementId, onReport }: { comme
 }
 
 function EventCommentSection({ evenementId }: { evenementId: string }) {
+  const tco = useTranslations('comments');
   const { data: comments, isLoading } = useEventComments(evenementId);
   const [newComment, setNewComment] = useState('');
   const [reportTarget, setReportTarget] = useState<string | null>(null);
@@ -343,9 +342,9 @@ function EventCommentSection({ evenementId }: { evenementId: string }) {
     if (!reportTarget) return;
     try {
       await reportMutation.mutateAsync({ commentId: reportTarget, raison });
-      addToast('Commentaire signale. Merci pour votre vigilance.', 'success');
+      addToast(tco('reported'), 'success');
     } catch {
-      addToast('Vous avez deja signale ce commentaire', 'error');
+      addToast(tco('alreadyReported'), 'error');
     }
     setReportTarget(null);
   };
@@ -357,11 +356,11 @@ function EventCommentSection({ evenementId }: { evenementId: string }) {
       { targetType: 'evenement', targetId: evenementId, contenu: newComment.trim() },
       {
         onSuccess: () => {
-          addToast('Commentaire publie !', 'success');
+          addToast(tco('published'), 'success');
           setNewComment('');
         },
         onError: () => {
-          addToast('Erreur lors de la publication', 'error');
+          addToast(tco('publishError'), 'error');
         },
       }
     );
@@ -384,7 +383,7 @@ function EventCommentSection({ evenementId }: { evenementId: string }) {
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
-              placeholder="Ecrire un commentaire..."
+              placeholder={tco('placeholder')}
               className="w-full resize-none border border-forest-900/10 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest-900/20 focus:border-forest-900/30 transition-all h-12 focus:h-24"
               rows={1}
             />
@@ -424,7 +423,7 @@ function EventCommentSection({ evenementId }: { evenementId: string }) {
           ))}
           {comments?.length === 0 && (
             <p className="py-8 text-center text-sm text-ink-400">
-              Soyez le premier a commenter cet evenement.
+              {tco('beFirstEvent')}
             </p>
           )}
         </div>
@@ -444,6 +443,17 @@ export default function EvenementDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const te = useTranslations('evenements');
+  const tc = useTranslations('common');
+
+  const typeLabels: Record<string, string> = {
+    culte: te('typeCulte'),
+    conference: te('typeConference'),
+    retraite: te('typeRetraite'),
+    formation: te('typeFormation'),
+    jeunesse: te('typeJeunesse'),
+  };
+
   const { id: rawId } = use(params);
   const id = useDynamicId(rawId);
   const { data: evenement, isLoading } = useEvenement(id);
@@ -464,17 +474,17 @@ export default function EvenementDetailPage({
     return (
       <div className="mx-auto max-w-3xl px-4 py-12 text-center">
         <h2 className="font-heading text-2xl font-bold text-ink-900">
-          Evenement introuvable
+          {te('notFound')}
         </h2>
         <p className="mt-2 text-ink-500">
-          Cet evenement n&apos;existe pas ou a ete supprime.
+          {te('notFoundDescription')}
         </p>
         <Link
           href="/evenements"
           className="mt-4 inline-flex items-center gap-2 text-forest-700 hover:text-forest-900"
         >
           <ArrowLeft className="h-4 w-4" />
-          Retour aux evenements
+          {te('backToEvents')}
         </Link>
       </div>
     );
@@ -489,6 +499,7 @@ export default function EvenementDetailPage({
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
+    addToast(tc('linkCopied'), 'success');
   };
 
   const handleShareWhatsApp = () => {
@@ -545,7 +556,7 @@ export default function EvenementDetailPage({
     a.download = `${evenement.titre.replace(/\s+/g, '-')}.ics`;
     a.click();
     URL.revokeObjectURL(url);
-    addToast('Evenement ajoute a votre calendrier', 'success');
+    addToast(te('calendarAdded'), 'success');
   };
 
   return (
@@ -605,7 +616,7 @@ export default function EvenementDetailPage({
               {timeStart}{timeEnd ? ` - ${timeEnd}` : ''}
             </p>
             <p className="text-xs text-ink-600">
-              {timeEnd ? 'Duree du culte' : 'Heure de debut'}
+              {timeEnd ? te('duration') : te('startTime')}
             </p>
           </div>
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-sage-200/30 text-center">
@@ -614,18 +625,18 @@ export default function EvenementDetailPage({
               {evenement.lieu.split(',')[0]}
             </p>
             <p className="text-xs text-ink-600">
-              {evenement.lieu.split(',').slice(1).join(',').trim() || 'Voir adresse'}
+              {evenement.lieu.split(',').slice(1).join(',').trim() || te('seeAddress')}
             </p>
           </div>
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-sage-200/30 text-center">
             <Users className="w-6 h-6 text-forest-900 mx-auto mb-2" />
             <p className="text-sm font-semibold text-ink-900">
-              {evenement.participantsInscrits} inscrits
+              {evenement.participantsInscrits} {tc('registered')}
             </p>
             <p className="text-xs text-ink-600">
               {evenement.maxParticipants
-                ? `${evenement.maxParticipants - evenement.participantsInscrits} places restantes`
-                : 'Places illimitees'}
+                ? `${evenement.maxParticipants - evenement.participantsInscrits} ${tc('remainingSpots')}`
+                : tc('unlimitedSpots')}
             </p>
           </div>
         </div>
@@ -657,7 +668,7 @@ export default function EvenementDetailPage({
               className="flex items-center gap-2 text-forest-900 font-medium text-sm hover:underline"
             >
               <ExternalLink className="w-4 h-4" />
-              Voir sur Google Maps
+              {te('seeOnMaps')}
             </a>
           </div>
         </div>
@@ -665,7 +676,7 @@ export default function EvenementDetailPage({
         {/* Description */}
         <div className="bg-white rounded-2xl shadow-sm border border-sage-200/30 p-6 mb-8 animate-[fade-up_0.5s_ease-out_0.2s_both]">
           <h2 className="font-heading text-xl font-bold text-forest-900 mb-4">
-            A propos de cet evenement
+            {te('about')}
           </h2>
           <p className="text-ink-600 leading-relaxed mb-4 whitespace-pre-line">
             {evenement.description}
@@ -674,7 +685,7 @@ export default function EvenementDetailPage({
           {/* Programme inline */}
           {evenement.programme && evenement.programme.length > 0 && (
             <>
-              <h3 className="font-heading font-bold text-ink-900 mb-3">Programme</h3>
+              <h3 className="font-heading font-bold text-ink-900 mb-3">{te('program')}</h3>
               <div className="space-y-3">
                 {evenement.programme.map((item, index) => (
                   <div key={index} className="flex items-start gap-3">
@@ -695,10 +706,10 @@ export default function EvenementDetailPage({
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-white/60 mb-1">
-                  Culte en ligne
+                  {te('onlineCulte')}
                 </p>
                 <p className="text-white font-semibold">
-                  Rejoignez ce culte depuis chez vous
+                  {te('joinOnlineDesc')}
                 </p>
               </div>
               <a
@@ -708,7 +719,7 @@ export default function EvenementDetailPage({
                 className="flex shrink-0 items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-forest-900 shadow-md transition-opacity hover:opacity-90"
               >
                 <Video className="h-4 w-4" />
-                Rejoindre en ligne
+                {te('joinOnline')}
               </a>
             </div>
           </div>
@@ -723,7 +734,7 @@ export default function EvenementDetailPage({
         {evenement.participantsInscrits > 0 && (
           <div className="bg-white rounded-2xl shadow-sm border border-sage-200/30 p-6 mb-8 animate-[fade-up_0.5s_ease-out_0.3s_both]">
             <h2 className="font-heading text-xl font-bold text-forest-900 mb-4">
-              Participants ({evenement.participantsInscrits})
+              {te('participants', { count: evenement.participantsInscrits })}
             </h2>
             <div className="flex gap-4 overflow-x-auto pb-2 items-center">
               <div className="flex [&>*:not(:first-child)]:-ml-3">
@@ -747,7 +758,7 @@ export default function EvenementDetailPage({
                 )}
               </div>
               <span className="text-sm text-ink-500 ml-2 whitespace-nowrap">
-                {evenement.participantsInscrits} participant{evenement.participantsInscrits > 1 ? 's' : ''} inscrit{evenement.participantsInscrits > 1 ? 's' : ''}
+                {te('participantsCount', { count: evenement.participantsInscrits })}
               </span>
             </div>
           </div>
@@ -756,7 +767,7 @@ export default function EvenementDetailPage({
         {/* Share */}
         <div className="bg-white rounded-2xl shadow-sm border border-sage-200/30 p-6 mb-8 animate-[fade-up_0.5s_ease-out_0.3s_both]">
           <h2 className="font-heading text-xl font-bold text-forest-900 mb-4">
-            Partager
+            {tc('share')}
           </h2>
           <div className="flex flex-wrap gap-3">
             <button
@@ -785,7 +796,7 @@ export default function EvenementDetailPage({
               className="flex items-center gap-2 px-4 py-2.5 bg-ink-100 text-ink-900 rounded-xl text-sm font-medium hover:bg-ink-200 transition hover:scale-[1.02] active:scale-[0.98]"
             >
               <LinkIcon className="w-4 h-4" />
-              Copier le lien
+              {te('copyLink')}
             </button>
           </div>
         </div>
@@ -801,7 +812,7 @@ export default function EvenementDetailPage({
           className="w-full md:w-auto px-6 py-3.5 bg-white border-2 border-forest-900 text-forest-900 font-semibold rounded-xl hover:bg-forest-900 hover:text-white transition hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 animate-[fade-up_0.5s_ease-out_0.4s_both]"
         >
           <CalendarPlus className="w-5 h-5" />
-          Ajouter au calendrier
+          {te('addToCalendar')}
         </button>
       </div>
     </div>

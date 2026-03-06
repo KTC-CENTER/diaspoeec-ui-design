@@ -88,6 +88,9 @@ export interface BibleStats {
   plansCompletes: number;
   joursConsecutifs: number;
   versetsAnnotes: number;
+  meditationsLues?: number;
+  serieActuelle?: number;
+  versetsFavoris?: number;
 }
 
 export async function getBibleStats(): Promise<BibleStats> {

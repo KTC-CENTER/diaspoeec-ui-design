@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { X, BookOpen, CheckCircle, Loader2, Clock } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useToastStore } from '@/stores/toast.store';
 import { useCompleteLectureJour, useLectureCourante } from '@/features/bible/hooks/use-bible';
 import type { PlanLecture } from '@/types';
@@ -23,6 +24,8 @@ function ReadingModal({ planId, onClose, onComplete }: {
   onClose: () => void;
   onComplete: () => void;
 }) {
+  const t = useTranslations('bible');
+  const tc = useTranslations('common');
   const { data, isLoading } = useLectureCourante(planId, true);
   const [hasScrolled, setHasScrolled] = useState(false);
 
@@ -42,7 +45,7 @@ function ReadingModal({ planId, onClose, onComplete }: {
           <div className="flex items-center gap-2">
             <BookOpen className="h-5 w-5 text-forest-900" />
             <span className="font-semibold text-ink-900" style={{ fontFamily: 'var(--font-heading)' }}>
-              Lecture du jour
+              {t('dailyReading')}
             </span>
           </div>
           <button
@@ -57,20 +60,20 @@ function ReadingModal({ planId, onClose, onComplete }: {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-16">
             <Loader2 className="h-8 w-8 animate-spin text-forest-900" />
-            <p className="mt-3 text-sm text-ink-400">Chargement de la lecture...</p>
+            <p className="mt-3 text-sm text-ink-400">{t('loadingReading')}</p>
           </div>
         ) : data?.termine ? (
           <div className="flex flex-col items-center justify-center py-16 px-6">
             <CheckCircle className="h-12 w-12 text-green-500 mb-4" />
-            <h3 className="text-lg font-bold text-ink-900 mb-2">Plan termine !</h3>
+            <h3 className="text-lg font-bold text-ink-900 mb-2">{t('planCompleted')}</h3>
             <p className="text-sm text-center text-ink-500">
-              Felicitations ! Vous avez complete ce plan de lecture.
+              {t('congratulations')}
             </p>
             <button
               onClick={onClose}
               className="mt-6 rounded-xl bg-forest-900 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-forest-800"
             >
-              Fermer
+              {tc('close')}
             </button>
           </div>
         ) : data?.disponible === false ? (
@@ -78,11 +81,11 @@ function ReadingModal({ planId, onClose, onComplete }: {
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-50">
               <Clock className="h-8 w-8 text-amber-500" />
             </div>
-            <h3 className="text-lg font-bold text-ink-900 mb-2">A demain !</h3>
+            <h3 className="text-lg font-bold text-ink-900 mb-2">{t('seeTomorrow')}</h3>
             <p className="text-sm text-center text-ink-500 leading-relaxed">
-              Vous avez deja lu votre passage du jour.{' '}
+              {t('alreadyReadToday')}{' '}
               <br />
-              Le jour {data.jourNumero} sera disponible{' '}
+              {t('dayAvailable', { day: data.jourNumero })}{' '}
               <span className="font-semibold text-ink-700">
                 {formatProchaineLecture(data.prochaineLecture)}
               </span>.
@@ -91,21 +94,21 @@ function ReadingModal({ planId, onClose, onComplete }: {
               onClick={onClose}
               className="mt-6 rounded-xl bg-forest-900 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-forest-800"
             >
-              Fermer
+              {tc('close')}
             </button>
           </div>
         ) : !data?.lecture ? (
           <div className="flex flex-col items-center justify-center py-16 px-6">
             <BookOpen className="h-10 w-10 text-ink-200 mb-4" />
-            <h3 className="text-base font-semibold text-ink-700 mb-2">Lecture non configuree</h3>
+            <h3 className="text-base font-semibold text-ink-700 mb-2">{t('readingNotConfigured')}</h3>
             <p className="text-sm text-center text-ink-500">
-              Le contenu pour le jour {data?.jourNumero} n&apos;a pas encore ete ajoute par le pasteur.
+              {t('readingNotConfiguredMsg', { day: data?.jourNumero })}
             </p>
             <button
               onClick={onComplete}
               className="mt-6 rounded-xl bg-forest-900 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-forest-800"
             >
-              Valider quand meme
+              {t('validateAnyway')}
             </button>
           </div>
         ) : (
@@ -114,7 +117,7 @@ function ReadingModal({ planId, onClose, onComplete }: {
             <div className="shrink-0 px-5 pt-4">
               <div className="inline-flex items-center gap-2 rounded-full bg-forest-900/10 px-3 py-1">
                 <span className="text-xs font-semibold text-forest-900">
-                  Jour {data.lecture.jourNumero}
+                  {t('dayNumber', { day: data.lecture.jourNumero })}
                 </span>
                 <span className="h-1 w-1 rounded-full bg-forest-900/30" />
                 <span className="text-xs font-medium text-forest-700">{data.lecture.reference}</span>
@@ -143,15 +146,15 @@ function ReadingModal({ planId, onClose, onComplete }: {
               ) : (
                 <div className="rounded-xl bg-amber-50 border border-amber-200 p-4">
                   <p className="text-sm text-amber-700">
-                    Le texte de ce passage n&apos;a pas ete renseigne. Retrouvez{' '}
-                    <strong>{data.lecture.reference}</strong> dans votre Bible.
+                    {t('textNotProvided')}{' '}
+                    <strong>{data.lecture.reference}</strong>
                   </p>
                 </div>
               )}
 
               {!hasScrolled && data.lecture.texte && data.lecture.texte.length > 400 && (
                 <div className="mt-3 text-center text-xs text-ink-400 animate-pulse">
-                  ↓ Faites defiler pour lire
+                  ↓ {t('scrollToRead')}
                 </div>
               )}
             </div>
@@ -162,11 +165,11 @@ function ReadingModal({ planId, onClose, onComplete }: {
                 onClick={onComplete}
                 className="w-full rounded-xl bg-gradient-to-r from-forest-900 to-forest-700 py-3 text-sm font-semibold text-white shadow-md transition hover:shadow-lg active:scale-[0.98]"
               >
-                ✓ J&apos;ai lu ce passage
+                ✓ {t('iReadPassage')}
               </button>
               {!hasScrolled && data.lecture.texte && data.lecture.texte.length > 400 && (
                 <p className="mt-2 text-center text-xs text-ink-400">
-                  Lisez le passage avant de valider
+                  {t('readBeforeValidate')}
                 </p>
               )}
             </div>
@@ -180,6 +183,8 @@ function ReadingModal({ planId, onClose, onComplete }: {
 // ── Plan Card ─────────────────────────────────────────────────────────────────
 
 export function ReadingPlanCard({ plan }: ReadingPlanCardProps) {
+  const t = useTranslations('bible');
+  const tc = useTranslations('common');
   const { addToast } = useToastStore();
   const completeMutation = useCompleteLectureJour();
   const [showReading, setShowReading] = useState(false);
@@ -194,12 +199,12 @@ export function ReadingPlanCard({ plan }: ReadingPlanCardProps) {
       onSuccess: (updated) => {
         setShowReading(false);
         if (updated.joursCompletes >= updated.dureeJours) {
-          addToast(`Bravo ! Plan "${plan.titre}" termine !`, 'success');
+          addToast(t('planCompletedToast', { title: plan.titre }), 'success');
         } else {
-          addToast(`Jour ${updated.joursCompletes} complete !`, 'success');
+          addToast(t('noteSaved'), 'success');
         }
       },
-      onError: () => addToast('Erreur lors de la mise a jour', 'error'),
+      onError: () => addToast(tc('updateError'), 'error'),
     });
   };
 
@@ -214,11 +219,11 @@ export function ReadingPlanCard({ plan }: ReadingPlanCardProps) {
               <h3 className="text-base font-bold text-ink-900 mb-0.5">{plan.titre}</h3>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-ink-400">
-                  Jour {plan.joursCompletes} / {plan.dureeJours}
+                  {t('dayNumber', { day: plan.joursCompletes })} / {plan.dureeJours}
                 </span>
                 {streak > 2 && (
                   <span className="streak-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold text-white shadow-sm">
-                    {'\u{1F525}'} {streak} jours
+                    {'\u{1F525}'} {t('streakDays', { count: streak })}
                   </span>
                 )}
               </div>
@@ -247,13 +252,13 @@ export function ReadingPlanCard({ plan }: ReadingPlanCardProps) {
           className="w-full py-2.5 bg-forest-900 text-white text-sm font-semibold rounded-xl hover:bg-forest-700 transition-colors shadow-sm disabled:opacity-60 flex items-center justify-center gap-2"
         >
           {completeMutation.isPending ? (
-            <><Loader2 className="h-4 w-4 animate-spin" /> Validation...</>
+            <><Loader2 className="h-4 w-4 animate-spin" /> {t('validating')}</>
           ) : isTermine ? (
-            'Termine !'
+            t('completed')
           ) : isLocked ? (
-            <><Clock className="h-4 w-4" /> Revenir demain</>
+            <><Clock className="h-4 w-4" /> {t('comeBackTomorrow')}</>
           ) : (
-            <><BookOpen className="h-4 w-4" /> Lire le jour {plan.joursCompletes + 1}</>
+            <><BookOpen className="h-4 w-4" /> {t('readDay', { day: plan.joursCompletes + 1 })}</>
           )}
         </button>
       </div>

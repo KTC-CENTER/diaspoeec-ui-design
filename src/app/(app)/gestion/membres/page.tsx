@@ -3,14 +3,10 @@
 import { useState } from 'react';
 import { Search, Eye, X, MapPin, Mail, Phone, Award } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { getMembers } from '@/lib/api/members.api';
 import { RoleGuard } from '@/features/gestion/components/role-guard';
 import type { User } from '@/types';
-
-const statusLabels: Record<string, string> = {
-  actif: 'Actif',
-  inactif: 'Inactif',
-};
 
 const statusColors: Record<string, string> = {
   actif: 'bg-green-50 text-green-700 border-green-200',
@@ -18,6 +14,8 @@ const statusColors: Record<string, string> = {
 };
 
 function GestionMembresContent() {
+  const t = useTranslations('gestionMembres');
+  const tc = useTranslations('common');
   const { data: membersData } = useQuery({ queryKey: ['gestion-members'], queryFn: () => getMembers({ role: 'fidele' }) });
   const [search, setSearch] = useState('');
   const [viewItem, setViewItem] = useState<User | null>(null);
@@ -43,10 +41,10 @@ function GestionMembresContent() {
           className="text-2xl font-semibold text-forest-900 md:text-3xl"
           style={{ fontFamily: 'var(--font-heading)' }}
         >
-          Membres de la zone
+          {t('pageTitle')}
         </h1>
         <p className="mt-1 text-sm text-ink-500">
-          Consultez les fideles de votre zone
+          {t('pageSubtitle')}
         </p>
       </div>
 
@@ -56,7 +54,7 @@ function GestionMembresContent() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
           <input
             type="text"
-            placeholder="Rechercher un membre..."
+            placeholder={t('searchMember')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-xl border border-forest-900/10 bg-cream-50 py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:border-forest-700 focus:ring-2 focus:ring-forest-900/10"
@@ -67,10 +65,10 @@ function GestionMembresContent() {
       {/* Stats */}
       <div className="mb-6 flex flex-wrap gap-3">
         <span className="rounded-full border border-forest-900/10 bg-sage-200 px-3 py-1 text-xs font-medium text-forest-900">
-          {members.length} membre{members.length > 1 ? 's' : ''}
+          {t('memberCount', { count: members.length })}
         </span>
         <span className="rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-medium text-green-700">
-          {members.filter((m) => m.statut === 'actif').length} actif{members.filter((m) => m.statut === 'actif').length > 1 ? 's' : ''}
+          {t('activeCount', { count: members.filter((m) => m.statut === 'actif').length })}
         </span>
       </div>
 
@@ -80,12 +78,12 @@ function GestionMembresContent() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-cream-50/50">
-                <th className="px-4 py-3 text-left font-medium text-ink-500">Nom</th>
-                <th className="hidden px-4 py-3 text-left font-medium text-ink-500 sm:table-cell">Email</th>
-                <th className="hidden px-4 py-3 text-left font-medium text-ink-500 md:table-cell">Ville</th>
-                <th className="hidden px-4 py-3 text-left font-medium text-ink-500 lg:table-cell">Ministeres</th>
-                <th className="px-4 py-3 text-left font-medium text-ink-500">Statut</th>
-                <th className="px-4 py-3 text-right font-medium text-ink-500">Actions</th>
+                <th className="px-4 py-3 text-left font-medium text-ink-500">{t('name')}</th>
+                <th className="hidden px-4 py-3 text-left font-medium text-ink-500 sm:table-cell">{tc('email')}</th>
+                <th className="hidden px-4 py-3 text-left font-medium text-ink-500 md:table-cell">{t('city')}</th>
+                <th className="hidden px-4 py-3 text-left font-medium text-ink-500 lg:table-cell">{t('ministries')}</th>
+                <th className="px-4 py-3 text-left font-medium text-ink-500">{tc('status')}</th>
+                <th className="px-4 py-3 text-right font-medium text-ink-500">{tc('actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -127,7 +125,7 @@ function GestionMembresContent() {
                   </td>
                   <td className="px-4 py-3">
                     <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${statusColors[member.statut] || 'bg-gray-50 text-gray-600'}`}>
-                      {statusLabels[member.statut] || member.statut}
+                      {member.statut === 'actif' ? tc('active') : member.statut === 'inactif' ? tc('inactive') : member.statut}
                     </span>
                   </td>
                   <td className="px-4 py-3">
@@ -163,7 +161,7 @@ function GestionMembresContent() {
               className="mb-4 text-lg font-semibold text-ink-900"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
-              Fiche du membre
+              {t('memberCard')}
             </h3>
 
             <div className="space-y-4">
@@ -180,7 +178,7 @@ function GestionMembresContent() {
                 <div>
                   <p className="font-semibold text-ink-900">{viewItem.nomComplet}</p>
                   <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${statusColors[viewItem.statut]}`}>
-                    {statusLabels[viewItem.statut]}
+                    {viewItem.statut === 'actif' ? tc('active') : viewItem.statut === 'inactif' ? tc('inactive') : viewItem.statut}
                   </span>
                 </div>
               </div>
@@ -188,32 +186,32 @@ function GestionMembresContent() {
               <div className="h-px bg-ink-100" />
 
               <div>
-                <p className="text-sm font-medium text-ink-500">Email</p>
+                <p className="text-sm font-medium text-ink-500">{tc('email')}</p>
                 <p className="flex items-center gap-1.5 text-sm text-ink-900">
                   <Mail className="h-3.5 w-3.5 text-ink-400" />
                   {viewItem.email}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-ink-500">Telephone</p>
+                <p className="text-sm font-medium text-ink-500">{t('phone')}</p>
                 <p className="flex items-center gap-1.5 text-sm text-ink-900">
                   <Phone className="h-3.5 w-3.5 text-ink-400" />
                   {viewItem.telephone}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-ink-500">Ville</p>
+                <p className="text-sm font-medium text-ink-500">{t('city')}</p>
                 <p className="flex items-center gap-1.5 text-sm text-ink-900">
                   <MapPin className="h-3.5 w-3.5 text-ink-400" />
                   {viewItem.ville}, {viewItem.paysResidence}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-ink-500">Paroisse d&apos;origine</p>
+                <p className="text-sm font-medium text-ink-500">{t('originParish')}</p>
                 <p className="text-sm text-ink-900">{viewItem.paroisseOrigine}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-ink-500">Ministeres</p>
+                <p className="text-sm font-medium text-ink-500">{t('ministries')}</p>
                 <div className="mt-1 flex flex-wrap gap-1.5">
                   {viewItem.ministeres.map((m) => (
                     <span
@@ -227,19 +225,19 @@ function GestionMembresContent() {
                 </div>
               </div>
               <div>
-                <p className="text-sm font-medium text-ink-500">Baptise</p>
+                <p className="text-sm font-medium text-ink-500">{t('baptized')}</p>
                 <p className="text-sm text-ink-900">
-                  {viewItem.baptise ? 'Oui' : 'Non'}
+                  {viewItem.baptise ? tc('yes') : tc('no')}
                   {viewItem.dateBapteme && ` (${new Date(viewItem.dateBapteme).toLocaleDateString('fr-FR')})`}
                 </p>
               </div>
               <div className="flex gap-6">
                 <div>
-                  <p className="text-sm font-medium text-ink-500">Dons</p>
+                  <p className="text-sm font-medium text-ink-500">{t('donations')}</p>
                   <p className="text-sm font-semibold text-forest-900">{viewItem.donsEffectues}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-ink-500">Evenements</p>
+                  <p className="text-sm font-medium text-ink-500">{t('eventsAttended')}</p>
                   <p className="text-sm font-semibold text-forest-900">{viewItem.evenementsSuivis}</p>
                 </div>
               </div>
@@ -250,7 +248,7 @@ function GestionMembresContent() {
                 onClick={() => setViewItem(null)}
                 className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
               >
-                Fermer
+                {tc('close')}
               </button>
             </div>
           </div>

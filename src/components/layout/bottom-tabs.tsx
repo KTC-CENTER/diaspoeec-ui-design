@@ -3,21 +3,22 @@
 import Link from 'next/link';
 import { Home, BookOpen, Calendar, Heart, User } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { useTranslations } from 'next-intl';
 import type { LucideIcon } from 'lucide-react';
 
 interface Tab {
   key: string;
-  label: string;
+  labelKey: string;
   icon: LucideIcon;
   href: string;
 }
 
 const tabs: Tab[] = [
-  { key: 'accueil', label: 'Accueil', icon: Home, href: '/accueil' },
-  { key: 'meditations', label: 'Meditations', icon: BookOpen, href: '/meditations' },
-  { key: 'evenements', label: 'Evenements', icon: Calendar, href: '/evenements' },
-  { key: 'dons', label: 'Dons', icon: Heart, href: '/dons' },
-  { key: 'profil', label: 'Profil', icon: User, href: '/profil' },
+  { key: 'accueil', labelKey: 'home', icon: Home, href: '/accueil' },
+  { key: 'meditations', labelKey: 'meditations', icon: BookOpen, href: '/meditations' },
+  { key: 'evenements', labelKey: 'events', icon: Calendar, href: '/evenements' },
+  { key: 'dons', labelKey: 'donations', icon: Heart, href: '/dons' },
+  { key: 'profil', labelKey: 'profile', icon: User, href: '/profil' },
 ];
 
 interface BottomTabsProps {
@@ -25,11 +26,14 @@ interface BottomTabsProps {
 }
 
 export function BottomTabs({ activeTab }: BottomTabsProps) {
+  const tn = useTranslations('nav');
+  const tc = useTranslations('common');
+
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-50 border-t border-ink-100 bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
       role="navigation"
-      aria-label="Navigation principale"
+      aria-label={tc('mainNav')}
     >
       <div className="flex items-center justify-around px-2 py-1.5">
         {tabs.map((tab) => {
@@ -63,7 +67,7 @@ export function BottomTabs({ activeTab }: BottomTabsProps) {
                   isActive ? 'font-semibold' : 'font-medium'
                 )}
               >
-                {tab.label}
+                {tn(tab.labelKey as Parameters<typeof tn>[0])}
               </span>
             </Link>
           );

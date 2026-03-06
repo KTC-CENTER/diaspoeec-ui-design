@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useAuthStore } from '@/stores/auth.store';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
@@ -9,6 +10,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations('auth');
   const { login } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
 
@@ -19,7 +21,7 @@ function AuthCallbackContent() {
     const redirectTo = searchParams.get('redirectTo') ?? '/accueil';
 
     if (!accessToken || !refreshToken) {
-      setError('Connexion echouee. Parametres manquants.');
+      setError(t('connectionFailed'));
       return;
     }
 
@@ -38,7 +40,7 @@ function AuthCallbackContent() {
         router.replace(redirectTo);
       })
       .catch(() => {
-        setError('Connexion echouee. Veuillez reessayer.');
+        setError(t('connectionFailedRetry'));
       });
   }, []);
 
@@ -50,7 +52,7 @@ function AuthCallbackContent() {
           onClick={() => router.replace('/login')}
           className="rounded-xl bg-forest-900 px-6 py-2.5 text-sm font-medium text-white"
         >
-          Retour a la connexion
+          {t('backToLogin')}
         </button>
       </div>
     );
@@ -59,18 +61,19 @@ function AuthCallbackContent() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4">
       <div className="h-8 w-8 animate-spin rounded-full border-2 border-forest-900/20 border-t-forest-900" />
-      <p className="text-sm text-ink-500">Connexion en cours...</p>
+      <p className="text-sm text-ink-500">{t('connecting')}</p>
     </div>
   );
 }
 
 export default function AuthCallbackPage() {
+  const t = useTranslations('auth');
   return (
     <Suspense
       fallback={
         <div className="flex min-h-screen flex-col items-center justify-center gap-4">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-forest-900/20 border-t-forest-900" />
-          <p className="text-sm text-ink-500">Connexion en cours...</p>
+          <p className="text-sm text-ink-500">{t('connecting')}</p>
         </div>
       }
     >

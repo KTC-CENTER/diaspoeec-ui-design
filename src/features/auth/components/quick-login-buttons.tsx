@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Shield, User, Loader2, Zap, BookOpen, Users } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useLogin, DEMO_ACCOUNTS } from '@/features/auth/hooks/use-auth';
 import type { LucideIcon } from 'lucide-react';
 
@@ -53,6 +54,7 @@ const buttons: QuickButton[] = [
 
 export function QuickLoginButtons() {
   const { mutate: login, isPending } = useLogin();
+  const tc = useTranslations('common');
   const [loadingAccount, setLoadingAccount] = useState<AccountKey | null>(null);
 
   const handleQuickLogin = (accountKey: AccountKey) => {
@@ -75,7 +77,7 @@ export function QuickLoginButtons() {
       <div className="flex items-center gap-2 mb-3">
         <Zap className="w-4 h-4 text-gold-600" />
         <span className="text-xs font-semibold text-ink-600 uppercase tracking-wider">
-          Connexion rapide
+          {tc('quickLogin')}
         </span>
       </div>
 

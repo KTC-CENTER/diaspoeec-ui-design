@@ -1,8 +1,11 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { MembersTable } from '@/features/admin/components/members-table';
 
 export default function AdminFidelesPage() {
+  const t = useTranslations('admin');
+
   return (
     <section className="mx-auto max-w-[1400px] p-4 md:p-8">
       {/* Header */}
@@ -11,10 +14,10 @@ export default function AdminFidelesPage() {
           className="text-2xl font-semibold text-forest-900 md:text-3xl"
           style={{ fontFamily: 'var(--font-heading)' }}
         >
-          Gestion des fideles
+          {t('membersManagement')}
         </h2>
         <p className="mt-1 text-sm text-ink-500">
-          Gerer les membres de la communaute DiaspoEEC
+          {t('membersManagementDesc')}
         </p>
       </div>
 

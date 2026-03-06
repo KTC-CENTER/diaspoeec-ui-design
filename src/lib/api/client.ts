@@ -11,6 +11,16 @@ const TOKEN_KEY = 'auth_token';
 const REFRESH_TOKEN_KEY = 'auth_refresh_token';
 const SESSION_ID_KEY = 'auth_session_id';
 
+function getStoredLocale(): string {
+  if (typeof window === 'undefined') return 'fr';
+  try {
+    const stored = JSON.parse(localStorage.getItem('diaspoeec-locale') || '{}');
+    return stored?.state?.locale || 'fr';
+  } catch {
+    return 'fr';
+  }
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -170,8 +180,10 @@ async function fetchWithAuth<T>(
 ): Promise<T> {
   const token = getToken();
   const sessionId = getSessionId();
+  const locale = getStoredLocale();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    'Accept-Language': locale,
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(sessionId ? { 'X-Session-Id': sessionId } : {}),
   };

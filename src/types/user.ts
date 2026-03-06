@@ -22,7 +22,8 @@ export interface User {
   dateBapteme?: string;
   ministeres: Ministere[];
   role: UserRole;
-  statut: 'actif' | 'inactif';
+  langue?: string;
+  statut: 'actif' | 'inactif' | 'suspendu';
   donsEffectues: number;
   evenementsSuivis: number;
   jaimesTotal: number;

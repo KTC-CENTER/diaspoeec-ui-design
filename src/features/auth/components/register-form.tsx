@@ -3,6 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, Check, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { registerSchema, type RegisterFormData } from '@/features/auth/schemas/auth.schema';
 import { useRegister } from '@/features/auth/hooks/use-auth';
@@ -12,11 +13,12 @@ import { useRegister } from '@/features/auth/hooks/use-auth';
 // ============================================================================
 
 function PasswordRules({ password }: { password: string }) {
+  const t = useTranslations('auth');
   const rules = [
-    { label: '8 caractères minimum', valid: password.length >= 8 },
-    { label: 'Une majuscule', valid: /[A-Z]/.test(password) },
-    { label: 'Un chiffre', valid: /[0-9]/.test(password) },
-    { label: 'Un caractère spécial', valid: /[^A-Za-z0-9]/.test(password) },
+    { label: t('passwordRule8Chars'), valid: password.length >= 8 },
+    { label: t('passwordRuleCapital'), valid: /[A-Z]/.test(password) },
+    { label: t('passwordRuleNumber'), valid: /[0-9]/.test(password) },
+    { label: t('passwordRuleSpecial'), valid: /[^A-Za-z0-9]/.test(password) },
   ];
 
   if (!password) return null;
@@ -49,6 +51,8 @@ function PasswordRules({ password }: { password: string }) {
 
 export function RegisterForm() {
   const { mutate: registerUser, isPending, error } = useRegister();
+  const t = useTranslations('auth');
+  const tc = useTranslations('common');
 
   const {
     register,
@@ -86,13 +90,13 @@ export function RegisterForm() {
           htmlFor="nomComplet"
           className="block text-sm font-medium text-ink-700"
         >
-          Nom complet
+          {t('fullName')}
         </label>
         <input
           id="nomComplet"
           type="text"
           autoComplete="name"
-          placeholder="Jean-Paul Mbarga"
+          placeholder={t('fullNamePlaceholder')}
           className={cn(
             'w-full rounded-xl border bg-white px-4 py-3 text-sm transition-colors',
             'placeholder:text-ink-400 focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20',
@@ -111,13 +115,13 @@ export function RegisterForm() {
           htmlFor="email"
           className="block text-sm font-medium text-ink-700"
         >
-          Adresse email
+          {tc('emailAddress')}
         </label>
         <input
           id="email"
           type="email"
           autoComplete="email"
-          placeholder="votre@email.com"
+          placeholder={t('emailPlaceholder')}
           className={cn(
             'w-full rounded-xl border bg-white px-4 py-3 text-sm transition-colors',
             'placeholder:text-ink-400 focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20',
@@ -136,13 +140,13 @@ export function RegisterForm() {
           htmlFor="password"
           className="block text-sm font-medium text-ink-700"
         >
-          Mot de passe
+          {tc('password')}
         </label>
         <input
           id="password"
           type="password"
           autoComplete="new-password"
-          placeholder="Cr&eacute;ez un mot de passe"
+          placeholder={t('createPassword')}
           className={cn(
             'w-full rounded-xl border bg-white px-4 py-3 text-sm transition-colors',
             'placeholder:text-ink-400 focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20',
@@ -162,13 +166,13 @@ export function RegisterForm() {
           htmlFor="confirmPassword"
           className="block text-sm font-medium text-ink-700"
         >
-          Confirmer le mot de passe
+          {t('confirmPassword')}
         </label>
         <input
           id="confirmPassword"
           type="password"
           autoComplete="new-password"
-          placeholder="Confirmez votre mot de passe"
+          placeholder={t('confirmPasswordPlaceholder')}
           className={cn(
             'w-full rounded-xl border bg-white px-4 py-3 text-sm transition-colors',
             'placeholder:text-ink-400 focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20',
@@ -195,19 +199,19 @@ export function RegisterForm() {
             {...register('acceptTerms')}
           />
           <span className="text-sm text-ink-600">
-            J&apos;accepte les{' '}
+            {t('acceptTerms')}{' '}
             <a
               href="/conditions"
               className="font-medium text-forest-700 underline hover:text-forest-500"
             >
-              conditions d&apos;utilisation
+              {t('termsOfService')}
             </a>{' '}
-            et la{' '}
+            {t('and')}{' '}
             <a
               href="/confidentialite"
               className="font-medium text-forest-700 underline hover:text-forest-500"
             >
-              politique de confidentialit&eacute;
+              {t('privacyPolicy')}
             </a>
           </span>
         </label>
@@ -229,10 +233,10 @@ export function RegisterForm() {
         {isPending ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            Cr&eacute;ation en cours...
+            {t('creatingAccount')}
           </>
         ) : (
-          'Cr\u00e9er mon compte'
+          t('createMyAccount')
         )}
       </button>
     </form>

@@ -1,6 +1,7 @@
 'use client';
 
 import { FileText } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { formatDate, formatMontant } from '@/lib/utils/format';
 import { useToastStore } from '@/stores/toast.store';
 import type { Don } from '@/types';
@@ -75,11 +76,12 @@ interface DonationHistoryProps {
 
 export function DonationHistory({ dons }: DonationHistoryProps) {
   const { addToast } = useToastStore();
+  const t = useTranslations('dons');
 
   if (!dons || dons.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-border bg-cream-50 py-12 text-center">
-        <p className="text-sm text-ink-400">Aucun don enregistre.</p>
+        <p className="text-sm text-ink-400">{t('noDonationsYet')}</p>
       </div>
     );
   }
@@ -91,10 +93,10 @@ export function DonationHistory({ dons }: DonationHistoryProps) {
         <table className="w-full text-sm">
           <thead className="bg-sage-200/30">
             <tr>
-              <th className="text-left py-3 px-5 font-semibold text-forest-900">Date</th>
-              <th className="text-left py-3 px-5 font-semibold text-forest-900">Campagne</th>
-              <th className="text-right py-3 px-5 font-semibold text-forest-900">Montant</th>
-              <th className="text-center py-3 px-5 font-semibold text-forest-900">Recu</th>
+              <th className="text-left py-3 px-5 font-semibold text-forest-900">{t('date')}</th>
+              <th className="text-left py-3 px-5 font-semibold text-forest-900">{t('campaign')}</th>
+              <th className="text-right py-3 px-5 font-semibold text-forest-900">{t('amount')}</th>
+              <th className="text-center py-3 px-5 font-semibold text-forest-900">{t('receipt')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-ink-100/50">
@@ -114,7 +116,7 @@ export function DonationHistory({ dons }: DonationHistoryProps) {
                     className="inline-flex items-center gap-1 text-forest-900 hover:text-forest-700 transition text-xs font-medium"
                     onClick={() => {
                       printReceipt(don);
-                      addToast('Recu ouvert pour impression', 'success');
+                      addToast(t('receiptOpened'), 'success');
                     }}
                   >
                     <FileText className="w-4 h-4" />
@@ -142,7 +144,7 @@ export function DonationHistory({ dons }: DonationHistoryProps) {
                 className="text-forest-900 text-xs font-medium flex items-center gap-1"
                 onClick={() => {
                   printReceipt(don);
-                  addToast('Recu ouvert pour impression', 'success');
+                  addToast(t('receiptOpened'), 'success');
                 }}
               >
                 <FileText className="w-3.5 h-3.5" />

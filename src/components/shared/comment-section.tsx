@@ -9,6 +9,7 @@ import { useToastStore } from '@/stores/toast.store';
 import type { Comment } from '@/types';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useTranslations } from 'next-intl';
 
 interface CommentSectionProps {
   comments: Comment[];
@@ -29,13 +30,6 @@ function formatTime(dateStr: string): string {
   }
 }
 
-const REPORT_REASONS = [
-  'Contenu inapproprie',
-  'Spam ou publicite',
-  'Langage offensant',
-  'Harcelement',
-  'Fausse information',
-];
 
 interface SingleCommentProps {
   comment: Comment;
@@ -44,6 +38,7 @@ interface SingleCommentProps {
 }
 
 function SingleComment({ comment, isReply = false, onReport }: SingleCommentProps) {
+  const tc = useTranslations('common');
   const [localLiked, setLocalLiked] = useState(false);
   const [localLikes, setLocalLikes] = useState(comment.likes);
   const roleBadge = getRoleBadge(comment.auteurNom);
@@ -99,7 +94,7 @@ function SingleComment({ comment, isReply = false, onReport }: SingleCommentProp
           <button
             onClick={() => onReport(comment.id)}
             className="inline-flex items-center gap-1 text-xs text-ink-300 transition-colors hover:text-orange-500 active:text-orange-500"
-            title="Signaler"
+            title={tc('report')}
           >
             <Flag className="h-3 w-3" />
           </button>
@@ -120,7 +115,17 @@ function ReportModal({
   onSubmit: (raison: string) => void;
   isPending: boolean;
 }) {
+  const tc = useTranslations('common');
+  const t = useTranslations('comments');
   const [selected, setSelected] = useState<string | null>(null);
+
+  const reportReasons = [
+    t('inappropriate'),
+    t('spam'),
+    t('offensive'),
+    t('harassment'),
+    t('misinformation'),
+  ];
 
   if (!open) return null;
 
@@ -133,17 +138,17 @@ function ReportModal({
             className="text-lg font-semibold text-ink-900"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            Signaler ce commentaire
+            {t('reportTitle')}
           </h3>
           <button onClick={onClose} className="rounded-lg p-1 text-ink-400 transition hover:bg-ink-50">
             <X className="h-5 w-5" />
           </button>
         </div>
         <p className="mb-4 text-sm text-ink-500">
-          Pourquoi signalez-vous ce commentaire ?
+          {t('reportWhy')}
         </p>
         <div className="space-y-2">
-          {REPORT_REASONS.map((reason) => (
+          {reportReasons.map((reason) => (
             <button
               key={reason}
               onClick={() => setSelected(reason)}
@@ -163,7 +168,7 @@ function ReportModal({
             onClick={onClose}
             className="flex-1 rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
           >
-            Annuler
+            {tc('cancel')}
           </button>
           <button
             onClick={() => selected && onSubmit(selected)}
@@ -171,7 +176,7 @@ function ReportModal({
             className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-orange-600 disabled:opacity-60"
           >
             {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Flag className="h-4 w-4" />}
-            Signaler
+            {t('reportSubmit')}
           </button>
         </div>
       </div>
@@ -180,6 +185,8 @@ function ReportModal({
 }
 
 export function CommentSection({ comments, onSubmit, currentUserName = 'Moi' }: CommentSectionProps) {
+  const tc = useTranslations('common');
+  const t = useTranslations('comments');
   const [text, setText] = useState('');
   const [reportTarget, setReportTarget] = useState<string | null>(null);
   const reportMutation = useReportComment();
@@ -197,9 +204,9 @@ export function CommentSection({ comments, onSubmit, currentUserName = 'Moi' }: 
     if (!reportTarget) return;
     try {
       await reportMutation.mutateAsync({ commentId: reportTarget, raison });
-      addToast('Commentaire signale. Merci pour votre vigilance.', 'success');
+      addToast(t('reported'), 'success');
     } catch {
-      addToast('Vous avez deja signale ce commentaire', 'error');
+      addToast(t('alreadyReported'), 'error');
     }
     setReportTarget(null);
   };
@@ -214,7 +221,7 @@ export function CommentSection({ comments, onSubmit, currentUserName = 'Moi' }: 
             type="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Ecrire un commentaire..."
+            placeholder={t('placeholder')}
             className="min-w-0 flex-1 bg-transparent text-sm text-ink-900 placeholder:text-ink-400 outline-none"
           />
           <button
@@ -226,7 +233,7 @@ export function CommentSection({ comments, onSubmit, currentUserName = 'Moi' }: 
                 ? 'bg-forest-900 text-white hover:bg-forest-700'
                 : 'bg-ink-100 text-ink-300 cursor-not-allowed'
             )}
-            aria-label="Envoyer"
+            aria-label={tc('send')}
           >
             <Send className="h-4 w-4" />
           </button>
@@ -247,7 +254,7 @@ export function CommentSection({ comments, onSubmit, currentUserName = 'Moi' }: 
 
       {comments.length === 0 && (
         <p className="py-6 text-center text-sm text-ink-400">
-          Aucun commentaire pour le moment. Soyez le premier !
+          {t('noComments')}
         </p>
       )}
 

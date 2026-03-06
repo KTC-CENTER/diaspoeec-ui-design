@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { persist, type StateStorage } from 'zustand/middleware';
 import type { User } from '@/types';
 import { setTokens, clearTokens } from '@/lib/api/client';
+import { useLocaleStore, type AppLocale, SUPPORTED_LOCALES } from '@/stores/locale.store';
 
 interface AuthState {
   user: User | null;
@@ -30,6 +31,10 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: true,
           isLoading: false,
         });
+        // Sync locale from user preference
+        if (user.langue && SUPPORTED_LOCALES.includes(user.langue as AppLocale)) {
+          useLocaleStore.getState().setLocale(user.langue as AppLocale);
+        }
         // Also persist auth state to Capacitor Preferences
         persistAuthNative(user);
       },

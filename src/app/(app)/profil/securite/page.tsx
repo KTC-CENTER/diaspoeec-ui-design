@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Shield, Eye, EyeOff, Lock, KeyRound, Loader2, Check } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { useToastStore } from '@/stores/toast.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -10,6 +11,11 @@ import { useChangePassword } from '@/features/profil/hooks/use-change-password';
 import { ApiError } from '@/lib/api/client';
 
 export default function SecuritePage() {
+  const t = useTranslations('securite');
+  const tp = useTranslations('profil');
+  const tc = useTranslations('common');
+  const ta = useTranslations('auth');
+
   const user = useAuthStore((s) => s.user);
   const { addToast } = useToastStore();
   const changePasswordMutation = useChangePassword();
@@ -25,15 +31,15 @@ export default function SecuritePage() {
 
   const handleChangePassword = () => {
     if (!currentPwd) {
-      addToast('Veuillez saisir votre mot de passe actuel', 'error');
+      addToast(t('enterCurrentPassword'), 'error');
       return;
     }
     if (newPwd.length < 8) {
-      addToast('Le nouveau mot de passe doit contenir au moins 8 caracteres', 'error');
+      addToast(t('newPasswordMin'), 'error');
       return;
     }
     if (newPwd !== confirmPwd) {
-      addToast('Les mots de passe ne correspondent pas', 'error');
+      addToast(t('passwordMismatch'), 'error');
       return;
     }
     changePasswordMutation.mutate(
@@ -43,17 +49,17 @@ export default function SecuritePage() {
           setCurrentPwd('');
           setNewPwd('');
           setConfirmPwd('');
-          addToast('Mot de passe modifie avec succes', 'success');
+          addToast(t('passwordChanged'), 'success');
         },
         onError: (error) => {
-          const message = error instanceof ApiError ? error.message : 'Erreur lors du changement de mot de passe';
+          const message = error instanceof ApiError ? error.message : t('changeError');
           addToast(message, 'error');
         },
       },
     );
   };
 
-  const authProvider = user?.googleId ? 'Google' : 'Email + mot de passe';
+  const authProvider = user?.googleId ? 'Google' : t('emailPassword');
 
   return (
     <div>
@@ -63,15 +69,15 @@ export default function SecuritePage() {
           className="group mb-4 inline-flex items-center gap-2 text-sm font-medium text-forest-700 transition-colors hover:text-forest-900"
         >
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-          Retour au profil
+          {tp('backToProfile')}
         </Link>
         <h1
           className="mb-1 text-3xl font-bold text-forest-900 md:text-4xl"
           style={{ fontFamily: 'var(--font-heading)' }}
         >
-          Securite du compte
+          {t('title')}
         </h1>
-        <p className="text-ink-500">Gerez la securite de votre compte</p>
+        <p className="text-ink-500">{t('subtitle')}</p>
       </div>
 
       {/* Account info */}
@@ -81,29 +87,29 @@ export default function SecuritePage() {
           style={{ fontFamily: 'var(--font-heading)' }}
         >
           <Shield className="h-5 w-5 text-gold-600" />
-          Informations du compte
+          {t('accountInfo')}
         </h2>
         <div className="space-y-3">
           <div className="flex items-center justify-between rounded-xl bg-cream-50/50 p-3">
             <div>
-              <p className="text-xs text-ink-500">Email</p>
+              <p className="text-xs text-ink-500">{tp('email')}</p>
               <p className="text-sm font-medium text-ink-900">{user?.email}</p>
             </div>
             {user?.emailVerified && (
               <span className="flex items-center gap-1 rounded-full bg-forest-900/10 px-2 py-0.5 text-[10px] font-bold text-forest-900">
                 <Check className="h-3 w-3" />
-                Verifie
+                {tp('verified')}
               </span>
             )}
           </div>
           <div className="flex items-center justify-between rounded-xl bg-cream-50/50 p-3">
             <div>
-              <p className="text-xs text-ink-500">Authentification</p>
+              <p className="text-xs text-ink-500">{t('authentication')}</p>
               <p className="text-sm font-medium text-ink-900">{authProvider}</p>
             </div>
             {user?.googleId && (
               <span className="rounded-full bg-sage-100/50 px-2 py-0.5 text-[10px] font-medium text-ink-500">
-                Fournisseur externe
+                {t('externalProvider')}
               </span>
             )}
           </div>
@@ -117,23 +123,21 @@ export default function SecuritePage() {
           style={{ fontFamily: 'var(--font-heading)' }}
         >
           <Lock className="h-5 w-5 text-gold-600" />
-          Changer le mot de passe
+          {t('changePassword')}
         </h2>
         {isGoogleOnly ? (
-          <p className="text-sm text-ink-500">
-            Votre compte est connecte via Google. Le changement de mot de passe n&apos;est pas disponible.
-          </p>
+          <p className="text-sm text-ink-500">{t('googleAccountNote')}</p>
         ) : (
           <div className="space-y-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-ink-700">Mot de passe actuel</label>
+              <label className="mb-1.5 block text-sm font-medium text-ink-700">{t('currentPassword')}</label>
               <div className="relative">
                 <input
                   type={showCurrent ? 'text' : 'password'}
                   value={currentPwd}
                   onChange={(e) => setCurrentPwd(e.target.value)}
                   className="w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 pr-11 text-sm text-ink-900 outline-none transition-all focus:border-forest-500 focus:ring-2 focus:ring-forest-500/10"
-                  placeholder="Votre mot de passe actuel"
+                  placeholder={t('currentPasswordPlaceholder')}
                 />
                 <button
                   type="button"
@@ -145,14 +149,14 @@ export default function SecuritePage() {
               </div>
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-ink-700">Nouveau mot de passe</label>
+              <label className="mb-1.5 block text-sm font-medium text-ink-700">{ta('newPasswordLabel')}</label>
               <div className="relative">
                 <input
                   type={showNew ? 'text' : 'password'}
                   value={newPwd}
                   onChange={(e) => setNewPwd(e.target.value)}
                   className="w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 pr-11 text-sm text-ink-900 outline-none transition-all focus:border-forest-500 focus:ring-2 focus:ring-forest-500/10"
-                  placeholder="Minimum 8 caracteres"
+                  placeholder={t('newPasswordPlaceholder')}
                 />
                 <button
                   type="button"
@@ -164,13 +168,13 @@ export default function SecuritePage() {
               </div>
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-ink-700">Confirmer le mot de passe</label>
+              <label className="mb-1.5 block text-sm font-medium text-ink-700">{ta('confirmPasswordLabel')}</label>
               <input
                 type="password"
                 value={confirmPwd}
                 onChange={(e) => setConfirmPwd(e.target.value)}
                 className="w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-900 outline-none transition-all focus:border-forest-500 focus:ring-2 focus:ring-forest-500/10"
-                placeholder="Retapez le nouveau mot de passe"
+                placeholder={t('confirmPasswordPlaceholder')}
               />
             </div>
             <button
@@ -182,7 +186,7 @@ export default function SecuritePage() {
               )}
             >
               {changePasswordMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
-              {changePasswordMutation.isPending ? 'Modification...' : 'Modifier le mot de passe'}
+              {changePasswordMutation.isPending ? t('changing') : t('changePasswordBtn')}
             </button>
           </div>
         )}
@@ -195,18 +199,18 @@ export default function SecuritePage() {
           style={{ fontFamily: 'var(--font-heading)' }}
         >
           <KeyRound className="h-5 w-5 text-gold-600" />
-          Authentification a deux facteurs
+          {t('twoFactor')}
         </h2>
         <div className="flex items-center justify-between rounded-xl bg-cream-50/50 p-4">
           <div>
-            <p className="text-sm font-semibold text-ink-900">Activer la 2FA</p>
-            <p className="text-xs text-ink-500">Ajouter une couche de securite supplementaire</p>
+            <p className="text-sm font-semibold text-ink-900">{t('enable2fa')}</p>
+            <p className="text-xs text-ink-500">{t('twoFactorDesc')}</p>
           </div>
           <button
             onClick={() => {
               setTwoFA(!twoFA);
               addToast(
-                twoFA ? 'Authentification 2FA desactivee' : 'Authentification 2FA activee',
+                twoFA ? t('twoFactorDisabled') : t('twoFactorEnabled'),
                 twoFA ? 'info' : 'success'
               );
             }}

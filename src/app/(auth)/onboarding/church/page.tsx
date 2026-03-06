@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, Check, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { CustomSelect } from '@/components/forms/custom-select';
 import { OnboardingSteps } from '@/features/auth/components/onboarding-steps';
@@ -67,6 +68,8 @@ function MinistryChips({
 
 export default function OnboardingChurchPage() {
   const router = useRouter();
+  const t = useTranslations('onboarding');
+  const tc = useTranslations('common');
   const { user, updateUser } = useAuthStore();
   const { data: paroissesData } = useParoisses();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -109,10 +112,10 @@ export default function OnboardingChurchPage() {
 
       <div className="space-y-2 text-center">
         <h2 className="font-heading text-xl font-bold text-ink-900">
-          Votre vie d&apos;&eacute;glise
+          {t('churchLife')}
         </h2>
         <p className="text-sm text-ink-500">
-          Partagez votre parcours spirituel avec nous.
+          {t('shareJourney')}
         </p>
       </div>
 
@@ -120,13 +123,13 @@ export default function OnboardingChurchPage() {
         {/* Paroisse d'origine */}
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-ink-700">
-            Paroisse d&apos;origine
+            {t('originParish')}
           </label>
           <CustomSelect
             value={watch('paroisseOrigine') || ''}
             onChange={(value) => setValue('paroisseOrigine', value, { shouldValidate: true })}
             options={(paroissesData ?? []).map((p) => ({ value: p.slug, label: p.label }))}
-            placeholder="Selectionnez votre paroisse"
+            placeholder={t('selectParish')}
             error={!!errors.paroisseOrigine}
           />
           {errors.paroisseOrigine && (
@@ -139,7 +142,7 @@ export default function OnboardingChurchPage() {
         {/* Baptise toggle */}
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-ink-700">
-            Baptis&eacute;(e) ?
+            {t('baptized')}
           </label>
           <button
             type="button"
@@ -159,18 +162,18 @@ export default function OnboardingChurchPage() {
             />
           </button>
           <p className="text-xs text-ink-400">
-            {baptise ? 'Oui, je suis baptis\u00e9(e)' : 'Non, pas encore'}
+            {baptise ? t('baptizedYes') : t('baptizedNo')}
           </p>
         </div>
 
         {/* Ministeres */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-ink-700">
-            Minist&egrave;res{' '}
-            <span className="text-ink-400">(optionnel)</span>
+            {t('ministries')}{' '}
+            <span className="text-ink-400">({t('optional')})</span>
           </label>
           <p className="text-xs text-ink-400">
-            S&eacute;lectionnez les minist&egrave;res auxquels vous participez.
+            {t('selectMinistries')}
           </p>
           <Controller
             name="ministeres"
@@ -195,7 +198,7 @@ export default function OnboardingChurchPage() {
             )}
           >
             <ArrowLeft className="h-4 w-4" />
-            Pr&eacute;c&eacute;dent
+            {tc('previous')}
           </button>
           <button
             type="submit"
@@ -208,7 +211,7 @@ export default function OnboardingChurchPage() {
             {isSubmitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              'Terminer'
+              t('finish')
             )}
           </button>
         </div>

@@ -1,4 +1,7 @@
+'use client';
+
 import { User } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { formatMontant, formatRelativeTime, getInitials } from '@/lib/utils/format';
 import type { Don } from '@/types';
@@ -16,10 +19,12 @@ interface DonorListProps {
 }
 
 export function DonorList({ dons }: DonorListProps) {
+  const t = useTranslations('dons');
+
   if (!dons || dons.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-border bg-cream-50 py-8 text-center">
-        <p className="text-sm text-ink-400">Aucun donateur pour le moment.</p>
+        <p className="text-sm text-ink-400">{t('noDonors')}</p>
       </div>
     );
   }
@@ -27,7 +32,7 @@ export function DonorList({ dons }: DonorListProps) {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-sage-200/30 p-6">
       <h2 className="font-heading text-xl font-bold text-forest-900 mb-4">
-        Derniers donateurs
+        {t('lastDonors')}
       </h2>
       <div className="space-y-3">
         {dons.map((don, index) => {

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Settings, ChevronRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import {
   useNotifications,
@@ -12,6 +13,7 @@ import {
 import { NotificationList } from '@/features/notifications/components/notification-list';
 
 export default function NotificationsPage() {
+  const t = useTranslations('notifications');
   const router = useRouter();
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const { data: notifications, isLoading } = useNotifications(filter);
@@ -32,7 +34,7 @@ export default function NotificationsPage() {
               className="mb-1 text-3xl font-bold text-forest-900 md:text-4xl"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
-              Notifications
+              {t('title')}
             </h1>
           </div>
           <button
@@ -40,7 +42,7 @@ export default function NotificationsPage() {
             disabled={unreadCount === 0 || markAsRead.isPending}
             className="text-sm font-medium text-forest-700 transition-colors hover:text-forest-900 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Marquer tout comme lu
+            {t('markAllRead')}
           </button>
         </div>
       </div>
@@ -56,7 +58,7 @@ export default function NotificationsPage() {
               : 'border border-forest-900/20 text-ink-500 hover:border-forest-900/40'
           )}
         >
-          Toutes
+          {t('all')}
         </button>
         <button
           onClick={() => setFilter('unread')}
@@ -67,7 +69,7 @@ export default function NotificationsPage() {
               : 'border border-forest-900/20 text-ink-500 hover:border-forest-900/40'
           )}
         >
-          Non lues
+          {t('unread')}
           {unreadCount > 0 && (
             <span className="ml-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-terra-600 text-[10px] font-bold text-white">
               {unreadCount}
@@ -107,7 +109,7 @@ export default function NotificationsPage() {
             <Settings className="h-5 w-5 text-forest-900 transition-transform duration-500 group-hover:rotate-90" />
           </div>
           <span className="text-sm font-semibold text-forest-900">
-            Gerer mes preferences de notification
+            {t('managePreferences')}
           </span>
           <ChevronRight className="ml-auto h-4 w-4 text-ink-500" />
         </button>

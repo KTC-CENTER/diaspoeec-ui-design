@@ -18,6 +18,7 @@ import {
   Check,
   Loader2,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import {
   useNotificationPreferences,
@@ -51,64 +52,67 @@ function Toggle({ enabled, onChange }: ToggleProps) {
 
 type PrefsKey = keyof Omit<NotificationPreferences, 'pushEnabled'>;
 
-const typeItems: { key: PrefsKey; label: string; icon: typeof BookHeart; iconColor: string }[] = [
-  {
-    key: 'nouvelleMeditation',
-    label: 'Nouvelles meditations',
-    icon: BookHeart,
-    iconColor: 'text-forest-900',
-  },
-  {
-    key: 'rappelEvenement',
-    label: "Rappels d'evenements",
-    icon: CalendarDays,
-    iconColor: 'text-gold-600',
-  },
-  {
-    key: 'rappelLecture',
-    label: 'Rappels de lecture biblique',
-    icon: BookOpen,
-    iconColor: 'text-forest-900',
-  },
-  {
-    key: 'anniversaire',
-    label: 'Anniversaires',
-    icon: Cake,
-    iconColor: 'text-gold-600',
-  },
-  {
-    key: 'confirmationDon',
-    label: 'Dons et campagnes',
-    icon: HeartHandshake,
-    iconColor: 'text-terra-600',
-  },
-  {
-    key: 'culteEnDirect',
-    label: 'Cultes en direct',
-    icon: Radio,
-    iconColor: 'text-red-500',
-  },
-  {
-    key: 'reponseCommentaire',
-    label: 'Commentaires et reponses',
-    icon: MessageCircle,
-    iconColor: 'text-forest-700',
-  },
-  {
-    key: 'likesEnabled',
-    label: 'Likes sur vos contenus',
-    icon: Heart,
-    iconColor: 'text-red-400',
-  },
-  {
-    key: 'nouvelEvenementZone',
-    label: 'Nouveaux evenements',
-    icon: MapPin,
-    iconColor: 'text-gold-600',
-  },
-];
-
 export default function NotificationPrefsPage() {
+  const t = useTranslations('notifications');
+  const tc = useTranslations('common');
+
+  const typeItems: { key: PrefsKey; label: string; icon: typeof BookHeart; iconColor: string }[] = [
+    {
+      key: 'nouvelleMeditation',
+      label: t('newMeditations'),
+      icon: BookHeart,
+      iconColor: 'text-forest-900',
+    },
+    {
+      key: 'rappelEvenement',
+      label: t('eventReminders'),
+      icon: CalendarDays,
+      iconColor: 'text-gold-600',
+    },
+    {
+      key: 'rappelLecture',
+      label: t('bibleReminders'),
+      icon: BookOpen,
+      iconColor: 'text-forest-900',
+    },
+    {
+      key: 'anniversaire',
+      label: t('birthdays'),
+      icon: Cake,
+      iconColor: 'text-gold-600',
+    },
+    {
+      key: 'confirmationDon',
+      label: t('donationsCampaigns'),
+      icon: HeartHandshake,
+      iconColor: 'text-terra-600',
+    },
+    {
+      key: 'culteEnDirect',
+      label: t('liveServices'),
+      icon: Radio,
+      iconColor: 'text-red-500',
+    },
+    {
+      key: 'reponseCommentaire',
+      label: t('commentsReplies'),
+      icon: MessageCircle,
+      iconColor: 'text-forest-700',
+    },
+    {
+      key: 'likesEnabled',
+      label: t('likesOnContent'),
+      icon: Heart,
+      iconColor: 'text-red-400',
+    },
+    {
+      key: 'nouvelEvenementZone',
+      label: t('newEvents'),
+      icon: MapPin,
+      iconColor: 'text-gold-600',
+    },
+  ];
+
   const { data: prefs, isLoading } = useNotificationPreferences();
   const updateMutation = useUpdateNotificationPreferences();
 
@@ -153,15 +157,15 @@ export default function NotificationPrefsPage() {
           className="group mb-4 inline-flex items-center gap-2 text-sm font-medium text-forest-700 transition-colors hover:text-forest-900"
         >
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-          Retour aux notifications
+          {t('backToNotifications')}
         </Link>
         <h1
           className="mb-1 text-3xl font-bold text-forest-900 md:text-4xl"
           style={{ fontFamily: 'var(--font-heading)' }}
         >
-          Preferences de notification
+          {t('preferencesTitle')}
         </h1>
-        <p className="text-ink-500">Choisissez comment vous souhaitez etre notifie</p>
+        <p className="text-ink-500">{t('preferencesSubtitle')}</p>
       </div>
 
       {/* Push Channel */}
@@ -171,7 +175,7 @@ export default function NotificationPrefsPage() {
           style={{ fontFamily: 'var(--font-heading)' }}
         >
           <Bell className="h-5 w-5 text-gold-600" />
-          Notifications push
+          {t('pushNotifications')}
         </h2>
         <div className="flex items-center justify-between rounded-xl bg-cream-50/50 p-3">
           <div className="flex items-center gap-3">
@@ -179,8 +183,8 @@ export default function NotificationPrefsPage() {
               <Bell className="h-4 w-4 text-forest-900" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-ink-900">Notifications push</p>
-              <p className="text-xs text-ink-500">Recevez des alertes sur votre appareil</p>
+              <p className="text-sm font-semibold text-ink-900">{t('pushNotifications')}</p>
+              <p className="text-xs text-ink-500">{t('pushDescription')}</p>
             </div>
           </div>
           <Toggle enabled={local.pushEnabled} onChange={() => handleToggle('pushEnabled')} />
@@ -194,7 +198,7 @@ export default function NotificationPrefsPage() {
           style={{ fontFamily: 'var(--font-heading)' }}
         >
           <ListChecks className="h-5 w-5 text-gold-600" />
-          Types de notification
+          {t('notificationTypes')}
         </h2>
         <div className="space-y-1">
           {typeItems.map((item) => {
@@ -230,17 +234,17 @@ export default function NotificationPrefsPage() {
         {updateMutation.isPending ? (
           <>
             <Loader2 className="h-5 w-5 animate-spin" />
-            Enregistrement...
+            {tc('saving')}
           </>
         ) : saved ? (
           <>
             <Check className="h-5 w-5" />
-            Preferences enregistrees !
+            {t('preferencesSaved')}
           </>
         ) : (
           <>
             <Check className="h-5 w-5" />
-            Enregistrer les preferences
+            {t('savePreferences')}
           </>
         )}
       </button>

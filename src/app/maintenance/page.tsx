@@ -3,12 +3,14 @@
 import { useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Wrench } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { ENDPOINTS } from '@/lib/api/endpoints';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export default function MaintenancePage() {
   const router = useRouter();
+  const t = useTranslations('maintenance');
 
   const checkMaintenance = useCallback(async () => {
     try {
@@ -43,12 +45,12 @@ export default function MaintenancePage() {
           className="mb-3 text-2xl font-bold text-forest-900 md:text-3xl"
           style={{ fontFamily: 'var(--font-heading)' }}
         >
-          Maintenance en cours
+          {t('title')}
         </h1>
 
         <p className="mb-8 text-ink-500">
-          Nous effectuons une maintenance pour ameliorer votre experience.
-          Le site sera de nouveau disponible tres prochainement.
+          {t('description')}
+          {' '}{t('siteUnavailable')}
         </p>
 
         <div className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm text-ink-500 shadow-sm border border-forest-900/5">
@@ -56,7 +58,7 @@ export default function MaintenancePage() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gold-500 opacity-75" />
             <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-gold-600" />
           </span>
-          Verification automatique en cours...
+          {t('autoCheck')}
         </div>
       </div>
     </div>

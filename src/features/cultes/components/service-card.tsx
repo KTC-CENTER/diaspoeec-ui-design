@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { BellRing, Check, Church } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { formatDate } from '@/lib/utils/format';
 import { useToastStore } from '@/stores/toast.store';
@@ -17,6 +18,7 @@ export function ServiceCard({ service, onToggleRappel }: ServiceCardProps) {
   const [rappelSet, setRappelSet] = useState(service.rappelActif ?? false);
   const { addToast } = useToastStore();
   const rappelMutation = useToggleRappel();
+  const t = useTranslations('cultes');
   const dateStr = formatDate(service.date + 'T00:00:00Z', 'dd MMMM yyyy');
 
   return (
@@ -45,13 +47,13 @@ export function ServiceCard({ service, onToggleRappel }: ServiceCardProps) {
             onSuccess: () => {
               if (onToggleRappel) onToggleRappel();
               addToast(
-                wasSet ? 'Rappel supprime' : `Rappel defini pour "${service.titre}"`,
+                wasSet ? t('reminderRemoved') : t('reminderSet', { title: service.titre }),
                 wasSet ? 'info' : 'success'
               );
             },
             onError: () => {
               setRappelSet(wasSet);
-              addToast('Erreur lors de la modification du rappel', 'error');
+              addToast(t('reminderError'), 'error');
             },
           });
         }}
@@ -63,7 +65,7 @@ export function ServiceCard({ service, onToggleRappel }: ServiceCardProps) {
         )}
       >
         {rappelSet ? <Check className="h-4 w-4" /> : <BellRing className="h-4 w-4" />}
-        {rappelSet ? 'Rappel defini' : 'Definir un rappel'}
+        {rappelSet ? t('reminderActive') : t('setReminder')}
       </button>
     </div>
   );

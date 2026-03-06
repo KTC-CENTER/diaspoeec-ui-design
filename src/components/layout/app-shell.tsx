@@ -9,36 +9,8 @@ import { PullToRefresh } from '@/components/shared/pull-to-refresh';
 import { useAuthStore } from '@/stores/auth.store';
 import { useUnreadCount } from '@/features/notifications/hooks/use-notifications';
 import { usePushNotifications } from '@/features/notifications/hooks/use-push-notifications';
+import { useTranslations } from 'next-intl';
 import type { UserRole } from '@/types';
-
-const baseNavItems: NavItem[] = [
-  { icon: Home, label: 'Accueil', href: '/accueil' },
-  { icon: BookOpen, label: 'Meditations', href: '/meditations' },
-  { icon: Calendar, label: 'Evenements', href: '/evenements' },
-  { icon: Heart, label: 'Dons', href: '/dons' },
-  { icon: Church, label: 'Cultes', href: '/cultes' },
-  { icon: BookMarked, label: 'Bible', href: '/bible' },
-  { icon: Star, label: 'Mes Favoris', href: '/favoris' },
-  { icon: Bell, label: 'Notifications', href: '/notifications' },
-  { icon: User, label: 'Profil', href: '/profil' },
-];
-
-function getGestionItems(role?: UserRole): NavItem[] {
-  if (!role) return [];
-  const items: NavItem[] = [];
-  if (role === 'pasteur' || role === 'admin') {
-    items.push({ icon: PenSquare, label: 'Mes meditations', href: '/gestion/meditations' });
-    items.push({ icon: BookCheck, label: 'Plans Bible', href: '/gestion/bible' });
-    items.push({ icon: Video, label: 'Mes videos', href: '/gestion/cultes' });
-  }
-  if (role === 'pasteur' || role === 'responsable_zone' || role === 'admin') {
-    items.push({ icon: CalendarPlus, label: 'Mes evenements', href: '/gestion/evenements' });
-  }
-  if (role === 'responsable_zone' || role === 'admin') {
-    items.push({ icon: ClipboardList, label: 'Membres zone', href: '/gestion/membres' });
-  }
-  return items;
-}
 
 function getActiveHref(pathname: string, allItems: NavItem[]): string {
   // Match the closest nav item from the current path
@@ -61,6 +33,37 @@ export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
+  const tn = useTranslations('nav');
+  const tc = useTranslations('common');
+
+  const baseNavItems: NavItem[] = [
+    { icon: Home, label: tn('home'), href: '/accueil' },
+    { icon: BookOpen, label: tn('meditations'), href: '/meditations' },
+    { icon: Calendar, label: tn('events'), href: '/evenements' },
+    { icon: Heart, label: tn('donations'), href: '/dons' },
+    { icon: Church, label: tn('services'), href: '/cultes' },
+    { icon: BookMarked, label: tn('bible'), href: '/bible' },
+    { icon: Star, label: tn('favorites'), href: '/favoris' },
+    { icon: Bell, label: tn('notifications'), href: '/notifications' },
+    { icon: User, label: tn('profile'), href: '/profil' },
+  ];
+
+  function getGestionItems(role?: UserRole): NavItem[] {
+    if (!role) return [];
+    const items: NavItem[] = [];
+    if (role === 'pasteur' || role === 'admin') {
+      items.push({ icon: PenSquare, label: tn('myMeditations'), href: '/gestion/meditations' });
+      items.push({ icon: BookCheck, label: tn('biblePlans'), href: '/gestion/bible' });
+      items.push({ icon: Video, label: tn('myVideos'), href: '/gestion/cultes' });
+    }
+    if (role === 'pasteur' || role === 'responsable_zone' || role === 'admin') {
+      items.push({ icon: CalendarPlus, label: tn('myEvents'), href: '/gestion/evenements' });
+    }
+    if (role === 'responsable_zone' || role === 'admin') {
+      items.push({ icon: ClipboardList, label: tn('zoneMembers'), href: '/gestion/membres' });
+    }
+    return items;
+  }
 
   // Build nav items with role-specific gestion items
   const gestionItems = getGestionItems(user?.role);
@@ -76,7 +79,7 @@ export function AppShell({ children }: AppShellProps) {
   const activeTab = getActiveTab(pathname);
 
   const sidebarUser = {
-    name: user?.nomComplet ?? 'Utilisateur',
+    name: user?.nomComplet ?? tc('user'),
     parish: user?.paroisseOrigine ?? '',
   };
 

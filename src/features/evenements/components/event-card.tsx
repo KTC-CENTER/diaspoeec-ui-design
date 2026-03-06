@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { MapPin, Clock, Check } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { formatDate } from '@/lib/utils/format';
 import { useToastStore } from '@/stores/toast.store';
@@ -65,12 +66,12 @@ const typeColors: Record<string, {
   },
 };
 
-const typeLabels: Record<string, string> = {
-  culte: 'Culte',
-  conference: 'Conference',
-  retraite: 'Retraite',
-  formation: 'Formation',
-  jeunesse: 'Jeunesse',
+const typeLabelKeys: Record<string, string> = {
+  culte: 'typeCulte',
+  conference: 'typeConference',
+  retraite: 'typeRetraite',
+  formation: 'typeFormation',
+  jeunesse: 'typeJeunesse',
 };
 
 interface EventCardProps {
@@ -79,6 +80,7 @@ interface EventCardProps {
 }
 
 export function EventCard({ evenement, delay = 0 }: EventCardProps) {
+  const t = useTranslations('evenements');
   const [inscrit, setInscrit] = useState(evenement.userParticipe ?? false);
 
   // Sync with API data when the event is refetched after RSVP
@@ -162,7 +164,7 @@ export function EventCard({ evenement, delay = 0 }: EventCardProps) {
                   </svg>
                 </div>
                 <span className="text-xs text-ink-600 font-medium">
-                  {evenement.participantsInscrits} inscrits
+                  {t('participantsRegistered', { count: evenement.participantsInscrits })}
                 </span>
               </div>
 
@@ -184,13 +186,13 @@ export function EventCard({ evenement, delay = 0 }: EventCardProps) {
                     {
                       onSuccess: () => {
                         addToast(
-                          wasInscrit ? 'Inscription annulee' : `Inscription confirmee pour "${evenement.titre}"`,
+                          wasInscrit ? t('inscriptionCancelled') : t('inscriptionConfirmed', { title: evenement.titre }),
                           wasInscrit ? 'info' : 'success'
                         );
                       },
                       onError: () => {
                         setInscrit(wasInscrit);
-                        addToast('Erreur lors de l\'inscription', 'error');
+                        addToast(t('registrationError'), 'error');
                       },
                     }
                   );
@@ -199,10 +201,10 @@ export function EventCard({ evenement, delay = 0 }: EventCardProps) {
                 {inscrit ? (
                   <span className="flex items-center gap-1.5">
                     <Check className="w-4 h-4" />
-                    Inscrit
+                    {t('inscribed')}
                   </span>
                 ) : (
-                  "S'inscrire"
+                  t('register')
                 )}
               </button>
             </div>
