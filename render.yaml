@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: diaspoeec-web
+    runtime: node
+    region: frankfurt
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npx next start -p $PORT
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: NEXT_PUBLIC_API_URL
+        value: https://diaspo-eec-api.onrender.com
+      - key: NEXT_PUBLIC_APP_NAME
+        value: DiaspoEEC
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_API_KEY
+        value: AIzaSyAzzjgcUHaUG72Ru-sbOxibgOo73nmKGr8
+      - key: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+        value: diaspo-eec.firebaseapp.com
+      - key: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+        value: diaspo-eec
+      - key: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+        value: diaspo-eec.firebasestorage.app
+      - key: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+        value: "83260357011"
+      - key: NEXT_PUBLIC_FIREBASE_APP_ID
+        value: "1:83260357011:web:62c55e4d1eccc7b0885066"
+      - key: NEXT_PUBLIC_FIREBASE_VAPID_KEY
+        value: BDvk0xLo99BrvK2CELMG932W4tbpouKlZfwkgHJCC8yfs5HhiO9TGrij3eRQsvL2dGyKwQOM3Y_EYMNGteoHvns

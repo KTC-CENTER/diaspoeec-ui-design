@@ -369,7 +369,7 @@ function EventCommentSection({ evenementId }: { evenementId: string }) {
   return (
     <div>
       <h2 className="font-heading text-xl font-bold text-forest-900 mb-5">
-        {comments?.length || 0} Commentaires
+        {tco('count', { count: comments?.length || 0 })}
       </h2>
 
       {/* Add Comment */}

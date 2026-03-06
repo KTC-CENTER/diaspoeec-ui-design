@@ -350,7 +350,7 @@ function CommentSection({ meditationId }: { meditationId: string }) {
   return (
     <div>
       <h2 className="text-xl font-bold text-ink-900 mb-5">
-        {comments?.length || 0} Commentaires
+        {tco('count', { count: comments?.length || 0 })}
       </h2>
 
       {/* Add Comment */}
