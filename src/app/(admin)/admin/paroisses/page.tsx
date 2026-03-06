@@ -277,7 +277,7 @@ export default function AdminParoissesPage() {
       <ConfirmDialog
         open={!!deleteTarget}
         title={t('deleteParish')}
-        message={t('deleteParishConfirm', { name: deleteTarget?.label })}
+        message={t('deleteParishConfirm', { name: deleteTarget?.label ?? '' })}
         confirmLabel={tc('delete')}
         cancelLabel={tc('cancel')}
         variant="danger"
