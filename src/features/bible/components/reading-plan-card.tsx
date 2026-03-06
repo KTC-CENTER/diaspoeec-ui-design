@@ -102,7 +102,7 @@ function ReadingModal({ planId, onClose, onComplete }: {
             <BookOpen className="h-10 w-10 text-ink-200 mb-4" />
             <h3 className="text-base font-semibold text-ink-700 mb-2">{t('readingNotConfigured')}</h3>
             <p className="text-sm text-center text-ink-500">
-              {t('readingNotConfiguredMsg', { day: data?.jourNumero })}
+              {t('readingNotConfiguredMsg', { day: data?.jourNumero ?? 0 })}
             </p>
             <button
               onClick={onComplete}

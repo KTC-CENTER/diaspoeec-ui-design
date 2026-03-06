@@ -134,7 +134,7 @@ export function EventCard({ evenement, delay = 0 }: EventCardProps) {
                   colors.badge
                 )}
               >
-                {typeLabels[evenement.type]}
+                {t(typeLabelKeys[evenement.type] ?? evenement.type)}
               </span>
             </div>
 
