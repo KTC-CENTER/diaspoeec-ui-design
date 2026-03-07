@@ -4,7 +4,7 @@ import { useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, Bell, LogOut, Home, BookOpen, Calendar, Heart, User, Church, Radio, PenSquare, CalendarPlus, ClipboardList, BookCheck, LayoutDashboard, MessageCircle, Users } from 'lucide-react';
+import { Menu, X, Bell, LogOut, Home, BookOpen, Calendar, Heart, User, Church, BookMarked, PenSquare, CalendarPlus, ClipboardList, BookCheck, LayoutDashboard, MessageCircle, Users } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useUIStore } from '@/stores/ui.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -51,7 +51,7 @@ export function MobileNav({ notificationCount = 0, unreadMessages = 0 }: MobileN
     { icon: Calendar, label: tn('events'), href: '/evenements' },
     { icon: Heart, label: tn('donations'), href: '/dons' },
     { icon: Church, label: tn('services'), href: '/cultes' },
-    { icon: Radio, label: tn('bible'), href: '/bible' },
+    { icon: BookMarked, label: tn('bible'), href: '/bible' },
     { icon: Users, label: tn('community'), href: '/communaute' },
     { icon: MessageCircle, label: tn('messages'), href: '/messages' },
     { icon: Bell, label: tn('notifications'), href: '/notifications' },

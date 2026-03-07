@@ -56,9 +56,11 @@ interface AuthResponse {
 // ============================================================================
 
 async function apiLogin(data: LoginFormData): Promise<AuthResponse> {
+  const paroisse = useTenantStore.getState().paroisse;
   return apiClient.post<AuthResponse>(ENDPOINTS.AUTH.LOGIN, {
     email: data.email,
     password: data.password,
+    paroisseId: paroisse?.id,
   });
 }
 

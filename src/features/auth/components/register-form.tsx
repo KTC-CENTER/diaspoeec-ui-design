@@ -1,8 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Check, X } from 'lucide-react';
+import { Loader2, Check, X, Eye, EyeOff } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { registerSchema, type RegisterFormData } from '@/features/auth/schemas/auth.schema';
@@ -71,6 +72,8 @@ export function RegisterForm() {
     },
   });
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const passwordValue = watch('password');
 
   const onSubmit = (data: RegisterFormData) => {
@@ -143,18 +146,28 @@ export function RegisterForm() {
         >
           {tc('password')}
         </label>
-        <input
-          id="password"
-          type="password"
-          autoComplete="new-password"
-          placeholder={t('createPassword')}
-          className={cn(
-            'w-full rounded-xl border bg-white px-4 py-3 text-sm transition-colors',
-            'placeholder:text-ink-400 focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20',
-            errors.password ? 'border-red-400' : 'border-ink-200'
-          )}
-          {...register('password')}
-        />
+        <div className="relative">
+          <input
+            id="password"
+            type={showPassword ? 'text' : 'password'}
+            autoComplete="new-password"
+            placeholder={t('createPassword')}
+            className={cn(
+              'w-full rounded-xl border bg-white px-4 py-3 pr-11 text-sm transition-colors',
+              'placeholder:text-ink-400 focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20',
+              errors.password ? 'border-red-400' : 'border-ink-200'
+            )}
+            {...register('password')}
+          />
+          <button
+            type="button"
+            tabIndex={-1}
+            onClick={() => setShowPassword((v) => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600"
+          >
+            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
         {errors.password && (
           <p className="text-xs text-red-600">{errors.password.message}</p>
         )}
@@ -169,18 +182,28 @@ export function RegisterForm() {
         >
           {t('confirmPassword')}
         </label>
-        <input
-          id="confirmPassword"
-          type="password"
-          autoComplete="new-password"
-          placeholder={t('confirmPasswordPlaceholder')}
-          className={cn(
-            'w-full rounded-xl border bg-white px-4 py-3 text-sm transition-colors',
-            'placeholder:text-ink-400 focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20',
-            errors.confirmPassword ? 'border-red-400' : 'border-ink-200'
-          )}
-          {...register('confirmPassword')}
-        />
+        <div className="relative">
+          <input
+            id="confirmPassword"
+            type={showConfirm ? 'text' : 'password'}
+            autoComplete="new-password"
+            placeholder={t('confirmPasswordPlaceholder')}
+            className={cn(
+              'w-full rounded-xl border bg-white px-4 py-3 pr-11 text-sm transition-colors',
+              'placeholder:text-ink-400 focus:border-forest-500 focus:outline-none focus:ring-2 focus:ring-forest-500/20',
+              errors.confirmPassword ? 'border-red-400' : 'border-ink-200'
+            )}
+            {...register('confirmPassword')}
+          />
+          <button
+            type="button"
+            tabIndex={-1}
+            onClick={() => setShowConfirm((v) => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600"
+          >
+            {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
         {errors.confirmPassword && (
           <p className="text-xs text-red-600">
             {errors.confirmPassword.message}

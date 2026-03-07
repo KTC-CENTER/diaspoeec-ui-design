@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useTenantStore } from '@/stores/tenant.store';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 
@@ -8,7 +9,9 @@ export function GoogleOAuthButton() {
   const tc = useTranslations('common');
   const handleGoogleLogin = () => {
     const origin = encodeURIComponent(window.location.origin);
-    window.location.href = `${API_URL}/api/v1/auth/google?origin=${origin}`;
+    const paroisse = useTenantStore.getState().paroisse;
+    const paroisseParam = paroisse?.id ? `&paroisseId=${paroisse.id}` : '';
+    window.location.href = `${API_URL}/api/v1/auth/google?origin=${origin}${paroisseParam}`;
   };
 
   return (
