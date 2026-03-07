@@ -97,6 +97,12 @@ const typeConfig: Record<
     iconBg: 'bg-red-50',
     borderColor: 'border-l-red-400',
   },
+  nouveau_message: {
+    icon: MessageCircle,
+    iconColor: 'text-forest-700',
+    iconBg: 'bg-forest-700/10',
+    borderColor: 'border-l-forest-700',
+  },
 };
 
 function groupNotificationsByPeriod(notifications: Notification[], labels: { today: string; yesterday: string; thisWeek: string; older: string }) {

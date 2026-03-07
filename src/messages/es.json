@@ -108,7 +108,9 @@
     "myEvents": "Mis eventos",
     "zoneMembers": "Miembros de zona",
     "unread": "no leidas",
-    "favorites": "Mis Favoritos"
+    "favorites": "Mis Favoritos",
+    "messages": "Messages",
+    "community": "Communaute"
   },
   "accueil": {
     "greeting": "Hola, {name}",
@@ -655,7 +657,7 @@
     "monthlyDonations": "Donativos del mes",
     "donationsAndCampaigns": "Donativos y campanas",
     "currentMonthDonations": "Donativos del mes actual",
-    "uniqueDonors": "Donantes unicos",
+    "uniqueDonors": "donante(s) unico(s)",
     "topDonorsMonth": "Principales donantes este mes",
     "noCampaigns": "Sin campanas. Cree la primera!",
     "newCampaign": "Nueva campana",
@@ -815,7 +817,6 @@
     "optional": "opcional",
     "on": "sobre",
     "donorHistory": "Historial de donantes",
-    "uniqueDonors": "donante(s) unico(s)",
     "anonymous": "Anonimo",
     "noDonorsYet": "Aun no hay donaciones para esta campana"
   },
@@ -904,7 +905,12 @@
     "general": "General",
     "communityName": "Nombre de la comunidad",
     "defaultLanguage": "Idioma predeterminado",
-    "languageOptions": ["Francais", "English", "Deutsch", "Espanol"],
+    "languageOptions": [
+      "Francais",
+      "English",
+      "Deutsch",
+      "Espanol"
+    ],
     "timezone": "Zona horaria",
     "maintenanceMode": "Modo mantenimiento",
     "maintenanceDesc": "Desactiva el acceso publico al sitio",
@@ -916,7 +922,13 @@
     "security": "Seguridad",
     "twoFactorAuth": "Autenticacion de dos factores",
     "sessionDuration": "Duracion de sesion",
-    "sessionOptions": ["1 hora", "4 horas", "12 horas", "24 horas", "7 dias"],
+    "sessionOptions": [
+      "1 hora",
+      "4 horas",
+      "12 horas",
+      "24 horas",
+      "7 dias"
+    ],
     "openRegistration": "Registro abierto",
     "donationsPayments": "Donativos y pagos",
     "defaultCurrency": "Moneda predeterminada",
@@ -1101,7 +1113,8 @@
     "originParish": "Parroquia de origen",
     "baptized": "Bautizado",
     "donations": "Donaciones",
-    "eventsAttended": "Eventos"
+    "eventsAttended": "Eventos",
+    "sendMessage": "Envoyer un message"
   },
   "landing": {
     "about": "Acerca de",
@@ -1251,5 +1264,18 @@
     "wishSentBtn": "Deseo enviado!",
     "sendWish": "Enviar un deseo",
     "event": "Evento"
+  },
+  "communaute": {
+    "pageTitle": "Comunidad",
+    "pageSubtitle": "Descubre los miembros de tu parroquia e intercambia con ellos",
+    "searchPlaceholder": "Buscar un miembro...",
+    "memberCount": "{count} miembro(s)",
+    "noResults": "Ningun miembro corresponde a su busqueda",
+    "noMembers": "Ningun miembro por el momento",
+    "sendMessage": "Enviar mensaje",
+    "originParish": "Parroquia de origen",
+    "ministries": "Ministerios",
+    "donations": "Donaciones",
+    "events": "Eventos"
   }
 }

@@ -177,7 +177,7 @@ function ChatView({
   const [isTyping, setIsTyping] = useState(false);
   const [menuMessageId, setMenuMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Sync messages from query on conversation change

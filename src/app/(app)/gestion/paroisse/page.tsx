@@ -41,9 +41,9 @@ import {
   type CreatePasteurPayload,
 } from '@/lib/api/members.api';
 import type { User, Don, Evenement } from '@/types';
-import { GestionEvenementsContent } from '@/app/(app)/gestion/evenements/page';
-import { GestionCultesContent } from '@/app/(app)/gestion/cultes/page';
-import { GestionCampagnesContent } from '@/app/(app)/gestion/campagnes/page';
+import { GestionEvenementsContent } from '@/app/(app)/gestion/evenements/evenements-content';
+import { GestionCultesContent } from '@/app/(app)/gestion/cultes/cultes-content';
+import { GestionCampagnesContent } from '@/app/(app)/gestion/campagnes/campagnes-content';
 import { CalendarPlus, Video, Megaphone, MessageCircle } from 'lucide-react';
 import { useCreateConversation } from '@/features/messages/hooks/use-messages';
 

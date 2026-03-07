@@ -108,7 +108,9 @@
     "myEvents": "Meine Veranstaltungen",
     "zoneMembers": "Zonenmitglieder",
     "unread": "ungelesen",
-    "favorites": "Meine Favoriten"
+    "favorites": "Meine Favoriten",
+    "messages": "Messages",
+    "community": "Communaute"
   },
   "accueil": {
     "greeting": "Hallo, {name}",
@@ -655,7 +657,7 @@
     "monthlyDonations": "Monatliche Spenden",
     "donationsAndCampaigns": "Spenden & Kampagnen",
     "currentMonthDonations": "Spenden des laufenden Monats",
-    "uniqueDonors": "Einzigartige Spender",
+    "uniqueDonors": "einzigartige(r) Spender",
     "topDonorsMonth": "Top-Spender diesen Monat",
     "noCampaigns": "Keine Kampagnen. Erstellen Sie die erste!",
     "newCampaign": "Neue Kampagne",
@@ -815,7 +817,6 @@
     "optional": "optional",
     "on": "auf",
     "donorHistory": "Spenderverlauf",
-    "uniqueDonors": "einzigartige(r) Spender",
     "anonymous": "Anonym",
     "noDonorsYet": "Noch keine Spenden fuer diese Kampagne"
   },
@@ -904,7 +905,12 @@
     "general": "Allgemein",
     "communityName": "Name der Gemeinschaft",
     "defaultLanguage": "Standardsprache",
-    "languageOptions": ["Francais", "English", "Deutsch", "Espanol"],
+    "languageOptions": [
+      "Francais",
+      "English",
+      "Deutsch",
+      "Espanol"
+    ],
     "timezone": "Zeitzone",
     "maintenanceMode": "Wartungsmodus",
     "maintenanceDesc": "Deaktiviert den oeffentlichen Zugang zur Website",
@@ -916,7 +922,13 @@
     "security": "Sicherheit",
     "twoFactorAuth": "Zwei-Faktor-Authentifizierung",
     "sessionDuration": "Sitzungsdauer",
-    "sessionOptions": ["1 Stunde", "4 Stunden", "12 Stunden", "24 Stunden", "7 Tage"],
+    "sessionOptions": [
+      "1 Stunde",
+      "4 Stunden",
+      "12 Stunden",
+      "24 Stunden",
+      "7 Tage"
+    ],
     "openRegistration": "Offene Registrierung",
     "donationsPayments": "Spenden & Zahlungen",
     "defaultCurrency": "Standardwaehrung",
@@ -1101,7 +1113,8 @@
     "originParish": "Heimatgemeinde",
     "baptized": "Getauft",
     "donations": "Spenden",
-    "eventsAttended": "Veranstaltungen"
+    "eventsAttended": "Veranstaltungen",
+    "sendMessage": "Envoyer un message"
   },
   "landing": {
     "about": "Ueber uns",
@@ -1251,5 +1264,18 @@
     "wishSentBtn": "Wunsch gesendet!",
     "sendWish": "Glueckwuensche senden",
     "event": "Veranstaltung"
+  },
+  "communaute": {
+    "pageTitle": "Gemeinschaft",
+    "pageSubtitle": "Entdecken Sie die Mitglieder Ihrer Gemeinde und tauschen Sie sich aus",
+    "searchPlaceholder": "Ein Mitglied suchen...",
+    "memberCount": "{count} Mitglied(er)",
+    "noResults": "Kein Mitglied entspricht Ihrer Suche",
+    "noMembers": "Noch keine Mitglieder",
+    "sendMessage": "Nachricht senden",
+    "originParish": "Heimatgemeinde",
+    "ministries": "Dienste",
+    "donations": "Spenden",
+    "events": "Veranstaltungen"
   }
 }

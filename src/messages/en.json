@@ -657,7 +657,7 @@
     "monthlyDonations": "Monthly donations",
     "donationsAndCampaigns": "Donations & Campaigns",
     "currentMonthDonations": "Current month donations",
-    "uniqueDonors": "Unique donors",
+    "uniqueDonors": "unique donor(s)",
     "topDonorsMonth": "Top donors this month",
     "noCampaigns": "No campaigns. Create the first one!",
     "newCampaign": "New campaign",
@@ -817,7 +817,6 @@
     "optional": "optional",
     "on": "on",
     "donorHistory": "Donor history",
-    "uniqueDonors": "unique donor(s)",
     "anonymous": "Anonymous",
     "noDonorsYet": "No donations for this campaign yet"
   },
@@ -906,7 +905,12 @@
     "general": "General",
     "communityName": "Community name",
     "defaultLanguage": "Default language",
-    "languageOptions": ["Francais", "English", "Deutsch", "Espanol"],
+    "languageOptions": [
+      "Francais",
+      "English",
+      "Deutsch",
+      "Espanol"
+    ],
     "timezone": "Timezone",
     "maintenanceMode": "Maintenance mode",
     "maintenanceDesc": "Disables public access to the site",
@@ -918,7 +922,13 @@
     "security": "Security",
     "twoFactorAuth": "Two-factor authentication",
     "sessionDuration": "Session duration",
-    "sessionOptions": ["1 hour", "4 hours", "12 hours", "24 hours", "7 days"],
+    "sessionOptions": [
+      "1 hour",
+      "4 hours",
+      "12 hours",
+      "24 hours",
+      "7 days"
+    ],
     "openRegistration": "Open registration",
     "donationsPayments": "Donations & Payments",
     "defaultCurrency": "Default currency",
