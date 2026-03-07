@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Eye, X, MapPin, Mail, Phone, Award } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Search, Eye, X, MapPin, Mail, Phone, Award, MessageCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { getMembers } from '@/lib/api/members.api';
 import { RoleGuard } from '@/features/gestion/components/role-guard';
+import { useCreateConversation } from '@/features/messages/hooks/use-messages';
 import type { User } from '@/types';
 
 const statusColors: Record<string, string> = {
@@ -19,6 +21,8 @@ function GestionMembresContent() {
   const { data: membersData } = useQuery({ queryKey: ['gestion-members'], queryFn: () => getMembers({ role: 'fidele' }) });
   const [search, setSearch] = useState('');
   const [viewItem, setViewItem] = useState<User | null>(null);
+  const createConversation = useCreateConversation();
+  const router = useRouter();
 
   // Only show fideles (members of the zone)
   const members = membersData ?? [];
@@ -243,12 +247,28 @@ function GestionMembresContent() {
               </div>
             </div>
 
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setViewItem(null)}
                 className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50"
               >
                 {tc('close')}
+              </button>
+              <button
+                onClick={() => {
+                  if (!viewItem) return;
+                  createConversation.mutate(viewItem.id, {
+                    onSuccess: (conv) => {
+                      setViewItem(null);
+                      router.push(`/messages?conversation=${conv.id}`);
+                    },
+                  });
+                }}
+                disabled={createConversation.isPending}
+                className="flex items-center gap-2 rounded-xl bg-forest-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-forest-800 disabled:opacity-50"
+              >
+                <MessageCircle className="h-4 w-4" />
+                {t('sendMessage')}
               </button>
             </div>
           </div>

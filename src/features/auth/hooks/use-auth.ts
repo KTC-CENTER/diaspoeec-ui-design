@@ -3,6 +3,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth.store';
+import { useTenantStore } from '@/stores/tenant.store';
 import { apiClient, clearTokens } from '@/lib/api/client';
 import { ENDPOINTS } from '@/lib/api/endpoints';
 import type { LoginFormData, RegisterFormData } from '@/features/auth/schemas/auth.schema';
@@ -62,10 +63,12 @@ async function apiLogin(data: LoginFormData): Promise<AuthResponse> {
 }
 
 async function apiRegister(data: RegisterFormData): Promise<AuthResponse> {
+  const paroisse = useTenantStore.getState().paroisse;
   return apiClient.post<AuthResponse>(ENDPOINTS.AUTH.REGISTER, {
     nomComplet: data.nomComplet,
     email: data.email,
     password: data.password,
+    paroisseId: paroisse?.id,
   });
 }
 

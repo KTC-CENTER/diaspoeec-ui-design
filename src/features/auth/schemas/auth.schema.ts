@@ -110,9 +110,6 @@ export type OnboardingDiasporaFormData = z.infer<
 // ============================================================================
 
 export const onboardingChurchSchema = z.object({
-  paroisseOrigine: z
-    .string({ required_error: 'La paroisse d\'origine est requise' })
-    .min(1, 'La paroisse d\'origine est requise'),
   baptise: z.boolean().default(false),
   ministeres: z.array(z.string()).default([]),
 });

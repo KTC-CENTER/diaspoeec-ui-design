@@ -1,13 +1,15 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, BookOpen, Calendar, Heart, Church, BookMarked, Bell, User, PenSquare, CalendarPlus, Users, ClipboardList, BookCheck, Video, Star } from 'lucide-react';
+import { Home, BookOpen, Calendar, Heart, Church, BookMarked, Bell, User, PenSquare, CalendarPlus, ClipboardList, BookCheck, Star, LayoutDashboard, MessageCircle, Users } from 'lucide-react';
 import { Sidebar, type NavItem } from './sidebar';
 import { BottomTabs } from './bottom-tabs';
 import { MobileNav } from './mobile-nav';
 import { PullToRefresh } from '@/components/shared/pull-to-refresh';
 import { useAuthStore } from '@/stores/auth.store';
+import { useTenantStore } from '@/stores/tenant.store';
 import { useUnreadCount } from '@/features/notifications/hooks/use-notifications';
+import { useUnreadMessageCount } from '@/features/messages/hooks/use-messages';
 import { usePushNotifications } from '@/features/notifications/hooks/use-push-notifications';
 import { useTranslations } from 'next-intl';
 import type { UserRole } from '@/types';
@@ -33,6 +35,7 @@ export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
+  const paroisse = useTenantStore((s) => s.paroisse);
   const tn = useTranslations('nav');
   const tc = useTranslations('common');
 
@@ -44,6 +47,8 @@ export function AppShell({ children }: AppShellProps) {
     { icon: Church, label: tn('services'), href: '/cultes' },
     { icon: BookMarked, label: tn('bible'), href: '/bible' },
     { icon: Star, label: tn('favorites'), href: '/favoris' },
+    { icon: Users, label: tn('community'), href: '/communaute' },
+    { icon: MessageCircle, label: tn('messages'), href: '/messages' },
     { icon: Bell, label: tn('notifications'), href: '/notifications' },
     { icon: User, label: tn('profile'), href: '/profil' },
   ];
@@ -52,14 +57,11 @@ export function AppShell({ children }: AppShellProps) {
     if (!role) return [];
     const items: NavItem[] = [];
     if (role === 'pasteur' || role === 'admin') {
+      items.push({ icon: LayoutDashboard, label: 'Ma Paroisse', href: '/gestion/paroisse' });
       items.push({ icon: PenSquare, label: tn('myMeditations'), href: '/gestion/meditations' });
       items.push({ icon: BookCheck, label: tn('biblePlans'), href: '/gestion/bible' });
-      items.push({ icon: Video, label: tn('myVideos'), href: '/gestion/cultes' });
-    }
-    if (role === 'pasteur' || role === 'responsable_zone' || role === 'admin') {
+    } else if (role === 'responsable_zone') {
       items.push({ icon: CalendarPlus, label: tn('myEvents'), href: '/gestion/evenements' });
-    }
-    if (role === 'responsable_zone' || role === 'admin') {
       items.push({ icon: ClipboardList, label: tn('zoneMembers'), href: '/gestion/membres' });
     }
     return items;
@@ -80,16 +82,20 @@ export function AppShell({ children }: AppShellProps) {
 
   const sidebarUser = {
     name: user?.nomComplet ?? tc('user'),
-    parish: user?.paroisseOrigine ?? '',
+    parish: paroisse?.label ?? user?.paroisseOrigine ?? '',
   };
 
   const notificationCount = useUnreadCount();
+  const unreadMessages = useUnreadMessageCount();
   usePushNotifications(user?.id);
 
-  // Add badge to notifications nav item
+  // Add badges to notifications and messages nav items
   const itemsWithBadges = navItems.map((item) => {
     if (item.href === '/notifications' && notificationCount > 0) {
       return { ...item, badge: notificationCount };
+    }
+    if (item.href === '/messages' && unreadMessages > 0) {
+      return { ...item, badge: unreadMessages };
     }
     return item;
   });
@@ -102,6 +108,7 @@ export function AppShell({ children }: AppShellProps) {
           items={itemsWithBadges}
           activeHref={activeHref}
           user={sidebarUser}
+          logoText={paroisse?.label ?? 'DiaspoEEC'}
           onLogout={() => {
             useAuthStore.getState().logout();
             router.push('/login');
@@ -110,7 +117,7 @@ export function AppShell({ children }: AppShellProps) {
       </div>
 
       {/* Mobile Top Bar */}
-      <MobileNav notificationCount={notificationCount} />
+      <MobileNav notificationCount={notificationCount} unreadMessages={unreadMessages} />
 
       {/* Main Content */}
       <main className="min-h-screen pt-[calc(3.5rem+var(--safe-area-top,env(safe-area-inset-top,0px)))] pb-20 md:pl-[280px] md:pt-0 md:pb-0">

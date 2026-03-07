@@ -22,6 +22,9 @@ export const ENDPOINTS = {
   MEMBERS: '/api/v1/members',
   MEMBER_BY_ID: (id: string) => `/api/v1/members/${id}`,
   MEMBER_FOLLOW: (id: string) => `/api/v1/members/${id}/follow`,
+  PASTEURS: '/api/v1/members/pasteurs',
+  PASTEURS_LIST: '/api/v1/members/pasteurs/list',
+  PASTEUR_BY_ID: (id: string) => `/api/v1/members/pasteurs/${id}`,
 
   // Meditations
   MEDITATIONS: '/api/v1/meditations',
@@ -90,9 +93,20 @@ export const ENDPOINTS = {
 
   // Paroisses (public)
   PAROISSES: '/api/v1/paroisses',
+  PAROISSE_BY_CODE: (code: string) => `/api/v1/paroisses/code/${code}`,
 
   // Settings (public)
   SETTINGS_PUBLIC: '/api/v1/settings/public',
+
+  // Messages
+  MESSAGES: {
+    CONVERSATIONS: '/api/v1/messages/conversations',
+    CONVERSATION_BY_ID: (id: string) => `/api/v1/messages/conversations/${id}`,
+    SEND_MESSAGE: (id: string) => `/api/v1/messages/conversations/${id}/messages`,
+    MARK_READ: (id: string) => `/api/v1/messages/conversations/${id}/read`,
+    UNREAD_COUNT: '/api/v1/messages/unread-count',
+    DELETE_MESSAGE: (messageId: string) => `/api/v1/messages/${messageId}`,
+  },
 
   // Admin
   ADMIN: {

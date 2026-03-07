@@ -117,21 +117,52 @@ export async function updateSettings(data: Partial<AppSettingsData>): Promise<Ap
 export interface ParoisseData {
   id: string;
   slug: string;
+  code: string;
   label: string;
   ville?: string;
+  synode?: string;
+  region?: string;
+  pasteurNom?: string;
+  messageAccueil?: string;
+  logoUrl?: string;
+  splashImageUrl?: string;
+  couleurPrimaire: string;
+  couleurSecondaire: string;
+  couleurAccent: string;
   actif: boolean;
   createdAt: string;
+  pasteur?: { id: string; email: string; nomComplet: string };
+}
+
+export interface CreateParoissePayload {
+  slug: string;
+  code: string;
+  label: string;
+  ville?: string;
+  synode?: string;
+  region?: string;
+  pasteurNom?: string;
+  messageAccueil?: string;
+  couleurPrimaire?: string;
+  couleurSecondaire?: string;
+  couleurAccent?: string;
+  pasteurEmail: string;
+  pasteurPassword: string;
 }
 
 export async function getParoissesAdmin(): Promise<ParoisseData[]> {
   return apiClient.get<ParoisseData[]>(ENDPOINTS.ADMIN.PAROISSES);
 }
 
-export async function createParoisse(data: { slug: string; label: string; ville?: string }): Promise<ParoisseData> {
+export async function createParoisse(data: CreateParoissePayload): Promise<ParoisseData> {
   return apiClient.post<ParoisseData>(ENDPOINTS.ADMIN.PAROISSES, data);
 }
 
-export async function updateParoisse(id: string, data: Partial<{ slug: string; label: string; ville: string; actif: boolean }>): Promise<ParoisseData> {
+export async function updateParoisse(id: string, data: Partial<{
+  slug: string; code: string; label: string; ville: string; synode: string; region: string;
+  pasteurNom: string; messageAccueil: string; couleurPrimaire: string; couleurSecondaire: string;
+  couleurAccent: string; actif: boolean;
+}>): Promise<ParoisseData> {
   return apiClient.put<ParoisseData>(ENDPOINTS.ADMIN.PAROISSE_BY_ID(id), data);
 }
 

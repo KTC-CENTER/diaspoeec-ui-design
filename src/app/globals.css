@@ -50,11 +50,16 @@
   --color-ink-200: #D0D0DC;
   --color-ink-100: #E8E8EE;
 
+  /* Tenant-overridable colors (set dynamically by TenantProvider) */
+  --tenant-primary: #1B4332;
+  --tenant-secondary: #D4A017;
+  --tenant-accent: #52B788;
+
   /* Semantic Colors */
-  --color-primary: #1B4332;
-  --color-primary-hover: #2D6A4F;
-  --color-secondary: #D4A017;
-  --color-secondary-hover: #B8860B;
+  --color-primary: var(--tenant-primary);
+  --color-primary-hover: color-mix(in srgb, var(--tenant-primary) 80%, white);
+  --color-secondary: var(--tenant-secondary);
+  --color-secondary-hover: color-mix(in srgb, var(--tenant-secondary) 80%, black);
   --color-background: #FFFBF0;
   --color-surface: #FFFFFF;
   --color-surface-elevated: #FFFDF5;

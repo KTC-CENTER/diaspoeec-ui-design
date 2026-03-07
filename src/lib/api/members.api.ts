@@ -60,3 +60,23 @@ export async function getCurrentUser(): Promise<User> {
 export async function toggleFollowMember(id: string): Promise<{ following: boolean }> {
   return apiClient.post<{ following: boolean }>(ENDPOINTS.MEMBER_FOLLOW(id));
 }
+
+// ── Pasteurs ──
+
+export interface CreatePasteurPayload {
+  nomComplet: string;
+  email: string;
+  password: string;
+}
+
+export async function getPasteurs(): Promise<User[]> {
+  return apiClient.get<User[]>(ENDPOINTS.PASTEURS_LIST);
+}
+
+export async function createPasteur(data: CreatePasteurPayload): Promise<User> {
+  return apiClient.post<User>(ENDPOINTS.PASTEURS, data);
+}
+
+export async function removePasteur(id: string): Promise<User> {
+  return apiClient.delete<User>(ENDPOINTS.PASTEUR_BY_ID(id));
+}

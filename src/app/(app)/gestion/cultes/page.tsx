@@ -26,7 +26,7 @@ function formatDuration(seconds?: number) {
 
 // ─── Inner component ─────────────────────────────────────────────────────────
 
-function GestionCultesContent() {
+export function GestionCultesContent() {
   const t = useTranslations('gestionCultes');
   const tc = useTranslations('common');
 

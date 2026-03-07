@@ -108,7 +108,9 @@
     "myEvents": "My events",
     "zoneMembers": "Zone members",
     "unread": "unread",
-    "favorites": "My Favorites"
+    "favorites": "My Favorites",
+    "messages": "Messages",
+    "community": "Community"
   },
   "accueil": {
     "greeting": "Hello, {name}",
@@ -462,7 +464,7 @@
     "securePayment": "Secure payment by Stripe",
     "paymentError": "An error occurred. Please try again.",
     "thankYou": "Thank you for your generosity!",
-    "donationConfirm": "Your donation of {amount} for the {campaign} campaign has been recorded.",
+    "donationConfirmation": "Your donation of {amount} for the {campaign} campaign has been recorded.",
     "monthlyAutoDebit": "Your monthly donation will be automatically debited each month.",
     "bibleQuote": "Each of you should give what you have decided in your heart to give, not reluctantly or under compulsion, for God loves a cheerful giver.",
     "bibleRef": "2 Corinthians 9:7",
@@ -547,6 +549,7 @@
     "commentsReplies": "Comments and replies",
     "likesOnContent": "Likes on your content",
     "newEvents": "New events",
+    "newMessages": "Private messages",
     "backToNotifications": "Back to notifications",
     "preferencesSaved": "Preferences saved!",
     "savePreferences": "Save preferences",
@@ -812,7 +815,11 @@
     "campaignDescPlaceholder": "Describe the objective of this campaign...",
     "campaignAllocationPlaceholder": "E.g.: Building construction, Student aid...",
     "optional": "optional",
-    "on": "on"
+    "on": "on",
+    "donorHistory": "Donor history",
+    "uniqueDonors": "unique donor(s)",
+    "anonymous": "Anonymous",
+    "noDonorsYet": "No donations for this campaign yet"
   },
   "gestion": {
     "myMeditations": "My meditations",
@@ -1096,7 +1103,21 @@
     "originParish": "Home parish",
     "baptized": "Baptized",
     "donations": "Donations",
-    "eventsAttended": "Events"
+    "eventsAttended": "Events",
+    "sendMessage": "Send a message"
+  },
+  "communaute": {
+    "pageTitle": "Community",
+    "pageSubtitle": "Discover your parish members and connect with them",
+    "searchPlaceholder": "Search a member...",
+    "memberCount": "{count} member(s)",
+    "noResults": "No member matches your search",
+    "noMembers": "No members yet",
+    "sendMessage": "Send a message",
+    "originParish": "Home parish",
+    "ministries": "Ministries",
+    "donations": "Donations",
+    "events": "Events"
   },
   "landing": {
     "about": "About",

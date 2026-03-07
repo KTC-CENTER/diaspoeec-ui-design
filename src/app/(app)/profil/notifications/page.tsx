@@ -14,6 +14,7 @@ import {
   MessageCircle,
   Heart,
   MapPin,
+  Send,
   ListChecks,
   Check,
   Loader2,
@@ -110,6 +111,12 @@ export default function NotificationPrefsPage() {
       label: t('newEvents'),
       icon: MapPin,
       iconColor: 'text-gold-600',
+    },
+    {
+      key: 'nouveauMessage',
+      label: t('newMessages'),
+      icon: Send,
+      iconColor: 'text-forest-700',
     },
   ];
 

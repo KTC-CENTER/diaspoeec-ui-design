@@ -462,7 +462,7 @@
     "securePayment": "Pago seguro por Stripe",
     "paymentError": "Ha ocurrido un error. Por favor, intente de nuevo.",
     "thankYou": "Gracias por su generosidad!",
-    "donationConfirm": "Su donacion de {amount} para la campana {campaign} ha sido registrada.",
+    "donationConfirmation": "Su donacion de {amount} para la campana {campaign} ha sido registrada.",
     "monthlyAutoDebit": "Su donacion mensual sera debitada automaticamente cada mes.",
     "bibleQuote": "Cada uno de como propuso en su corazon: no con tristeza, ni por necesidad, porque Dios ama al dador alegre.",
     "bibleRef": "2 Corintios 9:7",
@@ -547,6 +547,7 @@
     "commentsReplies": "Comentarios y respuestas",
     "likesOnContent": "Likes en sus contenidos",
     "newEvents": "Nuevos eventos",
+    "newMessages": "Mensajes privados",
     "backToNotifications": "Volver a notificaciones",
     "preferencesSaved": "Preferencias guardadas!",
     "savePreferences": "Guardar preferencias",
@@ -812,7 +813,11 @@
     "campaignDescPlaceholder": "Describa el objetivo de esta campana...",
     "campaignAllocationPlaceholder": "Ej: Construccion edificio, Ayuda estudiantes...",
     "optional": "opcional",
-    "on": "sobre"
+    "on": "sobre",
+    "donorHistory": "Historial de donantes",
+    "uniqueDonors": "donante(s) unico(s)",
+    "anonymous": "Anonimo",
+    "noDonorsYet": "Aun no hay donaciones para esta campana"
   },
   "gestion": {
     "myMeditations": "Mis meditaciones",

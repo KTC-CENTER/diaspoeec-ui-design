@@ -462,7 +462,7 @@
     "securePayment": "Sichere Zahlung uber Stripe",
     "paymentError": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
     "thankYou": "Vielen Dank fur Ihre Grosszugigkeit!",
-    "donationConfirm": "Ihre Spende von {amount} fur die Kampagne {campaign} wurde erfasst.",
+    "donationConfirmation": "Ihre Spende von {amount} fur die Kampagne {campaign} wurde erfasst.",
     "monthlyAutoDebit": "Ihre monatliche Spende wird jeden Monat automatisch abgebucht.",
     "bibleQuote": "Jeder gebe, wie er es sich in seinem Herzen vorgenommen hat, nicht mit Unlust oder aus Zwang; denn einen frohlichen Geber hat Gott lieb.",
     "bibleRef": "2. Korinther 9:7",
@@ -547,6 +547,7 @@
     "commentsReplies": "Kommentare und Antworten",
     "likesOnContent": "Likes auf Ihre Inhalte",
     "newEvents": "Neue Veranstaltungen",
+    "newMessages": "Private Nachrichten",
     "backToNotifications": "Zuruck zu Benachrichtigungen",
     "preferencesSaved": "Einstellungen gespeichert!",
     "savePreferences": "Einstellungen speichern",
@@ -812,7 +813,11 @@
     "campaignDescPlaceholder": "Beschreiben Sie das Ziel dieser Kampagne...",
     "campaignAllocationPlaceholder": "z.B.: Gebaeuebau, Studentenhilfe...",
     "optional": "optional",
-    "on": "auf"
+    "on": "auf",
+    "donorHistory": "Spenderverlauf",
+    "uniqueDonors": "einzigartige(r) Spender",
+    "anonymous": "Anonym",
+    "noDonorsYet": "Noch keine Spenden fuer diese Kampagne"
   },
   "gestion": {
     "myMeditations": "Meine Meditationen",

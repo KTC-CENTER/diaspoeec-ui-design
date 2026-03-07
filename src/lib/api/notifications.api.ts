@@ -22,6 +22,7 @@ export interface NotificationPreferences {
   rappelLecture: boolean;
   culteEnDirect: boolean;
   nouvelEvenementZone: boolean;
+  nouveauMessage: boolean;
 }
 
 export async function getNotifications(filter?: 'all' | 'unread'): Promise<Notification[]> {

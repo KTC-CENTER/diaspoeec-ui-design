@@ -7,7 +7,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, Check, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
-import { CustomSelect } from '@/components/forms/custom-select';
 import { OnboardingSteps } from '@/features/auth/components/onboarding-steps';
 import { useAuthStore } from '@/stores/auth.store';
 import { updateMember } from '@/lib/api/members.api';
@@ -16,7 +15,6 @@ import {
   type OnboardingChurchFormData,
 } from '@/features/auth/schemas/auth.schema';
 import { MINISTERES_OPTIONS } from '@/lib/constants/onboarding';
-import { useParoisses } from '@/hooks/use-paroisses';
 
 // ============================================================================
 // Ministry Chips Component
@@ -71,20 +69,16 @@ export default function OnboardingChurchPage() {
   const t = useTranslations('onboarding');
   const tc = useTranslations('common');
   const { user, updateUser } = useAuthStore();
-  const { data: paroissesData } = useParoisses();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
-    register,
     handleSubmit,
     control,
     watch,
     setValue,
-    formState: { errors },
   } = useForm<OnboardingChurchFormData>({
     resolver: zodResolver(onboardingChurchSchema),
     defaultValues: {
-      paroisseOrigine: '',
       baptise: false,
       ministeres: [],
     },
@@ -120,25 +114,6 @@ export default function OnboardingChurchPage() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Paroisse d'origine */}
-        <div className="space-y-1.5">
-          <label className="block text-sm font-medium text-ink-700">
-            {t('originParish')}
-          </label>
-          <CustomSelect
-            value={watch('paroisseOrigine') || ''}
-            onChange={(value) => setValue('paroisseOrigine', value, { shouldValidate: true })}
-            options={(paroissesData ?? []).map((p) => ({ value: p.slug, label: p.label }))}
-            placeholder={t('selectParish')}
-            error={!!errors.paroisseOrigine}
-          />
-          {errors.paroisseOrigine && (
-            <p className="text-xs text-red-600">
-              {errors.paroisseOrigine.message}
-            </p>
-          )}
-        </div>
-
         {/* Baptise toggle */}
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-ink-700">

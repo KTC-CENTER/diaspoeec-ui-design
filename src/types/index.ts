@@ -4,6 +4,7 @@ export type {
   DiasporaType,
   Sexe,
   User,
+  Paroisse,
 } from './user';
 
 export type {

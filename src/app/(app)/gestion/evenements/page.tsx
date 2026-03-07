@@ -33,7 +33,7 @@ const typeBadgeColors: Record<string, string> = {
 
 const typeOptions: EventType[] = ['culte', 'conference', 'retraite', 'formation', 'jeunesse'];
 
-function GestionEvenementsContent() {
+export function GestionEvenementsContent() {
   const t = useTranslations('gestionEvenements');
   const tc = useTranslations('common');
   const te = useTranslations('evenements');

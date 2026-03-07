@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { LoginForm } from '@/features/auth/components/login-form';
 import { GoogleOAuthButton } from '@/features/auth/components/google-oauth-button';
-import { QuickLoginButtons } from '@/features/auth/components/quick-login-buttons';
 
 export default function LoginPage() {
   const t = useTranslations('auth');
@@ -24,9 +23,6 @@ export default function LoginPage() {
           {t('loginSubtitle')}
         </p>
       </div>
-
-      {/* Quick Login (Dev mode) */}
-      <QuickLoginButtons />
 
       {/* Login Form */}
       <LoginForm />

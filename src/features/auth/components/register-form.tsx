@@ -58,9 +58,10 @@ export function RegisterForm() {
     register,
     handleSubmit,
     watch,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
+    mode: 'onChange',
     defaultValues: {
       nomComplet: '',
       email: '',
@@ -223,7 +224,7 @@ export function RegisterForm() {
       {/* Submit */}
       <button
         type="submit"
-        disabled={isPending}
+        disabled={isPending || !isValid}
         className={cn(
           'flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white transition-all',
           'bg-forest-900 hover:bg-forest-700 active:scale-[0.98]',

@@ -9,7 +9,8 @@ export type NotificationType =
   | 'culte_en_direct'
   | 'nouvel_evenement_zone'
   | 'nouveau_membre'
-  | 'moderation';
+  | 'moderation'
+  | 'nouveau_message';
 
 export interface Notification {
   id: string;

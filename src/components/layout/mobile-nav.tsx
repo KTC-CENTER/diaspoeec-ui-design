@@ -4,22 +4,25 @@ import { useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, Bell, LogOut, Home, BookOpen, Calendar, Heart, User, Church, Radio, PenSquare, CalendarPlus, ClipboardList, BookCheck } from 'lucide-react';
+import { Menu, X, Bell, LogOut, Home, BookOpen, Calendar, Heart, User, Church, Radio, PenSquare, CalendarPlus, ClipboardList, BookCheck, LayoutDashboard, MessageCircle, Users } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useUIStore } from '@/stores/ui.store';
 import { useAuthStore } from '@/stores/auth.store';
+import { useTenantStore } from '@/stores/tenant.store';
 import { useTranslations } from 'next-intl';
 import type { LucideIcon } from 'lucide-react';
 import type { UserRole } from '@/types';
 
 interface MobileNavProps {
   notificationCount?: number;
+  unreadMessages?: number;
 }
 
 interface MobileNavItem {
   icon: LucideIcon;
   label: string;
   href: string;
+  badge?: number;
 }
 
 function getInitials(name: string): string {
@@ -32,12 +35,13 @@ function getInitials(name: string): string {
     .toUpperCase();
 }
 
-export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
+export function MobileNav({ notificationCount = 0, unreadMessages = 0 }: MobileNavProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { mobileMenuOpen, setMobileMenuOpen } = useUIStore();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const paroisse = useTenantStore((s) => s.paroisse);
   const tn = useTranslations('nav');
   const tc = useTranslations('common');
 
@@ -48,6 +52,8 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
     { icon: Heart, label: tn('donations'), href: '/dons' },
     { icon: Church, label: tn('services'), href: '/cultes' },
     { icon: Radio, label: tn('bible'), href: '/bible' },
+    { icon: Users, label: tn('community'), href: '/communaute' },
+    { icon: MessageCircle, label: tn('messages'), href: '/messages' },
     { icon: Bell, label: tn('notifications'), href: '/notifications' },
     { icon: User, label: tn('profile'), href: '/profil' },
   ];
@@ -56,13 +62,11 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
     if (!role) return [];
     const items: MobileNavItem[] = [];
     if (role === 'pasteur' || role === 'admin') {
+      items.push({ icon: LayoutDashboard, label: 'Ma Paroisse', href: '/gestion/paroisse' });
       items.push({ icon: PenSquare, label: tn('myMeditations'), href: '/gestion/meditations' });
       items.push({ icon: BookCheck, label: tn('biblePlans'), href: '/gestion/bible' });
-    }
-    if (role === 'pasteur' || role === 'responsable_zone' || role === 'admin') {
+    } else if (role === 'responsable_zone') {
       items.push({ icon: CalendarPlus, label: tn('myEvents'), href: '/gestion/evenements' });
-    }
-    if (role === 'responsable_zone' || role === 'admin') {
       items.push({ icon: ClipboardList, label: tn('zoneMembers'), href: '/gestion/membres' });
     }
     return items;
@@ -77,6 +81,13 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
         ...baseMobileNavItems.slice(-2), // Profil & Parametres at the end
       ]
     : baseMobileNavItems;
+
+  // Add badges
+  const itemsWithBadges = mobileNavItems.map((item) => {
+    if (item.href === '/notifications' && notificationCount > 0) return { ...item, badge: notificationCount };
+    if (item.href === '/messages' && unreadMessages > 0) return { ...item, badge: unreadMessages };
+    return item;
+  });
 
   // Close drawer on route change
   useEffect(() => {
@@ -128,7 +139,7 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
             className="font-heading text-lg font-semibold text-forest-900 tracking-tight"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            DiaspoEEC
+            {paroisse?.label ?? 'DiaspoEEC'}
           </span>
         </div>
 
@@ -175,7 +186,7 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
               className="font-heading text-xl font-semibold text-forest-900 tracking-tight"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
-              DiaspoEEC
+              {paroisse?.label ?? 'DiaspoEEC'}
             </span>
           </div>
           <button
@@ -193,7 +204,7 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
         {/* Navigation Links */}
         <nav className="flex-1 overflow-y-auto px-3 py-4">
           <ul className="flex flex-col gap-1">
-            {mobileNavItems.map((item) => {
+            {itemsWithBadges.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
 
@@ -215,7 +226,12 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
                         isActive ? 'text-current' : 'text-ink-400'
                       )}
                     />
-                    <span>{item.label}</span>
+                    <span className="flex-1">{item.label}</span>
+                    {item.badge !== undefined && item.badge > 0 && (
+                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-error px-1.5 text-[11px] font-bold text-white">
+                        {item.badge > 99 ? '99+' : item.badge}
+                      </span>
+                    )}
                   </Link>
                 </li>
               );
@@ -237,7 +253,7 @@ export function MobileNav({ notificationCount = 0 }: MobileNavProps) {
                 {user?.nomComplet ?? tc('user')}
               </p>
               <p className="truncate text-xs text-ink-500">
-                {user?.paroisseOrigine ?? ''}
+                {paroisse?.label ?? user?.paroisseOrigine ?? ''}
               </p>
             </div>
             <button

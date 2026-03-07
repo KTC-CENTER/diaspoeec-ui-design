@@ -4,7 +4,7 @@ import {
   moderateItem, getSettings, updateSettings, getParoissesAdmin,
   createParoisse, updateParoisse, deleteParoisse, reactivateUser,
 } from '@/lib/api/admin.api';
-import type { ModerationAction, AppSettingsData } from '@/lib/api/admin.api';
+import type { ModerationAction, AppSettingsData, CreateParoissePayload } from '@/lib/api/admin.api';
 import { updateMember } from '@/lib/api/members.api';
 import type { UpdateMemberPayload } from '@/lib/api/members.api';
 import { createCampagne, updateCampagne } from '@/lib/api/campagnes.api';
@@ -169,7 +169,7 @@ export function useParoissesAdmin() {
 export function useCreateParoisse() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { slug: string; label: string; ville?: string }) => createParoisse(data),
+    mutationFn: (data: CreateParoissePayload) => createParoisse(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-paroisses'] });
       queryClient.invalidateQueries({ queryKey: ['paroisses'] });
@@ -180,7 +180,7 @@ export function useCreateParoisse() {
 export function useUpdateParoisse() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<{ slug: string; label: string; ville: string; actif: boolean }> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Parameters<typeof updateParoisse>[1] }) =>
       updateParoisse(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-paroisses'] });

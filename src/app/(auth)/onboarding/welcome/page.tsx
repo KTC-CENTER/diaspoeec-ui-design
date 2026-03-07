@@ -1,9 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { CheckCircle2, Users, Globe, Church } from 'lucide-react';
+import { CheckCircle2, MapPin, Church } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
+import { useTenantStore } from '@/stores/tenant.store';
+import { useAuthStore } from '@/stores/auth.store';
 
 // ============================================================================
 // Confetti Particle Component
@@ -52,12 +54,10 @@ function ConfettiParticle({
 export default function OnboardingWelcomePage() {
   const router = useRouter();
   const t = useTranslations('onboarding');
+  const paroisse = useTenantStore((s) => s.paroisse);
+  const user = useAuthStore((s) => s.user);
 
-  const stats = [
-    { icon: Users, value: '1 250+', label: t('members') },
-    { icon: Globe, value: '45+', label: t('countries') },
-    { icon: Church, value: '120+', label: t('parishes') },
-  ];
+  const firstName = user?.nomComplet?.split(' ')[0] ?? '';
 
   return (
     <>
@@ -93,44 +93,78 @@ export default function OnboardingWelcomePage() {
         {/* Checkmark */}
         <div className="flex justify-center">
           <div
-            className={cn(
-              'flex h-20 w-20 items-center justify-center rounded-full',
-              'bg-forest-500/10'
-            )}
-            style={{ animation: 'var(--animate-confetti)' }}
+            className="flex h-20 w-20 items-center justify-center rounded-full"
+            style={{
+              backgroundColor: paroisse
+                ? `${paroisse.couleurPrimaire}15`
+                : 'rgba(27, 67, 50, 0.1)',
+            }}
           >
-            <CheckCircle2 className="h-10 w-10 text-forest-700" />
+            <CheckCircle2
+              className="h-10 w-10"
+              style={{ color: paroisse?.couleurPrimaire ?? '#1B4332' }}
+            />
           </div>
         </div>
 
         {/* Heading */}
         <div className="space-y-3">
           <h2 className="font-heading text-2xl font-bold text-ink-900">
-            {t('welcome')}
+            {firstName
+              ? `${firstName}, bienvenue !`
+              : t('welcome')}
           </h2>
-          <p className="text-ink-500">{t('accountReady')}</p>
+          <p className="text-ink-500">
+            {paroisse?.messageAccueil ?? t('accountReady')}
+          </p>
         </div>
 
-        {/* Stats */}
-        <div className="flex items-center justify-center gap-6">
-          {stats.map((stat) => (
-            <div key={stat.label} className="flex flex-col items-center gap-1">
-              <stat.icon className="h-5 w-5 text-forest-600" />
-              <span className="text-lg font-bold text-ink-900">
-                {stat.value}
-              </span>
-              <span className="text-xs text-ink-400">{stat.label}</span>
+        {/* Parish info */}
+        {paroisse && (
+          <div className="mx-auto max-w-xs space-y-3">
+            <div
+              className="rounded-2xl border p-4"
+              style={{
+                borderColor: `${paroisse.couleurPrimaire}30`,
+                backgroundColor: `${paroisse.couleurPrimaire}08`,
+              }}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Church
+                  className="h-5 w-5"
+                  style={{ color: paroisse.couleurPrimaire }}
+                />
+                <span className="text-sm font-semibold text-ink-900">
+                  {paroisse.label}
+                </span>
+              </div>
+              {(paroisse.ville || paroisse.synode) && (
+                <div className="mt-1.5 flex items-center justify-center gap-1.5 text-xs text-ink-500">
+                  <MapPin className="h-3.5 w-3.5" />
+                  <span>
+                    {[paroisse.ville, paroisse.synode].filter(Boolean).join(' — ')}
+                  </span>
+                </div>
+              )}
+              {paroisse.pasteurNom && (
+                <p className="mt-2 text-xs text-ink-400">
+                  {paroisse.pasteurNom}
+                </p>
+              )}
             </div>
-          ))}
-        </div>
+          </div>
+        )}
 
         {/* CTA */}
         <button
           onClick={() => router.push('/accueil')}
           className={cn(
             'inline-flex items-center justify-center gap-2 rounded-xl px-8 py-3.5 text-sm font-semibold text-white transition-all',
-            'bg-gold-600 shadow-lg shadow-gold-600/25 hover:bg-gold-700 active:scale-[0.98]'
+            'shadow-lg active:scale-[0.98]'
           )}
+          style={{
+            backgroundColor: paroisse?.couleurSecondaire ?? '#D4A017',
+          }}
         >
           {t('exploreDiaspoEEC')}
         </button>

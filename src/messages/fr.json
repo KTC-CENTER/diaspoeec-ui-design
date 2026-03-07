@@ -108,7 +108,9 @@
     "myEvents": "Mes evenements",
     "zoneMembers": "Membres zone",
     "unread": "non lues",
-    "favorites": "Mes Favoris"
+    "favorites": "Mes Favoris",
+    "messages": "Messages",
+    "community": "Communaute"
   },
   "accueil": {
     "greeting": "Bonjour, {name}",
@@ -462,7 +464,7 @@
     "securePayment": "Paiement securise par Stripe",
     "paymentError": "Une erreur est survenue. Veuillez reessayer.",
     "thankYou": "Merci pour votre generosite !",
-    "donationConfirm": "Votre don de {amount} pour la campagne {campaign} a bien ete enregistre.",
+    "donationConfirmation": "Votre don de {amount} pour la campagne {campaign} a bien ete enregistre.",
     "monthlyAutoDebit": "Votre don mensuel sera preleve automatiquement chaque mois.",
     "bibleQuote": "Que chacun donne comme il l'a resolu en son coeur, sans tristesse ni contrainte ; car Dieu aime celui qui donne avec joie.",
     "bibleRef": "2 Corinthiens 9:7",
@@ -547,6 +549,7 @@
     "commentsReplies": "Commentaires et reponses",
     "likesOnContent": "Likes sur vos contenus",
     "newEvents": "Nouveaux evenements",
+    "newMessages": "Messages prives",
     "backToNotifications": "Retour aux notifications",
     "preferencesSaved": "Preferences enregistrees !",
     "savePreferences": "Enregistrer les preferences",
@@ -812,7 +815,11 @@
     "campaignDescPlaceholder": "Decrivez l'objectif de cette campagne...",
     "campaignAllocationPlaceholder": "Ex: Construction batiment, Aide etudiants...",
     "optional": "optionnel",
-    "on": "sur"
+    "on": "sur",
+    "donorHistory": "Historique des donateurs",
+    "uniqueDonors": "donateur(s) unique(s)",
+    "anonymous": "Anonyme",
+    "noDonorsYet": "Aucun don pour cette campagne"
   },
   "gestion": {
     "myMeditations": "Mes meditations",
@@ -1096,7 +1103,21 @@
     "originParish": "Paroisse d'origine",
     "baptized": "Baptise",
     "donations": "Dons",
-    "eventsAttended": "Evenements"
+    "eventsAttended": "Evenements",
+    "sendMessage": "Envoyer un message"
+  },
+  "communaute": {
+    "pageTitle": "Communaute",
+    "pageSubtitle": "Decouvrez les membres de votre paroisse et echangez avec eux",
+    "searchPlaceholder": "Rechercher un membre...",
+    "memberCount": "{count} membre(s)",
+    "noResults": "Aucun membre ne correspond a votre recherche",
+    "noMembers": "Aucun membre pour le moment",
+    "sendMessage": "Envoyer un message",
+    "originParish": "Paroisse d'origine",
+    "ministries": "Ministeres",
+    "donations": "Dons",
+    "events": "Evenements"
   },
   "landing": {
     "about": "A propos",

@@ -3,6 +3,24 @@ export type Ministere = 'chorale' | 'jeunesse' | 'diaconie' | 'enseignement' | '
 export type DiasporaType = 'etudiante' | 'professionnelle' | 'familiale' | 'missionnaire';
 export type Sexe = 'homme' | 'femme';
 
+export interface Paroisse {
+  id: string;
+  slug: string;
+  code: string;
+  label: string;
+  ville?: string;
+  synode?: string;
+  region?: string;
+  pasteurNom?: string;
+  messageAccueil?: string;
+  logoUrl?: string;
+  splashImageUrl?: string;
+  couleurPrimaire: string;
+  couleurSecondaire: string;
+  couleurAccent: string;
+  actif: boolean;
+}
+
 export interface User {
   id: string;
   nomComplet: string;
@@ -10,6 +28,7 @@ export interface User {
   emailVerified: boolean;
   googleId?: string | null;
   avatarUrl?: string;
+  paroisseId?: string;
   dateNaissance: string;
   sexe: Sexe;
   telephone?: string;

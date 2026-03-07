@@ -4,6 +4,7 @@ import { QueryProvider } from '@/providers/query-provider';
 import { AuthProvider } from '@/providers/auth-provider';
 import { CapacitorProvider } from '@/providers/capacitor-provider';
 import { IntlProvider } from '@/providers/intl-provider';
+import { TenantProvider } from '@/providers/tenant-provider';
 import './globals.css';
 
 const fraunces = Fraunces({
@@ -78,11 +79,13 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <QueryProvider>
-          <AuthProvider>
-            <CapacitorProvider>
-              <IntlProvider>{children}</IntlProvider>
-            </CapacitorProvider>
-          </AuthProvider>
+          <TenantProvider>
+            <AuthProvider>
+              <CapacitorProvider>
+                <IntlProvider>{children}</IntlProvider>
+              </CapacitorProvider>
+            </AuthProvider>
+          </TenantProvider>
         </QueryProvider>
       </body>
     </html>
